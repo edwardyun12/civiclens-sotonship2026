@@ -1,5 +1,5 @@
 {
- "built": "2026-10-17 20:21 UTC",
+ "built": "2026-10-17 20:30 UTC",
  "places": 324,
  "source_records": 382,
  "records_by_source": {
@@ -23,11 +23,30 @@
   "OUTSIDE_CITY": 81,
   "COORDS_FROM_POSTCODE_ONLY": 46,
   "NAME_DIFFERS_BETWEEN_SOURCES": 11,
-  "POSSIBLE_DUPLICATE": 10
+  "POSSIBLE_DUPLICATE": 10,
+  "COMPANY_REGISTERED_ELSEWHERE": 9,
+  "COMPANY_SIC_DOESNT_FIT_TYPE": 1
  },
  "inside_city": 243,
- "company_links": {},
+ "company_links": {
+  "no_match": 236,
+  "matched": 10
+ },
  "sources": {
+  "ch_file": {
+   "title": "Companies House advanced search download (5000 rows; the website caps downloads at 5,000)",
+   "url": "https://find-and-update.company-information.service.gov.uk/advanced-search",
+   "licence": "Companies House public register",
+   "downloaded": "2026-10-17 20:30 UTC",
+   "rows": 5000
+  },
+  "companies_house": {
+   "title": "Companies House advanced search (active, registered in Southampton)",
+   "url": "https://api.company-information.service.gov.uk",
+   "licence": "Companies House public register; company-level facts only, no personal data stored",
+   "downloaded": "2026-10-17 20:30 UTC",
+   "rows": 246
+  },
   "osm": {
    "title": "OpenStreetMap facilities (Overpass API, OSM data as of 2026-10-17T17:31:06Z)",
    "url": "https://overpass-api.de/api/interpreter",
@@ -48,6 +67,28 @@
    "licence": "OGL v3.0; contains OS data (c) Crown copyright; Royal Mail data (c) Royal Mail copyright",
    "downloaded": "2026-10-17 17:33 UTC",
    "rows": 114
+  },
+  "postcodes_2017": {
+   "title": "UK postcode coordinates as of Oct 2017 (github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv), PREVIEW ONLY; the PC run uses live postcodes.io",
+   "url": "https://github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv",
+   "licence": "Derived from ONS/OS open postcode data (OGL); check before reuse",
+   "downloaded": "2026-10-17 20:30 UTC",
+   "rows": 2362
   }
- }
+ },
+ "companies": 5000,
+ "company_addresses": 3724,
+ "company_flags": {
+  "REGISTERED_OFFICE_ONLY": 5000,
+  "COORDS_FROM_2017_POSTCODE_FILE": 4855,
+  "OUTSIDE_CITY": 2043,
+  "SHARED_ADDRESS_5PLUS": 970,
+  "BUSY_POSTCODE": 449,
+  "NOT_IN_SOUTHAMPTON": 372,
+  "DORMANT_OR_NON_TRADING": 135,
+  "POSTCODE_NOT_FOUND": 133,
+  "NO_POSTCODE": 12
+ },
+ "companies_inside_city": 2441,
+ "companies_linked_to_places": 10
 }

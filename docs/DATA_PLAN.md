@@ -117,13 +117,18 @@ python -m src.build_places --ch-key YOUR_COMPANIES_HOUSE_KEY
   office (the API version of the website's Advanced search), then matches locally. `--ch-mode search` instead
   runs one name search per place, which also finds chains registered elsewhere (slower: 600 requests / 5 min).
   Only active companies are ever linked.
+- Companies House website download: `--ch-file Companies-House-search-results.csv` reads the Advanced search
+  CSV (the site caps it at 5,000 rows, so it is a subset; `--ch-key` gets every active company). Every company is
+  kept in `companies.csv` with its industry, coordinates (postcode centre) and flags; companies sharing a registered
+  address become one row in `company_addresses.csv`, so the map never stacks duplicates on the same point.
+- FSA file: `--fsa-file FHRS877en-GB.xml` (Southampton) if you've downloaded it; otherwise the API is used.
 - Optional Google check: add `--google-key KEY --google-limit 200`. It checks the lowest-confidence places first
   and writes `google_check.csv` (gitignored; Google's terms limit storing their content). Every place also gets
   free "Pin on Google Maps" and "Search on Google Maps" links for manual checks.
 - If a source fails, the others still build. `--offline` rebuilds from `data/db/raw/` without downloading.
 - Outputs: `data/db/places.csv`, `source_records.csv`, `company_links.csv`, `companies_register.csv`,
   `places.sqlite`, `summary.json`. Load the CSVs into the Places Register viewer to inspect them.
-- Tests: `pytest -q tests/test_build_places.py` (11 tests: matching, flags, postcode checks, Companies House).
+- Tests: `pytest -q tests/test_build_places.py` (13 tests: matching, flags, postcode checks, Companies House API, website CSV and address grouping).
 - `data/db/sample/` is a small real build from the 17 Oct OSM and NHS files, for the viewer and tests.
 
 The simulator still reads `data/processed/facilities.csv`, so the published test numbers stay reproducible.
