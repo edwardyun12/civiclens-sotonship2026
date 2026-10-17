@@ -285,6 +285,22 @@ EA_WFS = "https://environment.data.gov.uk/spatialdata/flood-map-for-planning-flo
 EA_LAYER = "dataset-04532375-a198-476e-985e-0579a0a11b47:Flood_Zones_2_3_Rivers_and_Sea"
 
 
+def polygonal(g):
+    """Keep only polygon parts (intersections can return a GeometryCollection with stray lines)."""
+    from shapely.geometry import MultiPolygon, Polygon
+    if isinstance(g, Polygon):
+        return MultiPolygon([g])
+    if isinstance(g, MultiPolygon):
+        return g
+    parts = []
+    for p in getattr(g, "geoms", []):
+        if isinstance(p, Polygon):
+            parts.append(p)
+        elif isinstance(p, MultiPolygon):
+            parts.extend(p.geoms)
+    return MultiPolygon(parts)
+
+
 def fetch_flood(bbox: tuple[float, float, float, float], raw_file: Path | None = None) -> int:
     """Flood Zone 3 (rivers and sea) polygons, clipped to the city box and simplified (~5 m)."""
     from shapely.geometry import box, mapping, shape
@@ -303,6 +319,7 @@ def fetch_flood(bbox: tuple[float, float, float, float], raw_file: Path | None =
         (RAW / "ea_flood_zones.json").write_text(json.dumps(d))  # large; gitignored
     geoms = [shape(f["geometry"]) for f in d["features"] if f["properties"].get("flood_zone") == "FZ3"]
     g = unary_union(geoms).intersection(box(w, s, e, n)).simplify(0.00005, preserve_topology=True)
+    g = polygonal(g)
     out = {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"flood_zone": "FZ3"},
                                                        "geometry": mapping(g)}]}
     (PROC / "flood_zone3.geojson").write_text(json.dumps(out))
