@@ -136,3 +136,15 @@ python -m src.build_places --ch-key YOUR_COMPANIES_HOUSE_KEY
 The simulator still reads `data/processed/facilities.csv`, so the published test numbers stay reproducible.
 Switching the engine to the new `places` table is a separate step: rerun `pytest` and `tests.run_evaluation`
 afterwards, because coverage numbers will change.
+
+## 7. How flags are resolved
+
+- **Fixed automatically:** the same business listed twice in OSM or the FSA list (same name within 30 m) is merged
+  into one place (`MERGED_DUPLICATE`). Companies House and NHS records are never merged with each other this way:
+  two records there are two legal entities.
+- **Excluded, with the reason, into `excluded_places.csv`:** addresses not in Southampton (e.g. Southampton Row,
+  London), dormant or non-trading companies, companies registered outside the city boundary, and companies whose
+  postcode can't be located. Nothing is silently dropped.
+- **Scored:** every remaining flag lowers the 0-100 confidence (`PENALTY` in `src/build_places.py`).
+- **Fixed by the PC run:** pins from the 2017 postcode file are replaced by live postcodes.io lookups, and
+  `--ch-key` pulls every active Southampton company live from Companies House (the website download stops at 5,000).

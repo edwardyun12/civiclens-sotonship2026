@@ -108,7 +108,7 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 |---|---|---|
 | Nursery (children 0-4) | 60.2% → 76.7% (Sholing, Bevois, Millbrook) | 60.2% → 76.7% |
 | GP | 83.1% → 91.1% (Redbridge, Sholing, Bassett) | 83.5% → 91.5% |
-| Pharmacy | 86.0% → 92.8% (Sholing, Bassett, Woolston) | 85.6% → 92.8% |
+| Pharmacy | 85.9% → 92.8% (Sholing, Bassett, Woolston) | 85.6% → 92.8% |
 | Café | 79.4% → 89.0% | 79.4% → 89.0% |
 | Library | 43.7% → 59.7% | 43.7% → 59.7% |
 
