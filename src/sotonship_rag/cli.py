@@ -15,7 +15,7 @@ def main() -> None:
     subparsers.add_parser("index", help="Index documents in data/raw")
     query_parser = subparsers.add_parser("query", help="Ask a question")
     query_parser.add_argument("question")
-    query_parser.add_argument("--top-k", type=int, default=5)
+    query_parser.add_argument("--top-k", type=int, default=3)
     args = parser.parse_args()
 
     try:
