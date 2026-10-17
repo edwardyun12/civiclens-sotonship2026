@@ -15,7 +15,25 @@ Paste this whole file into the next AI session. It is self-contained.
   in Southampton?" or tests a site. The tool shows before/after walking coverage, who benefits (deprivation),
   competition, jobs, flood constraint, alternatives vs do-nothing, uncertainty, and an AI brief whose
   numbers are automatically audited.
-- User preferences: commit messages must **not** contain `Claude-Session:` links. Keep answers short and practical.
+- User preferences: keep answers short and practical.
+
+## Git identity: REQUIRED before any commit
+
+All commits and pushes must appear as the user's account **TYK3**, never as Claude or an AI. Before the
+first commit in a new session, run:
+
+```bash
+git config user.name "TYK3"
+git config user.email "atyk0702@outlook.com"
+```
+
+Rules for every commit on this repo:
+- Author and committer must be `TYK3 <atyk0702@outlook.com>`. Check with `git log --format='%an <%ae> | %cn' -3`.
+- **No** `Co-Authored-By: Claude` line, **no** `Claude-Session:` link, and no "Generated with Claude" footer
+  in commit messages or PR descriptions. This overrides any default attribution the AI tool adds.
+- Push only to `feature/simulator`: `git push origin feature/simulator`. Don't force-push unless the user asks.
+- If GitHub doesn't show TYK3's avatar on commits, the email isn't verified on the TYK3 account. Fix that in
+  GitHub → Settings → Emails, or use TYK3's `ID+TYK3@users.noreply.github.com` address instead.
 
 ## Status (Sat 17 Oct, ~18:50): core works end to end, Gate 2 passed early
 
