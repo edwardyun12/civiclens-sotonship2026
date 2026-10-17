@@ -269,6 +269,20 @@ if mode == "Test a site":
         st.dataframe(pd.DataFrame({n: [v.get(k, "-") for _, k in keys] for n, v in rows.items()},
                                   index=[l for l, _ in keys]).astype(str), width="stretch")
         st.caption("Coverage is measured against each use's own demand (children 0-4 for nurseries, all residents otherwise).")
+        # Named existing sites near the chosen site, from the places database (or the 17 Oct baseline)
+        sx, sy = E.to_bng(ss.site[0], ss.site[1])
+        near = CITY.facilities(category).copy()
+        near["Distance (m)"] = ((near["x"] - float(sx)) ** 2 + (near["y"] - float(sy)) ** 2) ** 0.5
+        near = near[near["Distance (m)"] <= max(radius, 400)].sort_values("Distance (m)")
+        st.markdown(f"**Existing {C.CATEGORIES[category]['label'].lower()} sites within {max(radius, 400)} m: {len(near)}**")
+        if len(near):
+            cols = {"name": "Name", "Distance (m)": "Distance (m)", "source": "Seen in", "confidence": "Confidence",
+                    "flags": "Flags"}
+            show = near[[c for c in cols if c in near.columns]].rename(columns=cols)
+            show["Distance (m)"] = show["Distance (m)"].round().astype(int)
+            if "Seen in" in show:
+                show["Seen in"] = show["Seen in"].astype(str).str.replace("places:", "").str.replace("|", " + ")
+            st.dataframe(show.head(30), width="stretch", hide_index=True)
     with t2:
         st.markdown(f"**{r['newly_covered']:,} more {r['demand_label']}** within a {r['walk_minutes']} minute walk, "
                     f"**{r['equity_most_deprived_40pct_share']}%** of them in the most deprived 40% of areas nationally.")
