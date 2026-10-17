@@ -212,6 +212,24 @@ def fetch_fsa() -> pd.DataFrame:
     return parse_fsa(rows)
 
 
+def read_fsa_xml(path: str) -> list[dict]:
+    """The FSA open-data file for one council (e.g. FHRS877en-GB.xml = Southampton), turned into the same
+    shape as the API's JSON so parse_fsa handles both."""
+    import xml.etree.ElementTree as ET
+    root = ET.parse(path).getroot()
+    rows = []
+    for e in root.iter("EstablishmentDetail"):
+        d = {c.tag: (c.text or "").strip() for c in e if len(c) == 0}
+        g = e.find("Geocode")
+        d["geocode"] = {"latitude": (g.findtext("Latitude") or "").strip() if g is not None else "",
+                        "longitude": (g.findtext("Longitude") or "").strip() if g is not None else ""}
+        sc = e.find("Scores")
+        if sc is not None:
+            d["scores"] = {c.tag: (c.text or "").strip() for c in sc}
+        rows.append(d)
+    return rows
+
+
 def parse_fsa(rows: list[dict]) -> pd.DataFrame:
     out = []
     for e in rows:
@@ -526,7 +544,7 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
                 flags.append("OSM_NOT_CHECKED_3Y")
             if r["source"] == "fsa" and age > STALE_FSA_YEARS:
                 flags.append("FSA_INSPECTION_OVER_4Y")
-        if '"rating_pending": true' in " ".join(g["extra"]).lower():
+        if re.search(r'"rating_pending": "?true', " ".join(g["extra"]).lower()):
             flags.append("FSA_RATING_PENDING")
         inside = bool(pd.notna(best["lat"]) and in_city(best["lat"], best["lon"], polys))
         if not inside:
@@ -615,7 +633,7 @@ SIC_TEXT = {  # the SIC codes we expect for each category (any 2-digit prefix ma
 
 
 def _district(pc: str) -> str:
-    return (pc or "").split(" ")[0]
+    return pc.split(" ")[0] if isinstance(pc, str) else ""
 
 
 def ch_candidates_api(name: str, key: str) -> list[dict]:
@@ -695,6 +713,125 @@ def fetch_ch_advanced(key: str, location: str = LA_NAME) -> pd.DataFrame:
     return df
 
 
+# UK SIC 2007 divisions (first two digits), for readable industry labels
+SIC_DIVISIONS = {
+    "01": "Agriculture", "02": "Forestry", "03": "Fishing", "05": "Coal mining", "06": "Oil and gas extraction",
+    "07": "Metal ore mining", "08": "Other mining and quarrying", "09": "Mining support", "10": "Food manufacturing",
+    "11": "Beverage manufacturing", "12": "Tobacco", "13": "Textiles", "14": "Clothing manufacturing", "15": "Leather goods",
+    "16": "Wood products", "17": "Paper products", "18": "Printing", "19": "Coke and refined petroleum", "20": "Chemicals",
+    "21": "Pharmaceutical manufacturing", "22": "Rubber and plastics", "23": "Non-metallic mineral products",
+    "24": "Basic metals", "25": "Fabricated metal products", "26": "Computer and electronic products",
+    "27": "Electrical equipment", "28": "Machinery", "29": "Motor vehicles", "30": "Other transport equipment",
+    "31": "Furniture", "32": "Other manufacturing", "33": "Repair and installation of machinery",
+    "35": "Electricity and gas", "36": "Water supply", "37": "Sewerage", "38": "Waste", "39": "Remediation",
+    "41": "Building construction", "42": "Civil engineering", "43": "Specialised construction trades",
+    "45": "Motor trade and repair", "46": "Wholesale", "47": "Retail", "49": "Land transport", "50": "Water transport",
+    "51": "Air transport", "52": "Warehousing and transport support", "53": "Postal and courier",
+    "55": "Accommodation", "56": "Food and drink service (cafés, restaurants, pubs, takeaways)", "58": "Publishing",
+    "59": "Film, video and music", "60": "Broadcasting", "61": "Telecommunications", "62": "Computer programming and IT",
+    "63": "Information services", "64": "Financial services", "65": "Insurance and pensions", "66": "Auxiliary finance",
+    "68": "Real estate", "69": "Legal and accounting", "70": "Head offices and management consultancy",
+    "71": "Architecture and engineering", "72": "Scientific research", "73": "Advertising and market research",
+    "74": "Other professional, scientific and technical", "75": "Veterinary", "77": "Rental and leasing",
+    "78": "Employment agencies", "79": "Travel agencies", "80": "Security", "81": "Building services and cleaning",
+    "82": "Office and business support", "84": "Public administration", "85": "Education",
+    "86": "Human health (GPs, dentists, clinics)", "87": "Residential care", "88": "Social work incl. childcare",
+    "90": "Arts and entertainment", "91": "Libraries, museums and heritage", "92": "Gambling", "93": "Sport and recreation",
+    "94": "Membership organisations", "95": "Repair of personal goods", "96": "Other personal services (hairdressing etc.)",
+    "97": "Households as employers", "98": "Households producing for own use", "99": "Extraterritorial / dormant",
+}
+# Divisions where a member of the public would normally visit the business (shop-front or service site)
+CUSTOMER_FACING = {"47", "55", "56", "75", "85", "86", "87", "88", "91", "93", "95", "96"}
+PC_RE = re.compile(r"([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})\s*$")
+CITY_DISTRICTS = {"SO14", "SO15", "SO16", "SO17", "SO18", "SO19"}  # Southampton city; SO30/31/40 are mostly outside
+
+
+def parse_ch_search_csv(path: str) -> pd.DataFrame:
+    """The CSV downloaded from Companies House 'Advanced search' (max 5,000 rows). Its nature_of_business column
+    holds unquoted lists like [56101, 56102], so it can't be read as plain CSV."""
+    lines = Path(path).read_text(encoding="utf-8-sig").splitlines()
+    row_re = re.compile(r'^(?P<name>.*?),(?P<num>[A-Z0-9]{8}),(?P<status>[a-z\-]+),(?P<ctype>[a-z\-]*),(?P<sub>[a-z\-]*),'
+                        r'(?P<diss>[\d\-]*),(?P<inc>[\d\-]*),(?P<rem>[\d\-]*),(?P<reg>[\d\-]*),(?P<sic>\[[^\]]*\]|),(?P<addr>.*)$')
+    rows, bad = [], 0
+    for line in lines[1:]:
+        if not line.strip():
+            continue
+        m = row_re.match(line)
+        if not m:  # company names can contain unquoted commas; the fixed-format fields after them anchor the parse
+            bad += 1
+            continue
+        name = m["name"]
+        if name.startswith('"') and name.endswith('"'):
+            name = name[1:-1].replace('""', '"')
+        num, status, ctype, inc, sic, addr = m["num"], m["status"], m["ctype"], m["inc"], m["sic"].strip("[]"), m["addr"]
+        addr = addr.strip().strip('"')
+        m = PC_RE.search(addr.upper())
+        pc = f"{m.group(1)} {m.group(2)}" if m else ""
+        codes = [c.strip() for c in sic.split(",") if c.strip()]
+        rows.append({"company_number": num, "company_name": name, "company_status": status, "company_type": ctype,
+                     "incorporated": inc, "sic_codes": "|".join(codes),
+                     "industry": "; ".join(dict.fromkeys(SIC_DIVISIONS.get(c[:2], c) for c in codes)),
+                     "customer_facing": any(c[:2] in CUSTOMER_FACING for c in codes),
+                     "address": PC_RE.sub("", addr).strip().rstrip(","), "postcode": pc, "registered_postcode": pc,
+                     "accounts_type": "", "last_accounts_made_up_to": ""})
+    df = pd.DataFrame(rows).drop_duplicates(subset=["company_number"])
+    print(f"[Companies House file] {len(df)} companies read" + (f", {bad} lines couldn't be parsed" if bad else ""))
+    note("ch_file", f"Companies House advanced search download ({len(df)} rows; the website caps downloads at 5,000)",
+         "https://find-and-update.company-information.service.gov.uk/advanced-search", "Companies House public register", len(df))
+    return df
+
+
+def company_tables(reg: pd.DataFrame, pcs: dict, polys, links: pd.DataFrame | None):
+    """companies: every company with coordinates (postcode centre), industry and flags.
+    company_addresses: one row per distinct registered address, so companies sharing an address
+    become ONE map point instead of a stack of duplicates on the same coordinates."""
+    c = reg.copy()
+    c["lat"] = c["postcode"].map(lambda p: (pcs.get(p) or {}).get("lat"))
+    c["lon"] = c["postcode"].map(lambda p: (pcs.get(p) or {}).get("lon"))
+    c["postcode_status"] = c["postcode"].map(lambda p: (pcs.get(p) or {}).get("status", "missing" if not p else "not_found"))
+    c["addr_key"] = (c["address"].str.upper().str.replace(r"[^A-Z0-9]", "", regex=True) + "|" + c["postcode"])
+    sizes = c.groupby("addr_key")["company_number"].transform("count")
+    pc_sizes = c.groupby("postcode")["company_number"].transform("count")
+    c["inside_city"] = [bool(pd.notna(a) and in_city(a, b, polys)) for a, b in zip(c["lat"], c["lon"])]
+    flags = []
+    for i, r in c.iterrows():
+        f = ["REGISTERED_OFFICE_ONLY"]  # the legal address, not necessarily where it trades
+        if not r["postcode"]:
+            f.append("NO_POSTCODE")
+        elif pd.isna(r["lat"]):
+            f.append("POSTCODE_NOT_FOUND")
+        if r["postcode_status"] == "approx_2017":
+            f.append("COORDS_FROM_2017_POSTCODE_FILE")
+        if r["postcode"] and r["postcode"].split(" ")[0] not in CITY_DISTRICTS and not r["postcode"].startswith("SO"):
+            f.append("NOT_IN_SOUTHAMPTON")  # e.g. Southampton Row, London
+        elif pd.notna(r["lat"]) and not r["inside_city"]:
+            f.append("OUTSIDE_CITY")
+        if sizes[i] >= 5:
+            f.append("SHARED_ADDRESS_5PLUS")  # accountant, formation agent or virtual office
+        elif pc_sizes[i] >= 10:
+            f.append("BUSY_POSTCODE")
+        if "99999" in r["sic_codes"].split("|") or "74990" in r["sic_codes"].split("|"):
+            f.append("DORMANT_OR_NON_TRADING")
+        flags.append(";".join(f))
+    c["flags"] = flags
+    addrs = []
+    for aid, (k, g) in enumerate(c.groupby("addr_key", sort=False), start=1):
+        r = g.iloc[0]
+        addrs.append({"address_id": f"A{aid:05d}", "address": r["address"], "postcode": r["postcode"],
+                      "lat": r["lat"], "lon": r["lon"], "n_companies": len(g), "inside_city": r["inside_city"],
+                      "n_customer_facing": int(g["customer_facing"].sum()),
+                      "industries": "; ".join(pd.Series([x for s in g["industry"] for x in s.split("; ") if x]).value_counts().head(3).index),
+                      "flags": ";".join(sorted({f for s in g["flags"] for f in s.split(";")} - {"REGISTERED_OFFICE_ONLY"}))})
+        c.loc[g.index, "address_id"] = f"A{aid:05d}"
+    addrs = pd.DataFrame(addrs)
+    if links is not None and len(links) and "company_number" in links:
+        m = links[links["ch_status"] == "matched"].set_index("company_number")["place_id"]
+        c["linked_place_id"] = c["company_number"].map(m)
+    else:
+        c["linked_place_id"] = None
+    return c.drop(columns=["addr_key"]), addrs
+
+
 def load_ch_bulk(path: str) -> pd.DataFrame:
     """Companies House free company data product (BasicCompanyData CSV, or several parts in a folder).
     Kept to companies registered in Southampton-area postcode districts to save memory."""
@@ -717,13 +854,16 @@ def load_ch_bulk(path: str) -> pd.DataFrame:
 
 
 def companies_house(places: pd.DataFrame, key: str | None, bulk: str | None, limit: int,
-                    mode: str = "advanced") -> pd.DataFrame:
+                    mode: str = "advanced", register: pd.DataFrame | None = None) -> pd.DataFrame:
     """Link places to the company that most likely runs them. A link needs a strong name match; the registered
     office being in the same postcode district raises confidence. No match is recorded as no match, never guessed.
     Stores company-level facts only (no officers, no people's addresses)."""
     todo = places[~places["category"].isin(CH_SKIP) & (places["name"].str.len() > 2)]
     bulk_df = None
-    if bulk:
+    if register is not None:
+        bulk_df = register[register["company_status"].str.lower() == "active"].copy()
+        print(f"[Companies House] matching places against {len(bulk_df)} active companies from the register file")
+    elif bulk:
         bulk_df = load_ch_bulk(bulk)
         bulk_df = bulk_df[bulk_df["company_status"].str.lower() == "active"]
         print(f"[Companies House] bulk file: {len(bulk_df)} active companies registered in SO districts")
@@ -777,12 +917,13 @@ def companies_house(places: pd.DataFrame, key: str | None, bulk: str | None, lim
                 time.sleep(0.5)
             except Exception:
                 pass
-        same_area = _district(prof.get("registered_postcode") or best["postcode"]) == _district(p["postcode"])
+        reg_d, place_d = _district(prof.get("registered_postcode") or best["postcode"]), _district(p["postcode"])
+        same_area = (reg_d == place_d) if (reg_d and place_d) else None  # None = place has no postcode to compare
         expect = SIC_TEXT.get(p["category"])
         sic_ok = (not expect) or any(code.startswith(expect) for code in str(prof.get("sic_codes", "")).split("|") if code)
-        conf = round(min(1.0, 0.5 + 0.3 * (best_score >= 1.0) + 0.2 * same_area - 0.3 * (not sic_ok)), 2)
+        conf = round(min(1.0, 0.5 + 0.3 * (best_score >= 1.0) + 0.2 * bool(same_area) - 0.3 * (not sic_ok)), 2)
         fl = []
-        if not same_area:
+        if same_area is False:
             fl.append("COMPANY_REGISTERED_ELSEWHERE")
         if not sic_ok:
             fl.append("COMPANY_SIC_DOESNT_FIT_TYPE")
@@ -813,6 +954,9 @@ def save(places: pd.DataFrame, recs: pd.DataFrame, extra_sources: dict | None = 
         pd.DataFrame([{"key": k, **v} for k, v in srcs.items()]).to_sql("sources", con, if_exists="replace", index=False)
         if companies is not None and len(companies):
             companies.to_sql("company_links", con, if_exists="replace", index=False)
+        for t in ("companies", "company_addresses"):
+            if (DB / f"{t}.csv").exists():
+                pd.read_csv(DB / f"{t}.csv", dtype=str).to_sql(t, con, if_exists="replace", index=False)
         if (DB / "companies_register.csv").exists():
             pd.read_csv(DB / "companies_register.csv", dtype=str).to_sql("companies_register", con, if_exists="replace", index=False)
     if companies is not None and len(companies):
@@ -834,11 +978,13 @@ def main(argv=None):
     ap.add_argument("--offline", action="store_true", help="use files already in data/db/raw")
     ap.add_argument("--skip", nargs="*", default=[], choices=["fsa", "osm", "nhs", "ofsted"])
     ap.add_argument("--ofsted-file", help="path to a downloaded Ofsted provider CSV")
+    ap.add_argument("--fsa-file", help="path to a downloaded FSA open-data XML, e.g. FHRS877en-GB.xml (Southampton)")
     ap.add_argument("--osm-file", help="path to a saved Overpass JSON")
     ap.add_argument("--google-key", help="Google Maps Platform key for the optional cross-check")
     ap.add_argument("--google-limit", type=int, default=200)
     ap.add_argument("--ch-key", help="Companies House API key (free) to link places to companies")
     ap.add_argument("--ch-bulk", help="path to the Companies House free company data CSV (file or folder); no key needed")
+    ap.add_argument("--ch-file", help="CSV downloaded from Companies House Advanced search (website)")
     ap.add_argument("--ch-limit", type=int, default=400, help="max places for --ch-mode search")
     ap.add_argument("--ch-mode", choices=["advanced", "search"], default="advanced",
                     help="advanced = pull every active Southampton-registered company, then match locally (default); "
@@ -850,7 +996,8 @@ def main(argv=None):
     bbox = (s - 0.01, w - 0.015, n + 0.01, e + 0.015)  # include sites just over the boundary
 
     parts = []
-    steps = [("fsa", lambda: parse_fsa(json.loads((RAW / "fsa.json").read_text())) if a.offline else fetch_fsa()),
+    steps = [("fsa", lambda: parse_fsa(read_fsa_xml(a.fsa_file)) if a.fsa_file else
+              parse_fsa(json.loads((RAW / "fsa.json").read_text())) if a.offline else fetch_fsa()),
              ("osm", lambda: parse_osm(json.loads(Path(a.osm_file or RAW / "osm.json").read_text()))
               if (a.offline or a.osm_file) else fetch_osm(bbox)),
              ("nhs", lambda: parse_nhs(pd.read_csv(RAW / "nhs_ods.csv")) if a.offline else fetch_nhs()),
@@ -881,8 +1028,12 @@ def main(argv=None):
                                for f, pid in zip(places["flags"], places["place_id"])]
             places["google_checked"] = places["place_id"].isin(gc["place_id"])
     companies = None
-    if a.ch_key or a.ch_bulk:
-        companies = companies_house(places, a.ch_key, a.ch_bulk, a.ch_limit, a.ch_mode)
+    register = None
+    if a.ch_file:
+        register = parse_ch_search_csv(a.ch_file)
+        pcs.update(postcode_lookup(register["postcode"].tolist(), a.offline))
+    if a.ch_key or a.ch_bulk or register is not None:
+        companies = companies_house(places, a.ch_key, a.ch_bulk, a.ch_limit, a.ch_mode, register=register)
         if len(companies) and "company_number" in companies:
             m = companies[companies["ch_status"] == "matched"].set_index("place_id")
             for col in ("company_number", "company_name", "company_status", "sic_codes", "accounts_type",
@@ -891,6 +1042,15 @@ def main(argv=None):
             cf = m["company_flags"].fillna("") if "company_flags" in m else pd.Series(dtype=str)
             places["flags"] = [";".join(sorted(set(filter(None, (f + ";" + cf.get(pid, "")).split(";")))))
                                for f, pid in zip(places["flags"], places["place_id"])]
+    if register is None and (DB / "companies_register.csv").exists() and a.ch_key:
+        register = pd.read_csv(DB / "companies_register.csv", dtype=str).fillna("")
+        register["industry"] = register["sic_codes"].map(lambda s: "; ".join(dict.fromkeys(SIC_DIVISIONS.get(c[:2], c) for c in s.split("|") if c)))
+        register["customer_facing"] = register["sic_codes"].map(lambda s: any(c[:2] in CUSTOMER_FACING for c in s.split("|") if c))
+        pcs.update(postcode_lookup(register["postcode"].tolist(), a.offline))
+    if register is not None:
+        comp, addrs = company_tables(register, pcs, polys, companies)
+        comp.to_csv(DB / "companies.csv", index=False)
+        addrs.to_csv(DB / "company_addresses.csv", index=False)
     summary = save(places, recs, companies=companies)
     print(json.dumps({k: v for k, v in summary.items() if k != "sources"}, indent=1, default=str))
     print(f"Saved data/db/places.csv ({len(places)} places), source_records.csv, places.sqlite, summary.json")

@@ -161,3 +161,34 @@ def test_advanced_search_splits_windows_and_matches_locally(tmp_path=None):
         import importlib; importlib.reload(BP)
     assert len(reg) == 13 and set(reg["company_status"]) == {"active"}
     assert out.iloc[0]["company_number"] == "99999999"
+
+
+def test_companies_house_website_csv_parses_commas_and_brackets(tmp_path=None):
+    import tempfile, pathlib
+    f = pathlib.Path(tempfile.mkdtemp()) / "ch.csv"
+    f.write_text(
+        "company_name,company_number,company_status,company_type,company_subtype,dissolution_date,incorporation_date,"
+        "removed_date,registered_date,nature_of_business,registered_office_address\n"
+        "H, B, C CONSULTANCY LTD,15803999,active,ltd,,,2024-06-26,,2024-06-26,[70229],60 Winchester Road Southampton England SO16 6UL\n"
+        '"THE FIRST" GALLERY LTD,13784047,active,ltd,,,2021-12-06,,2021-12-06,[47781, 47910, 58110],1 Burnham Chase Southampton England SO18 5DG\n'
+        "NO SIC LTD,00000001,active,ltd,,,2020-01-01,,2020-01-01,,One Southampton Row, London WC1B 5HA\n")
+    df = BP.parse_ch_search_csv(str(f)).set_index("company_number")
+    assert df.loc["15803999", "company_name"] == "H, B, C CONSULTANCY LTD"
+    assert df.loc["13784047", "company_name"] == '"THE FIRST" GALLERY LTD'
+    assert df.loc["13784047", "sic_codes"] == "47781|47910|58110" and df.loc["13784047", "customer_facing"]
+    assert df.loc["00000001", "postcode"] == "WC1B 5HA"
+
+
+def test_company_tables_one_point_per_address():
+    reg = pd.DataFrame([
+        {"company_number": str(i), "company_name": f"Co {i}", "company_status": "active", "company_type": "ltd",
+         "incorporated": "", "sic_codes": "56102", "industry": "Food", "customer_facing": True,
+         "address": "Tagus House Southampton", "postcode": "SO14 7DU", "registered_postcode": "SO14 7DU"} for i in range(6)]
+        + [{"company_number": "99", "company_name": "London Co", "company_status": "active", "company_type": "ltd",
+            "incorporated": "", "sic_codes": "99999", "industry": "", "customer_facing": False,
+            "address": "One Southampton Row London", "postcode": "WC1B 5HA", "registered_postcode": "WC1B 5HA"}])
+    comp, addrs = BP.company_tables(reg, PCS, POLYS, None)
+    assert len(addrs) == 2 and addrs.set_index("postcode").loc["SO14 7DU", "n_companies"] == 6
+    assert comp["address_id"].nunique() == 2
+    f = comp.set_index("company_number")["flags"]
+    assert "SHARED_ADDRESS_5PLUS" in f["0"] and "NOT_IN_SOUTHAMPTON" in f["99"] and "DORMANT_OR_NON_TRADING" in f["99"]
