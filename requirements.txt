@@ -1,10 +1,14 @@
 pandas>=2.0
-numpy>=1.26
+numpy>=2,<3
 shapely>=2.0
 pyproj>=3.6
 requests>=2.31
-streamlit>=1.38
+streamlit>=1.40,<2
 folium>=0.17
 streamlit-folium>=0.22
 anthropic>=0.40
+fastapi>=0.115,<1
+uvicorn>=0.34,<1
+pypdf>=5,<7
+rank-bm25>=0.2.2,<1
 pytest>=8.0
