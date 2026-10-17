@@ -107,8 +107,9 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 | Café | 79.4% | 89.0% | Sholing, Coxford, Woolston |
 | Library | 43.7% | 59.7% | Freemantle, Redbridge, Sholing |
 
-- **AI brief numbers audit on live briefs**: not yet run (needs an API key). TODO: run 10 live briefs and
-  report the pass rate from `logs/briefs.jsonl`.
+- **AI brief numbers audit on live briefs**: not yet run (needs an API key). TODO: run
+  `python -m tests.run_live_briefs` (10 scenarios) and report the pass rate and real cost from
+  `tests/live_brief_results.json`.
 
 ## Known limits and failures
 
@@ -124,6 +125,51 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 - **Population is Census 2021**, not the latest mid-year estimate.
 - Scores and weights are unvalidated. Jobs figures are assumptions. This is decision support for a human
   planner, not a decision.
+
+## Business and scale
+
+**Who has the problem, and how often.** Two statutory jobs already ask "is this service within reach, and
+where is the gap?":
+- **Pharmaceutical Needs Assessment (PNA)**: every Health and Wellbeing Board must publish one at least every
+  three years (NHS Pharmaceutical Services Regulations 2013). Southampton's latest was published in August
+  2025 ([data.southampton.gov.uk](https://data.southampton.gov.uk/health/pharmaceutical-needs-assessment)).
+  Councils often buy these in: Westminster and Kensington & Chelsea tendered their 2022 PNA at an estimated
+  **£45k-£60k** ([bidstats](https://bidstats.uk/tenders/2021/W52/765853914)).
+- **Childcare sufficiency**: councils have a statutory duty to secure enough childcare and report on it to
+  elected members every year. Southampton's Early Years team produces a Childcare Sufficiency Assessment and
+  delivery plan ([southampton.gov.uk](https://southampton.gov.uk/children-families/early-years-and-childcare/childcare-providers/improving-early-years-practice/improving-quality/childcare-sufficiency-assessment)).
+
+Today these are mostly spreadsheets, GIS analyst time and consultants' reports, refreshed once a year or less.
+
+**Who pays (hypothesis, not yet tested with a buyer).**
+
+| Customer | What they buy | Price hypothesis |
+|---|---|---|
+| Council public health / early years / planning teams | City licence: all uses, unlimited scenarios, yearly data refresh, exportable briefs for PNA and sufficiency reports | **£6,000 per council per year**, about a tenth of one outsourced PNA |
+| Nursery groups, pharmacy operators, café chains | Site reports: coverage gain, competition, deprivation reach, flood flag | **£150 per site report**, or £2,000 per year per region |
+
+First three customers to approach: Southampton City Council (Data Observatory, public health, early years),
+a neighbouring authority (Portsmouth or Hampshire) using the same national data, and a regional nursery group
+expanding under the wider childcare entitlements.
+
+**Cost to run.**
+- AI: one brief on Claude Haiku 5.5 ($0.10 / $0.50 per million input / output tokens) is about **0.02p**
+  (≈1,500 in, ≈350 out, at $1 = £0.75). Even 1,000 briefs a month is about 25p. Estimate until the live
+  test logs real token counts.
+- Hosting: one small cloud VM per region, roughly **£20-£40 a month**, plus a few hours of analyst time
+  per city per year to refresh the data. Inference is a rounding error; data upkeep is the real cost.
+
+**What stops a big player copying it.** Honestly, not the data: it is all open. The defence is the
+method and trust: deterministic, tested numbers, an audit that blocks any unverified figure, a refusal when
+evidence is thin, and outputs shaped to the PNA and sufficiency reports councils already write. Being the
+tool a council's own analysts have checked is hard to copy quickly.
+
+**At 10x and 100x.** Every input is national open data (ONS, Census, IMD, NHS ODS, Environment Agency, OSM),
+so a new English city is a config change and a data rebuild, with no new model training. The optimiser runs
+in under 0.01 s per city, and AI cost grows linearly and stays tiny. What changes: OSM needs a mirrored extract
+instead of the public Overpass API, walking-network distance (OSMnx) adds precompute per city, and each new
+service type needs a register (Ofsted for childcare, NHS ODS for health). Scotland, Wales and NI need their own
+deprivation indices.
 
 ## AI-generated vs pre-existing
 

@@ -85,6 +85,11 @@ Evidence: `python -m tests.run_evaluation`. Full docs: **`docs/SIMULATOR.md`** (
 
 ## Not done yet (priority order)
 
+**Sat 17 Oct ~20:30 update:** the cloud workspace could not install Python packages or reach gov.uk,
+postcodes.io or Overpass this session, so nothing could be run here. Added: business section in
+`docs/SIMULATOR.md` (item 4 done, prices are hypotheses), `docs/SUBMISSION.md` (150-word summary, checklist,
+PC run-book for items 1-2) and `tests/run_live_briefs.py` (untested: run it on the PC first).
+
 1. **Live AI brief test.** No `ANTHROPIC_API_KEY` in the cloud workspace yet. Set the key, run 10 briefs
    across scenarios, record the audit pass rate and real cost from `logs/briefs.jsonl`, and add them to
    `docs/SIMULATOR.md` (there's a TODO line). Running live also fills the **demo-mode cache**
