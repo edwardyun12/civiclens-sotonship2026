@@ -1,5 +1,5 @@
 {
- "built": "2026-10-17 22:03 UTC",
+ "built": "2026-10-17 22:07 UTC",
  "places": 2767,
  "source_records": 5452,
  "records_by_source": {
@@ -72,7 +72,7 @@
    "title": "Companies House advanced search download (5000 rows; the website caps downloads at 5,000)",
    "url": "https://find-and-update.company-information.service.gov.uk/advanced-search",
    "licence": "Companies House public register",
-   "downloaded": "2026-10-17 22:02 UTC",
+   "downloaded": "2026-10-17 22:06 UTC",
    "rows": 5000
   },
   "osm": {
@@ -100,7 +100,7 @@
    "title": "UK postcode coordinates as of Oct 2017 (github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv), PREVIEW ONLY; the PC run uses live postcodes.io",
    "url": "https://github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv",
    "licence": "Derived from ONS/OS open postcode data (OGL); check before reuse",
-   "downloaded": "2026-10-17 22:03 UTC",
+   "downloaded": "2026-10-17 22:07 UTC",
    "rows": 2415
   }
  },

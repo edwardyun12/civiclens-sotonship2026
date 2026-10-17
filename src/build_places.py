@@ -311,7 +311,10 @@ def parse_osm(data: dict) -> pd.DataFrame:
                     "website": t.get("website", "") or t.get("contact:website", ""),
                     "phone": t.get("phone", "") or t.get("contact:phone", ""), "quality": "",
                     "record_date": (t.get("check_date") or el.get("timestamp", ""))[:10],
-                    "extra": json.dumps({"brand_wikidata": t.get("brand:wikidata"), "operator": t.get("operator")})})
+                    "extra": json.dumps({"brand_wikidata": t.get("brand:wikidata"), "operator": t.get("operator"),
+                                         "cuisine": t.get("cuisine"), "healthcare": t.get("healthcare"),
+                                         "shop": t.get("shop"), "amenity": t.get("amenity"), "leisure": t.get("leisure"),
+                                         "beauty": t.get("beauty"), "diet": t.get("diet:vegan")})})
     return pd.DataFrame(out)
 
 
@@ -521,6 +524,149 @@ def display_name(name: str, source: str) -> str:
     return " ".join(words).replace("Limited", "Ltd").replace("Ltd.", "Ltd")
 
 
+# ------------------------------------------------------------------ detailed business type (for the advanced filter)
+SIC_SUBTYPE = {
+    "56101": "Restaurant (licensed)", "56102": "Restaurant or café", "56103": "Takeaway", "56210": "Event catering",
+    "56290": "Canteen or contract catering", "56301": "Licensed club", "56302": "Pub or bar",
+    "47110": "Supermarket or convenience store", "47210": "Greengrocer", "47220": "Butcher", "47230": "Fishmonger",
+    "47240": "Bakery or cake shop", "47250": "Off-licence", "47260": "Tobacconist or vape shop", "47290": "Other food shop",
+    "47300": "Petrol station", "47410": "Computer shop", "47421": "Mobile phone shop", "47710": "Clothing shop",
+    "47721": "Shoe shop", "47730": "Pharmacy", "47741": "Hearing aids", "47749": "Medical and mobility goods",
+    "47750": "Cosmetics and toiletries", "47760": "Florist, garden or pet shop", "47770": "Jeweller",
+    "47782": "Optician", "47910": "Online retailer",
+    "86101": "Hospital", "86210": "GP practice", "86220": "Specialist medical practice", "86230": "Dental practice",
+    "86900": "Other health (physio, therapy, clinic)", "75000": "Veterinary practice",
+    "87100": "Nursing home", "87300": "Care home", "88100": "Home care", "88910": "Day nursery or childcare",
+    "85100": "Pre-school", "85200": "Primary school", "85310": "Secondary school", "85510": "Sports or recreation tuition",
+    "85520": "Arts and music tuition", "85530": "Driving school", "85590": "Tutoring or other education",
+    "96010": "Laundry or dry cleaner", "96020": "Hairdresser or beauty salon", "96030": "Funeral services",
+    "96040": "Spa, massage or wellbeing", "96090": "Other personal services (e.g. tattoo)",
+    "93110": "Sports facility", "93130": "Gym or fitness centre", "93199": "Other sports activity",
+    "93290": "Other recreation", "55100": "Hotel", "55201": "Holiday centre", "55202": "Hostel", "55209": "Holiday lets",
+    "55900": "Other accommodation", "95210": "Electronics repair", "95230": "Shoe and leather repair",
+    "95250": "Watch and jewellery repair", "95290": "Other repairs", "45200": "Car repair or garage",
+    "45111": "Car dealer", "45320": "Car parts shop",
+}
+OSM_SUBTYPE = {
+    "amenity=fast_food": "Fast food", "amenity=restaurant": "Restaurant", "amenity=cafe": "Café", "amenity=pub": "Pub",
+    "amenity=bar": "Bar", "amenity=ice_cream": "Ice cream or dessert", "amenity=dentist": "Dental practice",
+    "amenity=doctors": "GP or clinic", "amenity=pharmacy": "Pharmacy", "amenity=clinic": "Clinic",
+    "amenity=veterinary": "Veterinary practice", "amenity=kindergarten": "Pre-school or nursery",
+    "amenity=childcare": "Day nursery or childcare", "healthcare=dentist": "Dental practice",
+    "healthcare=doctor": "GP or clinic", "healthcare=physiotherapist": "Physiotherapist", "healthcare=optometrist": "Optician",
+    "healthcare=psychotherapist": "Counselling or therapy", "healthcare=podiatrist": "Podiatrist",
+    "shop=hairdresser": "Hairdresser or barber", "shop=beauty": "Beauty salon", "shop=massage": "Spa, massage or wellbeing",
+    "shop=tattoo": "Tattoo studio", "shop=supermarket": "Supermarket", "shop=convenience": "Convenience store",
+    "shop=bakery": "Bakery or cake shop", "shop=butcher": "Butcher", "shop=optician": "Optician",
+    "shop=clothes": "Clothing shop", "shop=mobile_phone": "Mobile phone shop", "shop=laundry": "Laundry or dry cleaner",
+    "shop=dry_cleaning": "Laundry or dry cleaner", "leisure=fitness_centre": "Gym or fitness centre",
+    "leisure=sports_centre": "Sports facility", "amenity=spa": "Spa, massage or wellbeing", "leisure=spa": "Spa, massage or wellbeing",
+}
+CUISINE = {  # OSM cuisine values and name keywords -> (cuisine, family)
+    "korean": ("Korean", "Asian"), "kimchi": ("Korean", "Asian"), "seoul": ("Korean", "Asian"), "bibimbap": ("Korean", "Asian"),
+    "wok": ("Chinese", "Asian"), "dragon": ("Chinese", "Asian"), "canton": ("Chinese", "Asian"), "hong kong": ("Chinese", "Asian"),
+    "szechuan": ("Chinese", "Asian"), "sichuan": ("Chinese", "Asian"), "noodle": ("Noodles", "Asian"),
+    "india": ("Indian", "South Asian"), "bengal": ("Indian", "South Asian"), "punjab": ("Indian", "South Asian"),
+    "himalaya": ("Nepalese", "South Asian"), "nepal": ("Nepalese", "South Asian"), "bangkok": ("Thai", "Asian"),
+    "tokyo": ("Japanese", "Asian"), "sakura": ("Japanese", "Asian"), "istanbul": ("Turkish", "Middle Eastern"), "japanese": ("Japanese", "Asian"), "sushi": ("Japanese", "Asian"),
+    "ramen": ("Japanese", "Asian"), "chinese": ("Chinese", "Asian"), "dim sum": ("Chinese", "Asian"),
+    "thai": ("Thai", "Asian"), "vietnamese": ("Vietnamese", "Asian"), "pho": ("Vietnamese", "Asian"),
+    "malaysian": ("Malaysian", "Asian"), "indian": ("Indian", "South Asian"), "curry": ("Indian", "South Asian"),
+    "tandoori": ("Indian", "South Asian"), "masala": ("Indian", "South Asian"), "balti": ("Indian", "South Asian"),
+    "nepalese": ("Nepalese", "South Asian"), "bangladeshi": ("Bangladeshi", "South Asian"),
+    "pakistani": ("Pakistani", "South Asian"), "sri lankan": ("Sri Lankan", "South Asian"),
+    "turkish": ("Turkish", "Middle Eastern"), "kebab": ("Kebab", "Middle Eastern"), "lebanese": ("Lebanese", "Middle Eastern"),
+    "persian": ("Persian", "Middle Eastern"), "shawarma": ("Shawarma", "Middle Eastern"), "falafel": ("Falafel", "Middle Eastern"),
+    "italian": ("Italian", "Western"), "pizza": ("Pizza", "Western"), "pasta": ("Italian", "Western"),
+    "british": ("British", "Western"), "fish_and_chips": ("Fish and chips", "Western"), "fish and chips": ("Fish and chips", "Western"),
+    "fish bar": ("Fish and chips", "Western"), "chippy": ("Fish and chips", "Western"), "burger": ("Burgers", "Western"),
+    "american": ("American", "Western"), "steak": ("Steakhouse", "Western"), "french": ("French", "Western"),
+    "spanish": ("Spanish", "Western"), "tapas": ("Spanish", "Western"), "greek": ("Greek", "Western"),
+    "portuguese": ("Portuguese", "Western"), "peri": ("Peri-peri chicken", "Western"), "chicken": ("Fried chicken", "Western"),
+    "mexican": ("Mexican", "Latin American"), "caribbean": ("Caribbean", "Latin American"), "jamaican": ("Caribbean", "Latin American"),
+    "brazilian": ("Brazilian", "Latin American"), "african": ("African", "African"), "ethiopian": ("Ethiopian", "African"),
+    "coffee_shop": ("Coffee", "Café"), "coffee": ("Coffee", "Café"), "espresso": ("Coffee", "Café"),
+    "tea": ("Tea and bubble tea", "Café"), "bubble_tea": ("Tea and bubble tea", "Café"), "boba": ("Tea and bubble tea", "Café"),
+    "cake": ("Bakery and cakes", "Café"), "bakery": ("Bakery and cakes", "Café"), "dessert": ("Desserts", "Café"),
+    "ice_cream": ("Desserts", "Café"), "gelato": ("Desserts", "Café"), "waffle": ("Desserts", "Café"),
+    "sandwich": ("Sandwiches", "Café"), "breakfast": ("Breakfast", "Café"), "vegan": ("Vegan", "Other"),
+}
+CHAIN_CUISINE = {  # well-known brands whose names don't say the cuisine
+    "costa": "coffee", "starbucks": "coffee", "caffe nero": "coffee", "caffè nero": "coffee", "pret": "sandwich",
+    "greggs": "bakery", "subway": "sandwich", "mcdonald": "burger", "burger king": "burger", "five guys": "burger",
+    "kfc": "chicken", "popeyes": "chicken", "nando": "peri", "domino": "pizza", "papa john": "pizza", "pizza hut": "pizza",
+    "wagamama": "japanese", "itsu": "japanese", "yo sushi": "japanese", "wasabi": "japanese", "bubbleology": "bubble_tea",
+    "taco bell": "mexican", "chipotle": "mexican", "wildwood": "italian", "zizzi": "italian", "ask italian": "italian",
+    "prezzo": "italian", "bella italia": "italian", "pizza express": "pizza", "turtle bay": "caribbean", "tortilla": "mexican",
+}
+NAME_SUBTYPE = [  # (keywords in the name, subtype) for non-food places
+    (("dental", "dentist", "orthodont", "smile"), "Dental practice"), (("surgery", "medical centre", "health centre", "gp "), "GP or clinic"),
+    (("physio", "chiropract", "osteopath"), "Physiotherapist"), (("optician", "optometr", "eye care", "specsavers", "vision express"), "Optician"),
+    (("spa", "massage", "wellness", "wellbeing", "sauna"), "Spa, massage or wellbeing"), (("nail",), "Nail salon"),
+    (("barber",), "Hairdresser or barber"), (("hair", "salon", "stylist"), "Hairdresser or barber"),
+    (("beauty", "lash", "brow", "aesthetic", "tanning"), "Beauty salon"), (("tattoo", "ink "), "Tattoo studio"),
+    (("gym", "fitness", "crossfit", "pilates", "yoga"), "Gym or fitness centre"), (("nursery", "pre-school", "preschool", "playgroup"), "Day nursery or childcare"),
+    (("vet", "veterinary"), "Veterinary practice"), (("laundr", "dry clean", "launderette"), "Laundry or dry cleaner"),
+]
+FOOD_CATS = {"restaurant_cafe", "takeaway", "pub_bar", "other_catering", "mobile_caterer"}
+
+
+def cuisine_from(text: str):
+    t = " " + str(text or "").lower().replace(";", " ").replace("-", " ") + " "
+    for brand, key in CHAIN_CUISINE.items():
+        if brand in t:
+            return CUISINE[key]
+    for key, val in CUISINE.items():
+        if f" {key.replace('_', ' ')}" in t or f" {key} " in t or key in t.split():
+            return val
+    return None
+
+
+def detailed_type(g: pd.DataFrame, category: str, name: str, sic: str) -> dict:
+    """subtype (e.g. 'Dental practice', 'Fast food'), cuisine and cuisine family for food places, and where it came
+    from: 'map tag' and 'SIC code' are recorded facts; 'name' means guessed from words in the name."""
+    out = {"subtype": "", "cuisine": "", "cuisine_family": "", "subtype_from": ""}
+    tags = [json.loads(e) for e in g.loc[g["source"] == "osm", "extra"]] if (g["source"] == "osm").any() else []
+    for t in tags:  # 1. the map's own tags
+        for k in ("healthcare", "amenity", "shop", "leisure"):
+            v = t.get(k)
+            if v and f"{k}={v}" in OSM_SUBTYPE and not out["subtype"]:
+                out.update(subtype=OSM_SUBTYPE[f"{k}={v}"], subtype_from="map tag")
+        if t.get("cuisine") and not out["cuisine"]:
+            c = cuisine_from(t["cuisine"])
+            if c:
+                out.update(cuisine=c[0], cuisine_family=c[1])
+    if not out["subtype"]:  # 2. official registers
+        for _, r in g.iterrows():
+            if r["source"] == "nhs_ods":
+                out.update(subtype="Pharmacy" if r["category"] == "pharmacy" else "GP practice", subtype_from="register")
+            elif r["source"] == "ofsted":
+                out.update(subtype=f"Childcare: {r['raw_type']}" if r["raw_type"] else "Day nursery or childcare", subtype_from="register")
+            elif r["source"] == "fsa" and r["raw_type"]:
+                out.update(subtype=str(r["raw_type"]), subtype_from="register")
+            if out["subtype"]:
+                break
+    if not out["subtype"] and sic:  # 3. the company's SIC code
+        main = sic.split("|")[0]
+        if main in SIC_SUBTYPE:
+            out.update(subtype=SIC_SUBTYPE[main], subtype_from="SIC code")
+    names = " ".join(g["name"].astype(str)) + " " + str(name)
+    if category in FOOD_CATS and not out["cuisine"]:  # 4. words in the name (a guess, labelled as such)
+        c = cuisine_from(names)
+        if c:
+            out.update(cuisine=c[0], cuisine_family=c[1])
+            out["cuisine_from"] = "name"
+    if not out["subtype"]:
+        low = " " + names.lower() + " "
+        for words, sub in NAME_SUBTYPE:
+            if any(w in low for w in words):
+                out.update(subtype=sub, subtype_from="name")
+                break
+    if category in FOOD_CATS and out["cuisine_family"] in ("", None) and out["subtype"] in ("Fast food", "Takeaway"):
+        out["cuisine_family"] = "Fast food (cuisine unknown)"
+    return out
+
+
 # Confidence penalty per flag (points off a 0-100 score). Every problem flag costs something.
 PENALTY = {
     "NOT_IN_SOUTHAMPTON": 25, "DORMANT_OR_NON_TRADING": 25, "NO_COORDINATES": 20,
@@ -614,6 +760,22 @@ def ch_records(reg: pd.DataFrame) -> pd.DataFrame:
         "extra": [json.dumps({"company_number": n, "company_type": t, "sic_codes": c, "industry": i})
                   for n, t, c, i in zip(reg["company_number"], reg.get("company_type", ""), reg["sic_codes"].fillna(""),
                                         reg.get("industry", pd.Series([""] * len(reg))).fillna(""))]})
+
+
+_OA = None
+
+
+def ward_of(lat, lon) -> str:
+    """Ward of the nearest Census Output Area centre (for the area view)."""
+    global _OA
+    if _OA is None:
+        o = pd.read_csv(PROC / "oa.csv")
+        _OA = (o["lat"].to_numpy(), o["lon"].to_numpy(), o["ward"].to_numpy())
+    if pd.isna(lat):
+        return ""
+    la, lo, w = _OA
+    d = (la - lat) ** 2 + ((lo - lon) * 0.63) ** 2
+    return str(w[int(d.argmin())])
 
 
 def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -742,6 +904,8 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
             "names_seen": " | ".join(dict.fromkeys(g["name"])), "inside_city": inside,
             "confidence": max(0, min(100, conf)), "flags": ";".join(flags),
             "excluded_reason": exclusion_reason(flags, srcs),
+            "ward": ward_of(best["lat"], best["lon"]) if inside else "",
+            **{k: v for k, v in detailed_type(g, cats[0], name_src["name"], chx.get("sic_codes", "")).items()},
             "industry_group": INDUSTRY_GROUP.get(cats[0], "Other"),
             "customer_facing": INDUSTRY_GROUP.get(cats[0], "Other") in CUSTOMER_FACING_GROUPS,
             "company_number": chx.get("company_number", ""), "company_name": ch.iloc[0]["name"] if len(ch) else "",

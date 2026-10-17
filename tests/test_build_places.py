@@ -247,3 +247,16 @@ def test_register_name_wins_but_bare_brand_gives_way():
     p, _ = run([rec("nhs_ods", "FA3", "Well", "pharmacy", 50.9046, -1.4045, sim="pharmacy"),
                 rec("osm", "node/11", "Well Pharmacy", "pharmacy", 50.90462, -1.40452, sim="pharmacy")])
     assert p.iloc[0]["name"] == "Well Pharmacy"
+
+
+def test_detailed_types_and_cuisine():
+    reg = pd.DataFrame([{"company_number": "5", "company_name": "BRIGHT SMILES DENTAL LTD", "company_type": "ltd",
+                         "incorporated": "", "sic_codes": "86230", "address": "1 High St", "postcode": "SO14 7DU"}])
+    rows = [rec("osm", "node/20", "Seoul Kitchen", "restaurant_cafe", 50.9046, -1.4045),
+            rec("osm", "node/21", "Costa", "restaurant_cafe", 50.9100, -1.4100)] + BP.ch_records(reg).to_dict("records")
+    p, _ = run(rows)
+    by = p.set_index("name")
+    assert by.loc["Seoul Kitchen", "cuisine"] == "Korean" and by.loc["Seoul Kitchen", "cuisine_family"] == "Asian"
+    assert by.loc["Costa", "cuisine"] == "Coffee"
+    dent = p[p["company_number"] == "5"].iloc[0]
+    assert dent["subtype"] == "Dental practice" and dent["subtype_from"] == "SIC code" and dent["ward"]
