@@ -1,0 +1,10 @@
+pandas>=2.0
+numpy>=1.26
+shapely>=2.0
+pyproj>=3.6
+requests>=2.31
+streamlit>=1.38
+folium>=0.17
+streamlit-folium>=0.22
+anthropic>=0.40
+pytest>=8.0

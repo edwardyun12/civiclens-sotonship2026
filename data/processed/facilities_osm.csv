@@ -1,0 +1,313 @@
+category,name,lat,lon,osm_id,source
+cafe,The Cedars,50.8686415,-1.3423099,node/26592619,OSM
+pharmacy,Well Pharmacy,50.9085632,-1.3342568,node/292812253,OSM
+library,Thornhill Library,50.9089864,-1.3347299,node/292812303,OSM
+cafe,High Wood Barn Visitor Centre,50.9425057,-1.3453946,node/339846149,OSM
+pharmacy,Blackthorn Pharmacy,50.8760895,-1.3269605,node/568207055,OSM
+pharmacy,NHS Pharmacy,50.9305009,-1.4588844,node/602788878,OSM
+pharmacy,Woolston Pharmacy,50.8971316,-1.372078,node/640321048,OSM
+pharmacy,Telephone House Pharmacy,50.8975821,-1.4038685,node/676403254,OSM
+gp,Telephone House Surgery,50.8978443,-1.4037224,node/676403255,OSM
+cafe,Steam Coffee Shop,50.8945399,-1.4059921,node/700235920,OSM
+cafe,Steam Coffee Shop,50.8961907,-1.4051289,node/700236017,OSM
+library,Shirley Library,50.923946,-1.4343362,node/852775948,OSM
+cafe,The Lunch Lounge,50.8994641,-1.3921902,node/856997807,OSM
+cafe,Waterside Cafe,50.8700301,-1.3994209,node/1195157081,OSM
+cafe,Costa,50.8698558,-1.3985545,node/1195157082,OSM
+cafe,Costa,50.90818,-1.4138612,node/1299353543,OSM
+library,Eastleigh Library,50.9666953,-1.3539648,node/1555721680,OSM
+pharmacy,The Precinct Pharmacy,50.9236982,-1.4344367,node/1559829089,OSM
+cafe,Starbucks,50.9038114,-1.4045201,node/1592839313,OSM
+cafe,Costa,50.9034346,-1.4075296,node/1602142790,OSM
+cafe,Asda Café,50.9060164,-1.4077725,node/1602159264,OSM
+cafe,Fusion,50.9613388,-1.422739,node/1711741751,OSM
+cafe,Caffè Nero,50.9673103,-1.3529539,node/1764026453,OSM
+cafe,,50.9361632,-1.397777,node/1792941227,OSM
+cafe,Wells Place Centre,50.9674401,-1.3546109,node/1801955637,OSM
+cafe,Lakeside Café,50.9554175,-1.3643529,node/1863560138,OSM
+cafe,Eling Creek Tea Rooms,50.9113717,-1.4824556,node/1965732597,OSM
+pharmacy,Superdrug,50.8699353,-1.3980522,node/1967347753,OSM
+cafe,Be-Be's Cafe,50.8702416,-1.3996937,node/1967361316,OSM
+cafe,Costa,50.9334434,-1.4339823,node/2026085749,OSM
+pharmacy,Chartwell Pharmacy,50.9329736,-1.3523724,node/2107140318,OSM
+cafe,Sweet Soul Cafe,50.8907294,-1.4502061,node/2140837881,OSM
+library,West End Library,50.9288175,-1.3372581,node/2143335197,OSM
+nursery,Playaway,50.9283002,-1.3370328,node/2143335202,OSM
+nursery,,50.9271291,-1.3307246,node/2146819197,OSM
+pharmacy,Superdrug,50.9146615,-1.3600695,node/2161913526,OSM
+cafe,Woodland Cafe,50.9426075,-1.3454054,node/2164531862,OSM
+cafe,Café Local,50.9508433,-1.3630051,node/2206817411,OSM
+cafe,Bürgshake,50.9178151,-1.4272962,node/2322067048,OSM
+pharmacy,Tesco Pharmacy,50.8944201,-1.3208992,node/2337102315,OSM
+pharmacy,Bitterne Pharmacy,50.917511,-1.3588403,node/2400215826,OSM
+cafe,Costa,50.9586482,-1.4483027,node/2420875235,OSM
+pharmacy,Day Lewis Pharmacy,50.9005832,-1.3398322,node/2450390332,OSM
+cafe,Costa,50.9031587,-1.4059603,node/2571357267,OSM
+cafe,Sea City Museum Cafe,50.9082697,-1.4076259,node/2573542350,OSM
+cafe,Costa,50.905619,-1.4051475,node/2576450731,OSM
+cafe,LabelFood,50.9312349,-1.4000356,node/2851603270,OSM
+nursery,Bracken Place Nursery,50.956176,-1.3983025,node/2937723290,OSM
+cafe,Starbucks,50.8958802,-1.4048855,node/3291437792,OSM
+cafe,Fresh Food Cafe,50.9562007,-1.4479679,node/3354590324,OSM
+cafe,Boswells,50.9671875,-1.3536009,node/3370213984,OSM
+cafe,Obriens,50.9673893,-1.3519792,node/3370214709,OSM
+cafe,Flying Aubergine Mediterranean Café,50.9077285,-1.402103,node/3899096651,OSM
+cafe,Costa,50.9377324,-1.3973487,node/3950237076,OSM
+cafe,Isaac's Cafe,50.9074681,-1.4137258,node/4074152800,OSM
+cafe,Starbucks,50.9072693,-1.4138182,node/4074152950,OSM
+cafe,Round About Cafe,50.9418737,-1.3729261,node/4075940150,OSM
+cafe,League of Friends,50.9125861,-1.3967093,node/4091239357,OSM
+cafe,Costa Drive Thru,50.9573803,-1.4498046,node/4361140464,OSM
+cafe,Starbucks,50.9081802,-1.4140406,node/4501323189,OSM
+cafe,Tesco Café,50.8948994,-1.3206811,node/4509591430,OSM
+cafe,Doorsteps Cafe,50.8898034,-1.3155434,node/4881220154,OSM
+cafe,Oasis Tea Bar (F Level),50.9334824,-1.4352949,node/4941697784,OSM
+cafe,Sally Anne's,50.8982756,-1.3991679,node/5008079421,OSM
+cafe,Bistro Baristo,50.8973604,-1.4038515,node/5008321821,OSM
+cafe,Pats Sandwich Bar,50.9189374,-1.4909413,node/5047619535,OSM
+cafe,Arrosto,50.9184344,-1.4887376,node/5047748625,OSM
+cafe,Aroma,50.919363,-1.488404,node/5047768731,OSM
+gp,B level MRI,50.9323174,-1.434661,node/5109382392,OSM
+cafe,Fusion,50.9621992,-1.4304671,node/5254306742,OSM
+cafe,Costa,50.9692381,-1.3710219,node/5260399187,OSM
+cafe,Waterstones Cafe,50.9028959,-1.406215,node/5294173172,OSM
+gp,Lordshill Health Centre,50.9403482,-1.4488341,node/6116459956,OSM
+pharmacy,Boots,50.9665609,-1.3534574,node/6237209478,OSM
+pharmacy,Lloyds Pharmacy,50.9053391,-1.3971519,node/6237209762,OSM
+cafe,Cafe Thrive Southampton,50.9028339,-1.4018346,node/6347814252,OSM
+cafe,Aroma kitchen,50.9217996,-1.4437267,node/6433953274,OSM
+cafe,Costa,50.9564288,-1.44804,node/6468583941,OSM
+cafe,Rosemary Cafe & Bistro,50.9016272,-1.4042738,node/6475129685,OSM
+cafe,Costa Drive Thru,50.9570248,-1.449179,node/6502280602,OSM
+gp,Options Counseling,50.9102303,-1.4203751,node/6556282804,OSM
+nursery,Little Caterpillars Preschool,50.9269695,-1.4363377,node/6653423155,OSM
+cafe,Edison's,50.8994344,-1.4039886,node/6702794787,OSM
+cafe,Room 2 Living room Coffee & Cocktail bar,50.8979592,-1.4002105,node/6799001486,OSM
+cafe,Hoxton Bakehouse GHT Cafe,50.8963317,-1.4025804,node/6934566505,OSM
+cafe,Cartland Truck Stop Cafe,50.9175022,-1.4644332,node/7232525602,OSM
+pharmacy,Asda,50.9669472,-1.3901242,node/7508742263,OSM
+cafe,Asda Café,50.917919,-1.4886904,node/7510656090,OSM
+cafe,Empress Cafe,50.9191815,-1.3928973,node/8130663404,OSM
+cafe,Chatime,50.9017095,-1.4042927,node/8487532550,OSM
+cafe,Blackbird café,50.9673607,-1.3736902,node/8809413660,OSM
+nursery,Little Wisps Pavilion Preschool,50.9673555,-1.3734118,node/8809413662,OSM
+cafe,Costa,50.9505718,-1.3619359,node/8946330499,OSM
+cafe,Costa,50.9179493,-1.312032,node/9318068192,OSM
+nursery,Play Away Day Nursery Ltd,50.9002485,-1.3916484,node/9382166105,OSM
+cafe,Yellow Welly,50.9101179,-1.3799462,node/9430961370,OSM
+cafe,Coffee Ozzy,50.9060668,-1.4088846,node/9498421604,OSM
+cafe,Cake & Bake,50.9060394,-1.396924,node/9660477072,OSM
+cafe,Black Wax Coffee and Records,50.8701064,-1.3988945,node/10135804817,OSM
+cafe,Costa,50.9036128,-1.4063467,node/10210460573,OSM
+cafe,Costa,50.950319,-1.3611017,node/10223395008,OSM
+cafe,Elsabel Cafe,50.9192253,-1.4904977,node/10548356588,OSM
+coworking,Regus,50.9102249,-1.406894,node/10769611871,OSM
+cafe,,50.907692,-1.4052672,node/10945124762,OSM
+cafe,Mettricks,50.8947954,-1.3826455,node/10951317756,OSM
+library,Woolston Library,50.8957151,-1.3807742,node/10951332344,OSM
+cafe,Stacey's Shack,50.9146719,-1.3612528,node/11067743564,OSM
+pharmacy,Boots,50.9235472,-1.3732457,node/11138767016,OSM
+cafe,Bubbleology,50.9034246,-1.4067319,node/11238909751,OSM
+cafe,Mettricks,50.9037109,-1.4073186,node/11351433351,OSM
+nursery,Tickleford Preschool,50.8886654,-1.3527715,node/11643200065,OSM
+nursery,Co-operative Childcare,50.9298775,-1.441161,node/11758981617,OSM
+cafe,The Hatch Cafe,50.9288468,-1.3370995,node/12163262709,OSM
+cafe,The Nest Coffee,50.9231077,-1.4450597,node/12163531473,OSM
+cafe,Muzzy,50.9689161,-1.3532556,node/12291438139,OSM
+cafe,The Coffee Cabin,50.9702714,-1.3461904,node/12291460393,OSM
+cafe,Meet Point,50.9110242,-1.3841755,node/12303882357,OSM
+cafe,Tea Rex 茶味,50.9029276,-1.4053912,node/12373592886,OSM
+cafe,Poppins,50.9023386,-1.4044917,node/12373592888,OSM
+cafe,Heytea,50.9025212,-1.4045383,node/12373597466,OSM
+pharmacy,Wainwrights,50.9704293,-1.3369471,node/12404478274,OSM
+cafe,Hi Tea,50.9031657,-1.4032549,node/12410206273,OSM
+cafe,Ding Tea 薡茶,50.9029239,-1.403222,node/12410206278,OSM
+cafe,Costa,50.9020959,-1.4038643,node/12421770420,OSM
+nursery,Little Berries Pre-School,50.9367099,-1.4139497,node/12617838253,OSM
+cafe,悸动烧仙草 Jidong Herbal Jelly,50.9024696,-1.4045348,node/12800726060,OSM
+nursery,My Little Explorers Toothill,50.9626541,-1.4676052,node/12843633001,OSM
+cafe,Adesso Coffee & Panini Bar,50.9693544,-1.3500459,node/12899149191,OSM
+cafe,Meeple Play Cafe,50.8691569,-1.3994935,node/13306497034,OSM
+cafe,Howley Coffee Co.,50.8707186,-1.3993989,node/13308005594,OSM
+cafe,George's Cafe & Restaurant,50.9226808,-1.4326643,node/13338520190,OSM
+cafe,The Nest Coffee House,50.9113794,-1.404633,node/13421146859,OSM
+cafe,Ori Caffé,50.9045067,-1.4081413,node/13511066232,OSM
+cafe,Timplado,50.9018389,-1.4029272,node/13593247370,OSM
+cafe,Happy Lemon,50.9018454,-1.4035644,node/13593247397,OSM
+cafe,Starbucks,50.950182,-1.3612807,node/13624576758,OSM
+cafe,The Café at The Hawthorns,50.9234682,-1.4077964,node/13722976471,OSM
+cafe,Coffee 8,50.9007047,-1.4041565,node/13799737384,OSM
+gp,Enhanced Care Services,50.9419889,-1.4715463,node/14160235851,OSM
+nursery,The Aviary Children's Centre,50.963841,-1.380771,way/4724596,OSM
+library,Totton Library,50.9196549,-1.4892545,way/23134482,OSM
+gp,Totton Health Centre,50.9205119,-1.4887927,way/23134490,OSM
+library,Mountbatten Library (ML),50.908161,-1.4009181,way/27047528,OSM
+cafe,Cafe Nautical Mile,50.9077143,-1.4020547,way/27343029,OSM
+gp,University Health Service,50.9357028,-1.3994781,way/32678442,OSM
+library,Hartley Library,50.9350119,-1.3952718,way/33830050,OSM
+library,Hythe Library,50.8689104,-1.4000074,way/44598419,OSM
+gp,Victor Street Surgery,50.9242578,-1.4325355,way/63231104,OSM
+nursery,Oasis Lord's Hill Pre-School,50.9339853,-1.4549174,way/66666475,OSM
+library,Burgess Road Library,50.9382986,-1.3955448,way/81163505,OSM
+library,Bitterne Library,50.9148227,-1.3552384,way/87342819,OSM
+nursery,Woolston Community Pre-school,50.8937729,-1.3779945,way/94069832,OSM
+library,Lordshill Library,50.9400043,-1.4494423,way/95347194,OSM
+gp,Waterfront and Solent Surgery,50.8708868,-1.4006904,way/97821914,OSM
+gp,,50.8710699,-1.4009311,way/97821919,OSM
+library,Hedge End Library,50.9133731,-1.3057067,way/99057609,OSM
+pharmacy,Lordshill Pharmacy,50.9408853,-1.4485588,way/100689156,OSM
+nursery,St James Park Road Nursery,50.928492,-1.4306282,way/110288431,OSM
+library,Portswood Library,50.9267387,-1.3918918,way/113617753,OSM
+pharmacy,A R Pharmacy,50.9195948,-1.4902063,way/117104808,OSM
+nursery,Yellow Dot Nursery,50.9649839,-1.4212641,way/121222170,OSM
+cafe,Chaiiwala,50.9263196,-1.3916297,way/122706795,OSM
+pharmacy,Superdrug,50.9221733,-1.4328681,way/123078085,OSM
+nursery,PiXieS,50.8976369,-1.3718288,way/126104790,OSM
+cafe,Legends Cafe,50.923058,-1.4348151,way/126355318,OSM
+cafe,The Kiosk,50.897644,-1.407436,way/129851881,OSM
+cafe,Costa,50.9055646,-1.3394121,way/131894132,OSM
+pharmacy,Boots,50.9034542,-1.4048136,way/146618372,OSM
+gp,West End Surgery,50.9284644,-1.3274534,way/147294246,OSM
+cafe,Corniche Restaurant & Cafe,50.9382598,-1.392183,way/148590584,OSM
+gp,Woolston Lodge Surgery,50.8970671,-1.3722465,way/148730262,OSM
+gp,The Old Fire Station Surgery,50.8969368,-1.3717886,way/148730890,OSM
+gp,Blackthorn Health Centre,50.876031,-1.3270552,way/148789311,OSM
+gp,Burgess Road Surgery,50.9387962,-1.3872674,way/149489081,OSM
+cafe,Muse Coffee Co.,50.9256429,-1.3924768,way/149814017,OSM
+cafe,Cafe 38,50.9354743,-1.3971919,way/160255120,OSM
+cafe,Kate's Cafe,50.9261895,-1.3925798,way/160630503,OSM
+pharmacy,Boots,50.9263469,-1.3923919,way/160630506,OSM
+cafe,Poppins,50.9262875,-1.3924763,way/160630513,OSM
+pharmacy,Day Lewis Pharmacy,50.925465,-1.3934817,way/160637251,OSM
+cafe,Coffee#1,50.9256559,-1.3932189,way/160637268,OSM
+gp,Alma road Surgery,50.9217217,-1.4005532,way/161562744,OSM
+nursery,Explorers Nursery,50.93716,-1.4693825,way/164753216,OSM
+nursery,Bright Horizons Nursery,50.9255457,-1.3999202,way/165711758,OSM
+gp,Portswood Solent Surgery,50.9223552,-1.3901629,way/166098841,OSM
+cafe,Mettricks,50.9271155,-1.3908306,way/169379079,OSM
+nursery,,50.9270794,-1.3978279,way/169614762,OSM
+nursery,The Trees,50.9237753,-1.3989084,way/170767686,OSM
+pharmacy,Highfield Pharmacy,50.932895,-1.3957765,way/173807231,OSM
+cafe,Brewed Awakening,50.9376338,-1.3930833,way/177910441,OSM
+cafe,Secret Garden,50.8979718,-1.3981767,way/183440570,OSM
+pharmacy,Boots,50.921424,-1.4318274,way/183876038,OSM
+cafe,Costa,50.9224648,-1.4332502,way/183877084,OSM
+cafe,The Hungry Diner,50.9217415,-1.4330747,way/184068495,OSM
+cafe,Cafe Aroma Shirley,50.9218442,-1.4332376,way/184068501,OSM
+cafe,Victoria's coffe shop,50.9209996,-1.4321097,way/184138076,OSM
+cafe,Coffee#1,50.9206815,-1.4317317,way/184143327,OSM
+nursery,,50.9014188,-1.3995952,way/184267129,OSM
+cafe,Board in the City,50.9135032,-1.3988015,way/189758705,OSM
+cafe,Kingsland Cafe,50.9054273,-1.3964906,way/190393749,OSM
+pharmacy,Bassil Pharmacy,50.9111752,-1.4053692,way/190394974,OSM
+cafe,Allsorts Psychic Cafe,50.9126844,-1.4053598,way/190397757,OSM
+pharmacy,Boots,50.9042344,-1.4119648,way/191972372,OSM
+library,Cobbett Road Library,50.91776,-1.3734272,way/192359660,OSM
+cafe,Retro Cafe,50.9130284,-1.406237,way/193079368,OSM
+cafe,Cafe Creme,50.9128817,-1.4062336,way/193079380,OSM
+pharmacy,Avicenna Pharmacy,50.9360771,-1.4472383,way/194680114,OSM
+cafe,Happy Bean Coffee Bar,50.913324,-1.4067299,way/195012170,OSM
+cafe,Barraquito,50.9125353,-1.4066895,way/195012229,OSM
+pharmacy,Boots,50.9259185,-1.364416,way/196001534,OSM
+pharmacy,AR Pharmacy Testwood,50.9185497,-1.4888736,way/207101482,OSM
+pharmacy,Sangha Pharmacy,50.9143831,-1.3364867,way/208918419,OSM
+gp,Ladies Walk Practice,50.9145255,-1.3336713,way/208966057,OSM
+pharmacy,Lloyds Pharmacy,50.9648023,-1.3098401,way/217951523,OSM
+gp,Stokewood Surgery,50.9648898,-1.3102534,way/217951527,OSM
+cafe,Starbucks,50.9123445,-1.4039259,way/219763539,OSM
+pharmacy,Burgess Road Pharmacy,50.9387282,-1.3875171,way/220386952,OSM
+pharmacy,Lloyds Pharmacy,50.916884,-1.4282885,way/223166941,OSM
+gp,Walnut Tree Surgery,50.9149038,-1.4066173,way/224302595,OSM
+cafe,Muse,50.9107177,-1.4046166,way/224636037,OSM
+cafe,The Nest Coffee House,50.9116213,-1.4044585,way/225402036,OSM
+nursery,Hardmoor Early Years Centre,50.9454602,-1.3895135,way/226310529,OSM
+nursery,Teddies Nurseries,50.9106683,-1.4172546,way/235952419,OSM
+nursery,Teddies Nurseries,50.9106587,-1.4170676,way/235952425,OSM
+nursery,Paint Pots,50.9146243,-1.4175688,way/235955002,OSM
+gp,Shirley Avenue Surgery,50.9209602,-1.4302081,way/238299002,OSM
+gp,Cheviot Road Surgery,50.921393,-1.4560141,way/238313759,OSM
+nursery,Learning Land,50.9211924,-1.4577558,way/239062700,OSM
+pharmacy,PharmacyDirect,50.9144549,-1.4236524,way/239741614,OSM
+cafe,Mad Café and Deli,50.9145419,-1.4237624,way/239741617,OSM
+cafe,Costa,50.9725564,-1.368436,way/241968967,OSM
+cafe,Chasha,50.9258396,-1.3923388,way/242171041,OSM
+cafe,The Plant Pot,50.9344279,-1.3977046,way/244925919,OSM
+cafe,Lattés,50.9348964,-1.3959295,way/256454832,OSM
+gp,Raymond Road Surgery,50.9190727,-1.4192232,way/271988390,OSM
+cafe,ParkLife Cafe,50.926564,-1.4291794,way/274171329,OSM
+gp,Hill Lane Surgery,50.9170012,-1.4157843,way/280966429,OSM
+nursery,Woodberry Day Nursery,50.9100452,-1.3685969,way/281281391,OSM
+gp,Atherley House Surgery,50.913303,-1.4215825,way/284135085,OSM
+pharmacy,Solent Pharmacy,50.9207434,-1.4215669,way/285344002,OSM
+cafe,Crews Mess,50.9167058,-1.4257603,way/285346906,OSM
+cafe,Maurie's,50.918685,-1.4042864,way/286101382,OSM
+cafe,Arlott Bar,50.935327,-1.3971574,way/290159530,OSM
+cafe,Lattes,50.9363558,-1.3955517,way/292039239,OSM
+cafe,Lattes,50.9354768,-1.3973997,way/293266062,OSM
+cafe,Cafe No. 2,50.9405218,-1.3790048,way/305296881,OSM
+cafe,Costa,50.9681781,-1.3522763,way/306794667,OSM
+coworking,Design Chapel,50.9200466,-1.4135064,way/315214526,OSM
+cafe,Coffee#1,50.9691627,-1.3516266,way/334674000,OSM
+cafe,Cosy Cafe,50.9676716,-1.3517896,way/334674017,OSM
+gp,Thornhill Doctors Surgery,50.9097755,-1.3354048,way/351389474,OSM
+cafe,One-o-Four,50.9059549,-1.4041741,way/358517328,OSM
+cafe,Brunch And Barista,50.9057779,-1.4041691,way/358517826,OSM
+nursery,Valley Nursery,50.9312039,-1.4303869,way/359892097,OSM
+cafe,Starbucks,50.9056049,-1.4047289,way/361875398,OSM
+cafe,Caffè Nero,50.9053143,-1.4040584,way/365059981,OSM
+cafe,Coffee#1,50.9054458,-1.4040652,way/365061654,OSM
+pharmacy,Bassett Pharmacy,50.9340157,-1.4184128,way/366967956,OSM
+nursery,YMCA Nursery,50.8951183,-1.3805456,way/368693693,OSM
+gp,Stoneham Lane Surgery,50.9398393,-1.3781404,way/374847436,OSM
+pharmacy,Lloyds Pharmacy,50.9397263,-1.378211,way/374847787,OSM
+pharmacy,Day Lewis Pharmacy,50.9401524,-1.4271681,way/377264396,OSM
+pharmacy,Everetts Pharmacy,50.9276052,-1.33423,way/390880247,OSM
+library,Southampton Central Library,50.9085096,-1.4062599,way/392922182,OSM
+cafe,The Orangery,50.954562,-1.3176206,way/411833996,OSM
+cafe,Mettricks Tea & Coffee,50.9081015,-1.4039577,way/512076970,OSM
+cafe,Costa,50.919012,-1.4882379,way/517384861,OSM
+gp,Testvale Surgery,50.9197066,-1.4904487,way/517399960,OSM
+nursery,Play Away Day Nursery Totton,50.9174421,-1.4831973,way/517412583,OSM
+nursery,Tiny Toes Day Nursery,50.9444754,-1.4504481,way/654424119,OSM
+gp,Brook House Surgery,50.9216953,-1.4453867,way/655743587,OSM
+gp,Harefield Surgery,50.9189902,-1.3448372,way/659929842,OSM
+nursery,Acorns,50.9210297,-1.4870564,way/660008419,OSM
+gp,Peartree Practice,50.9136551,-1.3652547,way/672047493,OSM
+pharmacy,Regents Park Pharmacy,50.9167726,-1.4416245,way/704356447,OSM
+nursery,The Mulberry Bush Nursery School,50.9245511,-1.3610648,way/712089582,OSM
+cafe,Naked Coffee,50.9083737,-1.4123543,way/734773351,OSM
+nursery,Stepping Stones,50.9131033,-1.4825405,way/750102210,OSM
+gp,Midanbury Surgery - Ladies Walk Practice,50.92681,-1.3650046,way/755413210,OSM
+cafe,Coffee Roasters,50.9242119,-1.3763033,way/755424709,OSM
+cafe,Riverside Diner,50.924505,-1.3755594,way/758405118,OSM
+cafe,Pink Olive Cafe,50.9248432,-1.3755918,way/758405125,OSM
+cafe,Miss Ellie's Cafe,50.9250509,-1.3755351,way/758405130,OSM
+gp,St Peter's Surgery,50.8977869,-1.3727037,way/773141975,OSM
+nursery,,50.8987911,-1.3732217,way/774629951,OSM
+gp,Bitterne Surgery,50.9174331,-1.3587123,way/776608369,OSM
+pharmacy,Lloyds Pharmacy,50.9153021,-1.3556149,way/792859718,OSM
+pharmacy,Pharmacy Direct,50.9153831,-1.3540735,way/793254041,OSM
+cafe,The Boat Shop Cafe,50.8985293,-1.3781102,way/794937653,OSM
+cafe,Woolston Cafe,50.8977805,-1.3772382,way/814926728,OSM
+cafe,Coffee Woolston,50.8979353,-1.3800067,way/814982176,OSM
+cafe,Annie's,50.8979291,-1.3797224,way/814982180,OSM
+pharmacy,Superdrug,50.8973918,-1.3791829,way/815018164,OSM
+cafe,Piggy's Cafe,50.8972457,-1.379929,way/815054451,OSM
+cafe,The Coffee Shop Cafe,50.921076,-1.3541697,way/916003323,OSM
+pharmacy,Bassil Chemist,50.9139808,-1.4061235,way/937899395,OSM
+nursery,Kids Incorporated,50.9175441,-1.4819671,way/975254014,OSM
+cafe,Starbucks,50.9173892,-1.3124528,way/1009721990,OSM
+cafe,Woodmill coffee kitchen,50.9348239,-1.3764818,way/1060470004,OSM
+gp,Peartree Practice,50.9005674,-1.339904,way/1060494659,OSM
+cafe,On The Water Cafe,50.8867573,-1.374033,way/1060495838,OSM
+nursery,Play Away Day Nurseries,50.9280679,-1.3372595,way/1065519214,OSM
+nursery,Play Away Day Nurseries,50.9282638,-1.3371155,way/1065519215,OSM
+library,Netley Library,50.8731266,-1.3521162,way/1129713958,OSM
+cafe,Costa Drive Thru,50.9351334,-1.4684793,way/1176411143,OSM
+cafe,The Edge Hub,50.9289342,-1.3575088,way/1343459334,OSM
+nursery,,50.9290157,-1.3576271,way/1343459335,OSM
+nursery,Little Shipmates,50.8682078,-1.4060501,way/1451031837,OSM
+cafe,Starbucks,50.9243481,-1.3090309,way/1504432138,OSM
+cafe,Starbucks,50.9445804,-1.3700851,way/1508812600,OSM
+gp,Eastleigh Health Centre,50.9708823,-1.3532464,relation/6283407,OSM
+gp,Bitterne Health Clinic,50.9155559,-1.3546158,relation/11003833,OSM
