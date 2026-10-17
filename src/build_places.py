@@ -454,7 +454,8 @@ def match(recs: pd.DataFrame) -> pd.Series:
                 continue
             s = name_sim(names[a], names[b])
             same_pc = pcs[a] and pcs[a] == pcs[b]
-            if (d <= MATCH_NEAR_M and s >= MATCH_NEAR_SIM) or (s >= MATCH_FAR_SIM and (d <= MATCH_FAR_M or same_pc)):
+            near_ok = d <= MATCH_NEAR_M and s >= MATCH_NEAR_SIM and "ch" not in (src[a], src[b])
+            if near_ok or (s >= MATCH_FAR_SIM and (d <= MATCH_FAR_M or same_pc)):
                 cands.append((d / MATCH_FAR_M - s, a, b))  # best pairs first
     # merge best pairs first; keep at most one record per source in a place
     srcs_of = {i: {src[i]} for i in range(n)}
@@ -467,7 +468,76 @@ def match(recs: pd.DataFrame) -> pd.Series:
 
 
 COORD_RANK = {"osm_mapped": 0, "osm_building_centre": 1, "fsa_geocode": 2, "postcode_centre": 3}
-SRC_LABEL = {"fsa": "FSA", "osm": "OSM", "nhs_ods": "NHS ODS", "ofsted": "Ofsted"}
+SRC_LABEL = {"fsa": "FSA", "osm": "OSM", "nhs_ods": "NHS ODS", "ofsted": "Ofsted", "ch": "Companies House"}
+
+# SIC 2007 code prefix -> our category (longest prefix wins). Lets companies sit in the same taxonomy as places.
+SIC_CATEGORY = {
+    "56101": "restaurant_cafe", "56102": "restaurant_cafe", "56103": "takeaway", "5621": "other_catering",
+    "5629": "other_catering", "5630": "pub_bar", "4711": "supermarket", "4719": "shop_other", "472": "shop_food",
+    "47730": "pharmacy", "47": "shop_other", "88910": "nursery", "85100": "nursery", "85": "education",
+    "86210": "gp", "86230": "dentist", "86": "health_other", "87": "care_childcare_health", "88": "care_childcare_health",
+    "55": "hotel", "93": "leisure", "96020": "hair_beauty", "96": "personal_services", "91011": "library",
+    "91": "community", "94": "community", "90": "leisure", "68": "property", "41": "construction", "42": "construction",
+    "43": "construction", "62": "it_tech", "63": "it_tech", "58": "it_tech", "61": "it_tech", "64": "finance",
+    "65": "finance", "66": "finance", "69": "professional", "70": "professional", "71": "professional",
+    "72": "professional", "73": "professional", "74": "professional", "75": "health_other", "77": "business_services",
+    "78": "business_services", "79": "business_services", "80": "business_services", "81": "business_services",
+    "82": "business_services", "45": "motor", "46": "wholesale", "49": "transport_logistics", "50": "transport_logistics",
+    "51": "transport_logistics", "52": "transport_logistics", "53": "transport_logistics", "10": "food_manufacturer",
+    "11": "food_manufacturer", "95": "personal_services", "59": "it_tech", "60": "it_tech", "84": "community",
+    "99999": "dormant", "74990": "dormant",
+}
+for _d in range(5, 34):  # remaining manufacturing and mining divisions
+    SIC_CATEGORY.setdefault(f"{_d:02d}", "manufacturing")
+for _d in ("01", "02", "03", "35", "36", "37", "38", "39"):
+    SIC_CATEGORY.setdefault(_d, "utilities_primary")
+SIM_FROM_CATEGORY = {"nursery": "nursery", "gp": "gp", "pharmacy": "pharmacy", "library": "library"}
+
+# Broad industry groups for sorting and reporting (one per category)
+INDUSTRY_GROUP = {
+    **dict.fromkeys(["restaurant_cafe", "takeaway", "pub_bar", "other_catering", "mobile_caterer"], "Food and drink"),
+    **dict.fromkeys(["supermarket", "shop_food", "shop_other"], "Retail"),
+    **dict.fromkeys(["gp", "dentist", "pharmacy", "hospital", "health_other"], "Health"),
+    **dict.fromkeys(["nursery", "education", "care_childcare_health"], "Childcare, education and care"),
+    **dict.fromkeys(["library", "community"], "Community and culture"),
+    **dict.fromkeys(["hotel", "leisure"], "Leisure and hospitality"),
+    **dict.fromkeys(["hair_beauty", "personal_services"], "Personal services"),
+    **dict.fromkeys(["professional", "finance", "property", "it_tech", "business_services", "coworking", "wholesale"],
+                    "Business and professional"),
+    **dict.fromkeys(["construction", "manufacturing", "food_manufacturer", "food_distributor", "food_producer",
+                     "transport_logistics", "motor", "utilities_primary"], "Industry, construction and transport"),
+    **dict.fromkeys(["finance_bank", "post_office"], "Business and professional"),
+    "dormant": "Dormant or non-trading", "other": "Other",
+}
+CUSTOMER_FACING_GROUPS = {"Food and drink", "Retail", "Health", "Childcare, education and care", "Community and culture",
+                          "Leisure and hospitality", "Personal services"}
+
+
+def sic_category(codes: list[str]) -> str:
+    for code in codes:  # the first listed SIC code is the main activity
+        for n in (5, 4, 3, 2):
+            if code[:n] in SIC_CATEGORY:
+                return SIC_CATEGORY[code[:n]]
+    return "other"
+
+
+def ch_records(reg: pd.DataFrame) -> pd.DataFrame:
+    """Companies as source records, so they go through the same matching and flags as every other register.
+    Location = registered office postcode centre (filled in by build())."""
+    codes = reg["sic_codes"].fillna("").map(lambda s: [c for c in str(s).split("|") if c])
+    cats = codes.map(sic_category)
+    if "industry" not in reg:
+        reg = reg.assign(industry=codes.map(lambda cs: "; ".join(dict.fromkeys(SIC_DIVISIONS.get(c[:2], c) for c in cs))))
+    return pd.DataFrame({
+        "source": "ch", "source_id": reg["company_number"].astype(str), "name": reg["company_name"],
+        "raw_type": reg["sic_codes"].fillna("").map(lambda s: "SIC " + s.replace("|", ", ") if s else "No SIC code"),
+        "category": cats, "sim_category": cats.map(SIM_FROM_CATEGORY), "lat": None, "lon": None,
+        "coord_method": "postcode_centre", "address": reg["address"].fillna(""), "postcode": reg["postcode"].fillna(""),
+        "brand": "", "opening_hours": "", "website": "", "phone": "", "quality": "",
+        "record_date": reg["incorporated"].fillna("").astype(str).str[:10],
+        "extra": [json.dumps({"company_number": n, "company_type": t, "sic_codes": c, "industry": i})
+                  for n, t, c, i in zip(reg["company_number"], reg.get("company_type", ""), reg["sic_codes"].fillna(""),
+                                        reg.get("industry", pd.Series([""] * len(reg))).fillna(""))]})
 
 
 def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -499,6 +569,11 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
                     break
                 if metres(arr[i][0], arr[i][1], arr[j][0], arr[j][1]) <= 30 and name_sim(arr[i][2], arr[j][2]) >= 0.9:
                     recs.loc[[g.index[i], g.index[j]], "dup_in_source"] = True
+
+    # companies sharing one registered address (accountants, formation agents, virtual offices)
+    is_ch = recs["source"] == "ch"
+    akey = recs["address"].fillna("").str.upper().str.replace(r"[^A-Z0-9]", "", regex=True) + "|" + recs["postcode"].fillna("")
+    shared_addr = akey[is_ch].map(akey[is_ch].value_counts()).to_dict()
 
     # 2. one row per place
     rows = []
@@ -546,6 +621,17 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
                 flags.append("FSA_INSPECTION_OVER_4Y")
         if re.search(r'"rating_pending": "?true', " ".join(g["extra"]).lower()):
             flags.append("FSA_RATING_PENDING")
+        ch = g[g["source"] == "ch"]
+        if len(ch) and len(srcs) == 1:
+            flags.append("REGISTERED_OFFICE_ONLY")
+            if shared_addr.get(ch.index[0], 0) >= 5:
+                flags.append("SHARED_ADDRESS_5PLUS")
+            if (ch["category"] == "dormant").any():
+                flags.append("DORMANT_OR_NON_TRADING")
+        if g["postcode"].map(lambda p: bool(p) and not str(p).startswith("SO")).all() and len(ch):
+            flags.append("NOT_IN_SOUTHAMPTON")
+        if (g["postcode_status"] == "approx_2017").any() and best["coord_method"] == "postcode_centre":
+            flags.append("COORDS_FROM_2017_POSTCODE_FILE")
         inside = bool(pd.notna(best["lat"]) and in_city(best["lat"], best["lon"], polys))
         if not inside:
             flags.append("OUTSIDE_CITY")
@@ -557,9 +643,12 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
                                               "TYPE_CONFLICT", "FAR_FROM_OWN_POSTCODE", "POSTCODE_INVALID"))
         conf -= 10 * sum(f in flags for f in ("POSTCODE_TERMINATED", "POSSIBLE_DUPLICATE", "OSM_NOT_CHECKED_3Y"))
         sims = [s for s in g["sim_category"].dropna().unique() if s]
-        cats = list(dict.fromkeys(g["category"]))
+        # category: prefer what the place itself shows (map, registers) over the company's SIC code
+        cats = list(dict.fromkeys(list(g[g["source"] != "ch"]["category"]) + list(ch["category"])))
+        chx = json.loads(ch.iloc[0]["extra"]) if len(ch) else {}
         pick = lambda col: next((v for v in g[col] if isinstance(v, str) and v), "")
-        name_src = next((r for _, r in g.iterrows() if r["source"] in ("nhs_ods", "ofsted", "fsa")), best)
+        name_src = next((r for _, r in g.iterrows() if r["source"] in ("nhs_ods", "ofsted", "fsa")),
+                        next((r for _, r in g.iterrows() if r["source"] != "ch"), best))
         rows.append({
             "place_id": f"P{pid:05d}", "name": name_src["name"], "category": cats[0], "all_categories": "|".join(cats),
             "sim_category": sims[0] if sims else "", "lat": None if pd.isna(best["lat"]) else round(float(best["lat"]), 6),
@@ -570,6 +659,11 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
             "sources": "|".join(SRC_LABEL[s] for s in srcs), "n_sources": len(srcs),
             "names_seen": " | ".join(dict.fromkeys(g["name"])), "inside_city": inside,
             "confidence": max(0, min(100, conf)), "flags": ";".join(flags),
+            "industry_group": INDUSTRY_GROUP.get(cats[0], "Other"),
+            "customer_facing": INDUSTRY_GROUP.get(cats[0], "Other") in CUSTOMER_FACING_GROUPS,
+            "company_number": chx.get("company_number", ""), "company_name": ch.iloc[0]["name"] if len(ch) else "",
+            "company_type": chx.get("company_type", ""), "sic_codes": chx.get("sic_codes", ""),
+            "industry": chx.get("industry", ""), "incorporated": ch.iloc[0]["record_date"] if len(ch) else "",
             "google_maps_url": (f"https://www.google.com/maps/search/?api=1&query={best['lat']:.6f},{best['lon']:.6f}"
                                 if pd.notna(best["lat"]) else ""),
             "google_maps_search": "https://www.google.com/maps/search/?api=1&query=" + requests.utils.quote(
@@ -1014,6 +1108,17 @@ def main(argv=None):
             print(f"   {key} FAILED: {ex}. Continuing without it.")
     if not parts:
         sys.exit("No source loaded.")
+    register = None
+    if a.ch_file:
+        register = parse_ch_search_csv(a.ch_file)
+    elif a.ch_key and a.ch_mode == "advanced":
+        try:
+            register = fetch_ch_advanced(a.ch_key)
+        except Exception as ex:
+            print(f"   Companies House FAILED: {ex}. Continuing without it.")
+    if register is not None:
+        parts.append(ch_records(register))
+        print(f"   companies: {len(register)} records")
     recs = pd.concat(parts, ignore_index=True)
     # keep only records near the city (bbox), plus register records that only have a postcode
     recs = recs[recs["lat"].isna() | (recs["lat"].between(bbox[0], bbox[2]) & recs["lon"].between(bbox[1], bbox[3]))]
@@ -1028,12 +1133,8 @@ def main(argv=None):
                                for f, pid in zip(places["flags"], places["place_id"])]
             places["google_checked"] = places["place_id"].isin(gc["place_id"])
     companies = None
-    register = None
-    if a.ch_file:
-        register = parse_ch_search_csv(a.ch_file)
-        pcs.update(postcode_lookup(register["postcode"].tolist(), a.offline))
-    if a.ch_key or a.ch_bulk or register is not None:
-        companies = companies_house(places, a.ch_key, a.ch_bulk, a.ch_limit, a.ch_mode, register=register)
+    if a.ch_bulk or (a.ch_key and a.ch_mode == "search"):  # extra links for companies registered elsewhere (chains)
+        companies = companies_house(places, a.ch_key, a.ch_bulk, a.ch_limit, a.ch_mode)
         if len(companies) and "company_number" in companies:
             m = companies[companies["ch_status"] == "matched"].set_index("place_id")
             for col in ("company_number", "company_name", "company_status", "sic_codes", "accounts_type",
@@ -1042,15 +1143,6 @@ def main(argv=None):
             cf = m["company_flags"].fillna("") if "company_flags" in m else pd.Series(dtype=str)
             places["flags"] = [";".join(sorted(set(filter(None, (f + ";" + cf.get(pid, "")).split(";")))))
                                for f, pid in zip(places["flags"], places["place_id"])]
-    if register is None and (DB / "companies_register.csv").exists() and a.ch_key:
-        register = pd.read_csv(DB / "companies_register.csv", dtype=str).fillna("")
-        register["industry"] = register["sic_codes"].map(lambda s: "; ".join(dict.fromkeys(SIC_DIVISIONS.get(c[:2], c) for c in s.split("|") if c)))
-        register["customer_facing"] = register["sic_codes"].map(lambda s: any(c[:2] in CUSTOMER_FACING for c in s.split("|") if c))
-        pcs.update(postcode_lookup(register["postcode"].tolist(), a.offline))
-    if register is not None:
-        comp, addrs = company_tables(register, pcs, polys, companies)
-        comp.to_csv(DB / "companies.csv", index=False)
-        addrs.to_csv(DB / "company_addresses.csv", index=False)
     summary = save(places, recs, companies=companies)
     print(json.dumps({k: v for k, v in summary.items() if k != "sources"}, indent=1, default=str))
     print(f"Saved data/db/places.csv ({len(places)} places), source_records.csv, places.sqlite, summary.json")

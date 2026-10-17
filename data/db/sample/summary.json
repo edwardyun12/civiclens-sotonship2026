@@ -1,51 +1,76 @@
 {
- "built": "2026-10-17 20:30 UTC",
- "places": 324,
- "source_records": 382,
+ "built": "2026-10-17 20:43 UTC",
+ "places": 5376,
+ "source_records": 5444,
  "records_by_source": {
-  "osm": 278,
-  "nhs_ods": 104
+  "ch": 5000,
+  "osm": 304,
+  "nhs_ods": 140
  },
  "places_by_category": {
-  "restaurant_cafe": 153,
-  "gp": 64,
-  "pharmacy": 58,
-  "nursery": 33,
-  "library": 14,
+  "construction": 622,
+  "professional": 573,
+  "property": 466,
+  "business_services": 387,
+  "it_tech": 319,
+  "other": 275,
+  "transport_logistics": 264,
+  "shop_other": 248,
+  "restaurant_cafe": 246,
+  "finance": 222,
+  "manufacturing": 212,
+  "health_other": 134,
+  "dormant": 132,
+  "wholesale": 122,
+  "personal_services": 114,
+  "motor": 114,
+  "leisure": 103,
+  "gp": 97,
+  "pharmacy": 95,
+  "hair_beauty": 79,
+  "education": 65,
+  "takeaway": 64,
+  "utilities_primary": 64,
+  "nursery": 51,
+  "care_childcare_health": 46,
+  "other_catering": 44,
+  "pub_bar": 40,
+  "supermarket": 35,
+  "community": 32,
+  "hotel": 29,
+  "food_manufacturer": 23,
+  "shop_food": 22,
+  "dentist": 18,
+  "library": 17,
   "coworking": 2
  },
  "places_by_n_sources": {
-  "1": 266,
-  "2": 58
+  "1": 5309,
+  "2": 66,
+  "3": 1
  },
  "flags": {
-  "SINGLE_SOURCE": 266,
-  "OUTSIDE_CITY": 81,
-  "COORDS_FROM_POSTCODE_ONLY": 46,
-  "NAME_DIFFERS_BETWEEN_SOURCES": 11,
-  "POSSIBLE_DUPLICATE": 10,
-  "COMPANY_REGISTERED_ELSEWHERE": 9,
-  "COMPANY_SIC_DOESNT_FIT_TYPE": 1
+  "SINGLE_SOURCE": 5309,
+  "COORDS_FROM_POSTCODE_ONLY": 5072,
+  "REGISTERED_OFFICE_ONLY": 4993,
+  "COORDS_FROM_2017_POSTCODE_FILE": 4691,
+  "OUTSIDE_CITY": 2696,
+  "SHARED_ADDRESS_5PLUS": 970,
+  "NOT_IN_SOUTHAMPTON": 372,
+  "NO_COORDINATES": 167,
+  "DORMANT_OR_NON_TRADING": 132,
+  "POSSIBLE_DUPLICATE": 127,
+  "NAME_DIFFERS_BETWEEN_SOURCES": 11
  },
- "inside_city": 243,
- "company_links": {
-  "no_match": 236,
-  "matched": 10
- },
+ "inside_city": 2680,
+ "company_links": {},
  "sources": {
   "ch_file": {
    "title": "Companies House advanced search download (5000 rows; the website caps downloads at 5,000)",
    "url": "https://find-and-update.company-information.service.gov.uk/advanced-search",
    "licence": "Companies House public register",
-   "downloaded": "2026-10-17 20:30 UTC",
+   "downloaded": "2026-10-17 20:42 UTC",
    "rows": 5000
-  },
-  "companies_house": {
-   "title": "Companies House advanced search (active, registered in Southampton)",
-   "url": "https://api.company-information.service.gov.uk",
-   "licence": "Companies House public register; company-level facts only, no personal data stored",
-   "downloaded": "2026-10-17 20:30 UTC",
-   "rows": 246
   },
   "osm": {
    "title": "OpenStreetMap facilities (Overpass API, OSM data as of 2026-10-17T17:31:06Z)",
@@ -72,23 +97,21 @@
    "title": "UK postcode coordinates as of Oct 2017 (github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv), PREVIEW ONLY; the PC run uses live postcodes.io",
    "url": "https://github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv",
    "licence": "Derived from ONS/OS open postcode data (OGL); check before reuse",
-   "downloaded": "2026-10-17 20:30 UTC",
-   "rows": 2362
+   "downloaded": "2026-10-17 20:43 UTC",
+   "rows": 2415
   }
  },
- "companies": 5000,
- "company_addresses": 3724,
- "company_flags": {
-  "REGISTERED_OFFICE_ONLY": 5000,
-  "COORDS_FROM_2017_POSTCODE_FILE": 4855,
-  "OUTSIDE_CITY": 2043,
-  "SHARED_ADDRESS_5PLUS": 970,
-  "BUSY_POSTCODE": 449,
-  "NOT_IN_SOUTHAMPTON": 372,
-  "DORMANT_OR_NON_TRADING": 135,
-  "POSTCODE_NOT_FOUND": 133,
-  "NO_POSTCODE": 12
- },
- "companies_inside_city": 2441,
- "companies_linked_to_places": 10
+ "places_by_industry_group": {
+  "Business and professional": 2091,
+  "Industry, construction and transport": 1299,
+  "Food and drink": 394,
+  "Health": 344,
+  "Retail": 305,
+  "Other": 275,
+  "Personal services": 193,
+  "Childcare, education and care": 162,
+  "Leisure and hospitality": 132,
+  "Dormant or non-trading": 132,
+  "Community and culture": 49
+ }
 }
