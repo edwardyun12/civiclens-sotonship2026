@@ -1,0 +1,70 @@
+{
+  "dataset": "places",
+  "computed_with": "JS port of src/engine.py (matches Python on 49/49 checks); rerun python -m tests.run_evaluation to regenerate",
+  "baseline_cases": 10,
+  "baseline_differs": 5,
+  "people_gained_vs_baseline_total": 9403,
+  "optimiser": {
+    "nursery": {
+      "seconds": 0.018,
+      "coverage_before_pct": 60.2,
+      "coverage_after_top3_pct": 76.7,
+      "top3_wards": [
+        "Sholing",
+        "Bevois",
+        "Millbrook"
+      ]
+    },
+    "gp": {
+      "seconds": 0.009,
+      "coverage_before_pct": 83.1,
+      "coverage_after_top3_pct": 91.1,
+      "top3_wards": [
+        "Redbridge",
+        "Sholing",
+        "Bassett"
+      ]
+    },
+    "pharmacy": {
+      "seconds": 0.004,
+      "coverage_before_pct": 86.0,
+      "coverage_after_top3_pct": 92.8,
+      "top3_wards": [
+        "Sholing",
+        "Bassett",
+        "Woolston"
+      ]
+    },
+    "cafe": {
+      "seconds": 0.006,
+      "coverage_before_pct": 79.4,
+      "coverage_after_top3_pct": 89.0,
+      "top3_wards": [
+        "Sholing",
+        "Coxford",
+        "Woolston"
+      ]
+    },
+    "library": {
+      "seconds": 0.026,
+      "coverage_before_pct": 43.7,
+      "coverage_after_top3_pct": 59.7,
+      "top3_wards": [
+        "Freemantle",
+        "Redbridge",
+        "Sholing"
+      ]
+    }
+  },
+  "sites": {
+    "nursery": 40,
+    "gp": 53,
+    "pharmacy": 55,
+    "cafe": 171,
+    "library": 17
+  },
+  "city_centre_cafe": {
+    "coverage_change_pct_points": 0,
+    "competitors_within_400m": 32
+  }
+}

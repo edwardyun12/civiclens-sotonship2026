@@ -1,10 +1,10 @@
 {
- "built": "2026-10-17 20:43 UTC",
- "places": 5376,
- "source_records": 5444,
+ "built": "2026-10-17 20:55 UTC",
+ "places": 5381,
+ "source_records": 5452,
  "records_by_source": {
   "ch": 5000,
-  "osm": 304,
+  "osm": 312,
   "nhs_ods": 140
  },
  "places_by_category": {
@@ -15,8 +15,8 @@
   "it_tech": 319,
   "other": 275,
   "transport_logistics": 264,
+  "restaurant_cafe": 248,
   "shop_other": 248,
-  "restaurant_cafe": 246,
   "finance": 222,
   "manufacturing": 212,
   "health_other": 134,
@@ -26,12 +26,12 @@
   "motor": 114,
   "leisure": 103,
   "gp": 97,
-  "pharmacy": 95,
+  "pharmacy": 93,
   "hair_beauty": 79,
   "education": 65,
   "takeaway": 64,
   "utilities_primary": 64,
-  "nursery": 51,
+  "nursery": 56,
   "care_childcare_health": 46,
   "other_catering": 44,
   "pub_bar": 40,
@@ -45,31 +45,32 @@
   "coworking": 2
  },
  "places_by_n_sources": {
-  "1": 5309,
-  "2": 66,
+  "1": 5311,
+  "2": 69,
   "3": 1
  },
  "flags": {
-  "SINGLE_SOURCE": 5309,
-  "COORDS_FROM_POSTCODE_ONLY": 5072,
+  "SINGLE_SOURCE": 5311,
+  "COORDS_FROM_POSTCODE_ONLY": 5069,
   "REGISTERED_OFFICE_ONLY": 4993,
   "COORDS_FROM_2017_POSTCODE_FILE": 4691,
-  "OUTSIDE_CITY": 2696,
+  "OUTSIDE_CITY": 2697,
   "SHARED_ADDRESS_5PLUS": 970,
   "NOT_IN_SOUTHAMPTON": 372,
   "NO_COORDINATES": 167,
+  "POSSIBLE_DUPLICATE": 139,
   "DORMANT_OR_NON_TRADING": 132,
-  "POSSIBLE_DUPLICATE": 127,
-  "NAME_DIFFERS_BETWEEN_SOURCES": 11
+  "NAME_DIFFERS_BETWEEN_SOURCES": 9,
+  "TYPE_CONFLICT": 1
  },
- "inside_city": 2680,
+ "inside_city": 2684,
  "company_links": {},
  "sources": {
   "ch_file": {
    "title": "Companies House advanced search download (5000 rows; the website caps downloads at 5,000)",
    "url": "https://find-and-update.company-information.service.gov.uk/advanced-search",
    "licence": "Companies House public register",
-   "downloaded": "2026-10-17 20:42 UTC",
+   "downloaded": "2026-10-17 20:54 UTC",
    "rows": 5000
   },
   "osm": {
@@ -97,19 +98,19 @@
    "title": "UK postcode coordinates as of Oct 2017 (github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv), PREVIEW ONLY; the PC run uses live postcodes.io",
    "url": "https://github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv",
    "licence": "Derived from ONS/OS open postcode data (OGL); check before reuse",
-   "downloaded": "2026-10-17 20:43 UTC",
+   "downloaded": "2026-10-17 20:55 UTC",
    "rows": 2415
   }
  },
  "places_by_industry_group": {
   "Business and professional": 2091,
   "Industry, construction and transport": 1299,
-  "Food and drink": 394,
-  "Health": 344,
+  "Food and drink": 396,
+  "Health": 342,
   "Retail": 305,
   "Other": 275,
   "Personal services": 193,
-  "Childcare, education and care": 162,
+  "Childcare, education and care": 167,
   "Leisure and hospitality": 132,
   "Dormant or non-trading": 132,
   "Community and culture": 49

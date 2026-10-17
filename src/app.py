@@ -29,13 +29,19 @@ st.set_page_config(page_title="Southampton Planning Simulator", page_icon="ðŸ—ºï
 
 # ------------------------------------------------------------------ data
 @st.cache_resource(show_spinner="Loading Southampton data...")
-def city() -> E.City:
-    c = E.load_city()
+def city(dataset: str) -> E.City:
+    c = E.load_city(dataset=dataset)
     _ = c.cand_dist  # build the distance cache once
     return c
 
 
-CITY = city()
+DATASET_LABELS = {"places": "Places database (merged registers)", "baseline": "17 Oct baseline (published test numbers)"}
+dataset = st.sidebar.radio("Existing sites from", list(DATASET_LABELS), format_func=DATASET_LABELS.get)
+CITY = city(dataset)
+if CITY.dataset != dataset:
+    st.sidebar.warning("No places database built yet (run python -m src.build_places); using the 17 Oct baseline.")
+st.sidebar.caption("Sites: " + ", ".join(f"{len(CITY.facilities(k))} {v['label'].lower()}"
+                                         for k, v in C.CATEGORIES.items()))
 CATS = {k: v["label"] for k, v in C.CATEGORIES.items() if len(CITY.facilities(k)) >= 1}
 WARDS = sorted(CITY.oa.ward.unique())
 
