@@ -28,3 +28,14 @@ Output: a decision brief, evidence trail and recommendations for human review.
 
 
 ## Feature Ideas
+
+## Module C: planning scenario simulator (branch `feature/simulator`)
+
+Where should the next nursery, GP, pharmacy, café or library go in Southampton, and who benefits?
+Setup, data sources and licences, what the AI does, test results and known limits are in
+[docs/SIMULATOR.md](docs/SIMULATOR.md).
+
+```bash
+pip install -r requirements.txt
+streamlit run src/app.py
+```

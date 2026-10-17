@@ -1,0 +1,11 @@
+case,use,wards,newly_covered,competitors_400m,most_deprived_40pct_newly,our_pick,baseline_pick,differs,people_gained_vs_baseline
+1,cafe,Bargate / Portswood / Redbridge,0 / 0 / 6100,16 / 7 / 0,0 / 0 / 6100,Redbridge,Redbridge,False,0
+2,cafe,Bevois / Shirley / Sholing,0 / 0 / 6562,2 / 4 / 0,0 / 0 / 3385,Sholing,Sholing,False,0
+3,nursery,Bargate / Bevois / Sholing,54 / 704 / 502,1 / 0 / 0,54 / 658 / 283,Bevois,Bevois,False,0
+4,nursery,Portswood / Millbrook / Woolston,275 / 340 / 294,0 / 0 / 0,174 / 131 / 294,Millbrook,Portswood,True,65
+5,gp,Bargate / Redbridge / Coxford,0 / 7653 / 1434,1 / 0 / 0,0 / 7653 / 334,Redbridge,Redbridge,False,0
+6,gp,Swaythling / Harefield / Peartree,0 / 351 / 3123,2 / 0 / 0,0 / 0 / 2213,Peartree,Harefield,True,2772
+7,pharmacy,Bevois / Bitterne Park / Coxford,0 / 341 / 1100,0 / 1 / 0,0 / 0 / 0,Coxford,Bevois,True,1100
+8,pharmacy,Freemantle / Bassett / Woolston,2127 / 4777 / 300,0 / 0 / 1,2127 / 0 / 300,Bassett,Freemantle,True,2650
+9,library,Bargate / Peartree / Redbridge,8923 / 9775 / 10793,0 / 0 / 0,5719 / 7210 / 10793,Redbridge,Bargate,True,1870
+10,library,Bitterne / Freemantle / Swaythling,3860 / 14533 / 8263,1 / 0 / 0,3335 / 10406 / 7363,Freemantle,Freemantle,False,0
