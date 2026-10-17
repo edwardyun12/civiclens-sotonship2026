@@ -36,6 +36,7 @@ Output: a decision brief, evidence trail and recommendations for human review.
 │   │   └── project/        # Internal project material
 │   └── processed/          # Generated indexes; excluded from Git
 ├── src/sotonship_rag/
+│   ├── api.py              # FastAPI bridge for the React experience
 │   ├── cli.py              # Command-line entry point
 │   ├── config.py           # Models, Ollama URL, and paths
 │   ├── documents.py        # PDF/text loading and chunking
@@ -45,6 +46,7 @@ Output: a decision brief, evidence trail and recommendations for human review.
 │   ├── ollama.py           # Local Ollama client
 │   ├── retriever.py        # Relevant-chunk retrieval
 │   └── web.py              # Streamlit chat interface
+├── src/front-end/           # Vite + React opportunity dashboard
 ├── tests/                  # Automated tests
 ├── pyproject.toml          # Package metadata and CLI definition
 └── requirements.txt        # Runtime dependencies
@@ -93,3 +95,22 @@ streamlit run src/sotonship_rag/web.py
 
 Then open `http://localhost:8501`. The sidebar shows the active local models,
 index size, retrieval depth, and controls for rebuilding the document index.
+
+## React dashboard
+
+Run the local RAG API and React application in separate terminals after Ollama
+is available:
+
+```bash
+# Terminal 2 — from the repository root
+source .venv/bin/activate
+sotonship-api
+
+# Terminal 3
+cd src/front-end
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. The Vite development server proxies `/api`
+requests to the local FastAPI service at `http://127.0.0.1:8000`.
