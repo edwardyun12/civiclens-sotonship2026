@@ -18,3 +18,7 @@ logs/
 
 .DS_Store
 Thumbs.db
+
+# places database: raw downloads are large or re-fetchable; Google results must not be shipped
+data/db/raw/
+data/db/google_check.csv
