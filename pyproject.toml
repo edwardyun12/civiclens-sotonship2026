@@ -9,7 +9,9 @@ description = "Local RAG prototype for the Southampton Opportunity Engine"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "numpy>=2,<3",
     "pypdf>=5,<7",
+    "rank-bm25>=0.2.2,<1",
     "streamlit>=1.40,<2",
 ]
 
