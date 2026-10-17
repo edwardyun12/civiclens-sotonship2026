@@ -112,8 +112,8 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 
 ## Known limits and failures
 
-- **Straight-line distance crosses rivers.** A site on the east bank of the Itchen "covers" homes on the west
-  bank with no bridge nearby. Network walking distance (OSMnx) is the fix.
+- **Straight-line distance ignores barriers** such as the River Itchen, railways and main roads, so it overstates
+  who can walk to a site, most where crossings are far apart. Network walking distance (OSMnx) is the fix.
 - **The city boundary follows the waterfront**, so many sites show a "near the boundary" caveat. Residents
   just outside the city (Eastleigh, Totton) are not counted as demand, though facilities outside the city are.
 - **Nurseries come from OpenStreetMap**, which likely undercounts childcare. The Ofsted register would be
