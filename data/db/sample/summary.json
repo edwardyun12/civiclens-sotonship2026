@@ -1,6 +1,6 @@
 {
- "built": "2026-10-17 21:55 UTC",
- "places": 2765,
+ "built": "2026-10-17 22:03 UTC",
+ "places": 2767,
  "source_records": 5452,
  "records_by_source": {
   "ch": 5000,
@@ -19,8 +19,8 @@
   "other": 100,
   "finance": 91,
   "manufacturing": 89,
+  "gp": 86,
   "pharmacy": 84,
-  "gp": 84,
   "health_other": 75,
   "motor": 62,
   "personal_services": 58,
@@ -44,24 +44,23 @@
   "coworking": 2
  },
  "places_by_n_sources": {
-  "1": 2696,
-  "2": 68,
+  "1": 2697,
+  "2": 69,
   "3": 1
  },
  "flags": {
-  "SINGLE_SOURCE": 2696,
-  "COORDS_FROM_POSTCODE_ONLY": 2459,
+  "SINGLE_SOURCE": 2697,
+  "COORDS_FROM_POSTCODE_ONLY": 2458,
   "REGISTERED_OFFICE_ONLY": 2382,
   "COORDS_FROM_2017_POSTCODE_FILE": 2231,
   "SHARED_ADDRESS_5PLUS": 468,
-  "OUTSIDE_CITY": 139,
-  "POSSIBLE_DUPLICATE": 49,
+  "OUTSIDE_CITY": 140,
+  "POSSIBLE_DUPLICATE": 54,
   "NO_COORDINATES": 22,
-  "NAME_DIFFERS_BETWEEN_SOURCES": 9,
-  "MERGED_DUPLICATE": 6,
-  "TYPE_CONFLICT": 1
+  "NAME_DIFFERS_BETWEEN_SOURCES": 10,
+  "MERGED_DUPLICATE": 3
  },
- "inside_city": 2626,
+ "inside_city": 2627,
  "excluded": {
   "Company registered outside the Southampton city boundary": 2129,
   "Not in Southampton (the address only contains the word Southampton, e.g. Southampton Row, London)": 372,
@@ -73,7 +72,7 @@
    "title": "Companies House advanced search download (5000 rows; the website caps downloads at 5,000)",
    "url": "https://find-and-update.company-information.service.gov.uk/advanced-search",
    "licence": "Companies House public register",
-   "downloaded": "2026-10-17 21:53 UTC",
+   "downloaded": "2026-10-17 22:02 UTC",
    "rows": 5000
   },
   "osm": {
@@ -101,7 +100,7 @@
    "title": "UK postcode coordinates as of Oct 2017 (github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv), PREVIEW ONLY; the PC run uses live postcodes.io",
    "url": "https://github.com/dwyl/uk-postcodes-latitude-longitude-complete-csv",
    "licence": "Derived from ONS/OS open postcode data (OGL); check before reuse",
-   "downloaded": "2026-10-17 21:55 UTC",
+   "downloaded": "2026-10-17 22:03 UTC",
    "rows": 2415
   }
  },
@@ -109,7 +108,7 @@
   "Business and professional": 2091,
   "Industry, construction and transport": 1299,
   "Food and drink": 395,
-  "Health": 340,
+  "Health": 342,
   "Retail": 305,
   "Other": 275,
   "Personal services": 193,

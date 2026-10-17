@@ -119,14 +119,16 @@ GENERIC = {"surgery", "practice", "pharmacy", "chemist", "chemists", "gp", "heal
            "pre", "school", "preschool", "library", "store"}
 
 
-def name_sim(a, b) -> float:
+def name_sim(a, b, same_type: bool = True) -> float:
+    """0-1. Generic words ("surgery", "pharmacy"...) are ignored only when both records are the same type of
+    business, so "Bitterne Pharmacy" never matches "Bitterne Surgery"."""
     a, b = norm_name(a), norm_name(b)
     if not a or not b:
         return 0.0
     if a == b or (len(a) > 4 and a in b) or (len(b) > 4 and b in a):
-        return 1.0
+        return 1.0 if same_type or a == b else 0.6
     ca, cb = set(a.split()) - GENERIC, set(b.split()) - GENERIC
-    if ca and ca == cb:  # same distinctive words, e.g. "Portswood Solent Surgery" / "Solent GP Surgery Portswood"
+    if same_type and ca and ca == cb:  # same distinctive words, e.g. "Portswood Solent Surgery" / "Solent GP Surgery Portswood"
         return 0.9
     ta, tb = set(a.split()), set(b.split())
     jac = len(ta & tb) / len(ta | tb)
@@ -451,6 +453,8 @@ def match(recs: pd.DataFrame) -> pd.Series:
 
     lat, lon = recs["lat"].to_numpy(), recs["lon"].to_numpy()
     src, names, pcs = recs["source"].to_numpy(), recs["name"].to_numpy(), recs["postcode"].to_numpy()
+    # "same type" = same simulator use, or same category; companies (SIC-based) count as compatible with anything
+    typ = recs["category"].fillna("").astype(str).to_numpy()
     order = sorted(range(n), key=lambda i: lat[i])  # sweep by latitude
     cands, dups = [], []
     dlat = MATCH_FAR_M / 111_000
@@ -462,14 +466,17 @@ def match(recs: pd.DataFrame) -> pd.Series:
             if src[a] == src[b]:
                 # the same business entered twice in one register (map or hygiene list): merge it.
                 # Never for Companies House or NHS: two records there are two legal entities / organisations.
-                if src[a] in DEDUP_SOURCES and d <= DUP_M and name_sim(names[a], names[b]) >= 0.9:
+                if (src[a] in DEDUP_SOURCES and d <= DUP_M and typ[a] == typ[b]
+                        and name_sim(names[a], names[b]) >= 0.9):
                     dups.append((a, b))
                 continue
             if d > MATCH_FAR_M:
                 continue
-            s = name_sim(names[a], names[b])
+            same_type = typ[a] == typ[b] or "ch" in (src[a], src[b])
+            s = name_sim(names[a], names[b], same_type)
             same_pc = pcs[a] and pcs[a] == pcs[b]
-            near_ok = d <= MATCH_NEAR_M and s >= MATCH_NEAR_SIM and "ch" not in (src[a], src[b])
+            # loose name match only for the same type of business; different types need near-identical names
+            near_ok = d <= MATCH_NEAR_M and s >= MATCH_NEAR_SIM and "ch" not in (src[a], src[b]) and typ[a] == typ[b]
             if near_ok or (s >= MATCH_FAR_SIM and (d <= MATCH_FAR_M or same_pc)):
                 cands.append((d / MATCH_FAR_M - s, a, b))  # best pairs first
     # merge best pairs first; keep at most one record per source in a place
@@ -491,11 +498,34 @@ DEDUP_SOURCES, DUP_M = {"osm", "fsa"}, 30
 COORD_RANK = {"osm_mapped": 0, "osm_building_centre": 1, "fsa_geocode": 2, "postcode_centre": 3}
 SRC_LABEL = {"fsa": "FSA", "osm": "OSM", "nhs_ods": "NHS ODS", "ofsted": "Ofsted", "ch": "Companies House"}
 
+# Which source's name is used when sources disagree (lower = more reliable for the name people see).
+# Statutory registers first: the regulator holds the current registered name and must be told of changes
+# (NHS ODS for GPs and pharmacies, Ofsted for childcare, the council's food hygiene register for food businesses).
+# OpenStreetMap is volunteer-edited and can lag a rebrand or closure (e.g. old "Lloyds Pharmacy" names).
+# Companies House is the legal entity's name ("X LIMITED"), not the name over the door, so it is used only
+# when nothing else names the place; it is always kept in company_name.
+NAME_PRIORITY = {"nhs_ods": 0, "ofsted": 0, "fsa": 1, "osm": 2, "ch": 3}
+_KEEP_UPPER = {"UK", "GP", "NHS", "IT", "TV", "BBC", "BMW", "PC", "CIC", "LLP", "PLC", "HR", "UKCC", "SO"}
+
+
+def display_name(name: str, source: str) -> str:
+    """Companies House names are in capitals; show them in title case (keeping known acronyms)."""
+    name = str(name or "").strip()
+    if source != "ch" or not name.isupper():
+        return name
+    words = []
+    for w in name.split():
+        core = re.sub(r"[^A-Z]", "", w)
+        keep = core in _KEEP_UPPER or (len(core) <= 3 and "." in w)
+        words.append(w if keep else re.sub(r"[a-z]", lambda m: m.group().upper(), w.lower(), count=1))
+    return " ".join(words).replace("Limited", "Ltd").replace("Ltd.", "Ltd")
+
+
 # Confidence penalty per flag (points off a 0-100 score). Every problem flag costs something.
 PENALTY = {
     "NOT_IN_SOUTHAMPTON": 25, "DORMANT_OR_NON_TRADING": 25, "NO_COORDINATES": 20,
     "SOURCES_DISAGREE_ON_LOCATION": 15, "TYPE_CONFLICT": 15, "FAR_FROM_OWN_POSTCODE": 15, "POSTCODE_INVALID": 15,
-    "NAME_DIFFERS_BETWEEN_SOURCES": 10, "POSTCODE_TERMINATED": 10, "POSSIBLE_DUPLICATE": 10, "OSM_NOT_CHECKED_3Y": 10,
+    "NAME_DIFFERS_BETWEEN_SOURCES": 5,  # resolved by NAME_PRIORITY; the small penalty marks a possible rebrand "POSTCODE_TERMINATED": 10, "POSSIBLE_DUPLICATE": 10, "OSM_NOT_CHECKED_3Y": 10,
     "SHARED_ADDRESS_5PLUS": 10, "COMPANY_SIC_DOESNT_FIT_TYPE": 10, "COMPANY_REGISTERED_ELSEWHERE": 5,
     "COORDS_FROM_2017_POSTCODE_FILE": 5, "FSA_INSPECTION_OVER_4Y": 5, "FSA_RATING_PENDING": 0,
 }
@@ -693,10 +723,16 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
         cats = list(dict.fromkeys(list(g[g["source"] != "ch"]["category"]) + list(ch["category"])))
         chx = json.loads(ch.iloc[0]["extra"]) if len(ch) else {}
         pick = lambda col: next((v for v in g[col] if isinstance(v, str) and v), "")
-        name_src = next((r for _, r in g.iterrows() if r["source"] in ("nhs_ods", "ofsted", "fsa")),
-                        next((r for _, r in g.iterrows() if r["source"] != "ch"), best))
+        name_src = min((r for _, r in g.iterrows()), key=lambda r: NAME_PRIORITY.get(r["source"], 9))
+        # a bare brand from a register ("Well") gives way to a fuller name that contains it ("Well Pharmacy")
+        if len(norm_name(name_src["name"]).split()) == 1:
+            fuller = [r for _, r in g.iterrows() if r["source"] != "ch" and len(norm_name(r["name"])) > len(norm_name(name_src["name"]))
+                      and norm_name(name_src["name"]) in norm_name(r["name"]).split()]
+            if fuller:
+                name_src = fuller[0]
         rows.append({
-            "place_id": f"P{pid:05d}", "name": name_src["name"], "category": cats[0], "all_categories": "|".join(cats),
+            "place_id": f"P{pid:05d}", "name": display_name(name_src["name"], name_src["source"]),
+            "name_source": SRC_LABEL[name_src["source"]], "category": cats[0], "all_categories": "|".join(cats),
             "sim_category": sims[0] if sims else "", "lat": None if pd.isna(best["lat"]) else round(float(best["lat"]), 6),
             "lon": None if pd.isna(best["lon"]) else round(float(best["lon"]), 6), "coord_source": SRC_LABEL[best["source"]],
             "coord_method": best["coord_method"], "location_spread_m": round(spread), "address": pick("address"),

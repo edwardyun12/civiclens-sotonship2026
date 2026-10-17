@@ -6,7 +6,7 @@
   "people_gained_vs_baseline_total": 9403,
   "optimiser": {
     "nursery": {
-      "seconds": 0.033,
+      "seconds": 0.032,
       "coverage_before_pct": 60.2,
       "coverage_after_top3_pct": 76.7,
       "top3_wards": [
@@ -16,7 +16,7 @@
       ]
     },
     "gp": {
-      "seconds": 0.013,
+      "seconds": 0.017,
       "coverage_before_pct": 83.1,
       "coverage_after_top3_pct": 91.1,
       "top3_wards": [
@@ -26,17 +26,17 @@
       ]
     },
     "pharmacy": {
-      "seconds": 0.009,
-      "coverage_before_pct": 85.9,
-      "coverage_after_top3_pct": 92.8,
+      "seconds": 0.007,
+      "coverage_before_pct": 86.3,
+      "coverage_after_top3_pct": 93.1,
       "top3_wards": [
-        "Bassett",
         "Sholing",
+        "Bassett",
         "Woolston"
       ]
     },
     "cafe": {
-      "seconds": 0.014,
+      "seconds": 0.007,
       "coverage_before_pct": 79.4,
       "coverage_after_top3_pct": 89.0,
       "top3_wards": [
@@ -46,7 +46,7 @@
       ]
     },
     "library": {
-      "seconds": 0.027,
+      "seconds": 0.03,
       "coverage_before_pct": 43.7,
       "coverage_after_top3_pct": 59.7,
       "top3_wards": [
@@ -59,7 +59,7 @@
   "sites": {
     "nursery": 38,
     "gp": 53,
-    "pharmacy": 55,
+    "pharmacy": 56,
     "cafe": 170,
     "library": 17
   },
