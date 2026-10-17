@@ -50,6 +50,9 @@ button:hover, .filebtn:hover { border-color: var(--muted) }
 .flagopt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; font-size: .82rem; padding: 3px 4px; border-radius: 3px; cursor: pointer }
 .flagopt:hover { background: var(--chip) }
 .flagopt input { margin: 0 }
+.spech { display: flex; justify-content: space-between; gap: 6px; font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; color: var(--muted); padding: 6px 4px 2px; border: 0; background: none; text-align: left; cursor: pointer; width: 100% }
+.spech:hover { color: var(--ink) }
+.spech:first-child { padding-top: 0 }
 .flagopt .n { font-variant-numeric: tabular-nums; color: var(--muted) }
 .sev { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle }
 .sev.bad { background: var(--bad) } .sev.warn { background: var(--warn) } .sev.info { background: var(--muted) }
@@ -87,6 +90,21 @@ dt { color: var(--muted) } dd { margin: 0; overflow-wrap: anywhere }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper) }
 .maptools { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; z-index: 2 }
 .maptools .seg { background: var(--panel) }
+.seg button { padding: 7px 10px }
+.maptip { position: absolute; z-index: 3; pointer-events: none; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; font-size: .8rem; max-width: 260px; box-shadow: 0 2px 8px rgba(0,0,0,.12) }
+.maptip b { display: block; margin-bottom: 3px }
+.maptip .r { display: grid; grid-template-columns: 9px minmax(0,1fr) auto; gap: 6px; align-items: center }
+.maptip .r i, .legend i.sq { width: 9px; height: 9px; border-radius: 2px; display: inline-block }
+.bars { display: flex; flex-direction: column; gap: 2px }
+.bar { display: grid; grid-template-columns: minmax(0, 11rem) minmax(40px, 1fr) 2.6rem 4.6rem; gap: 8px; align-items: center; font-size: .84rem; padding: 3px 4px; border-radius: 3px; cursor: pointer }
+.bar:hover { background: var(--chip) }
+.bar > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.bar .track { height: 8px; background: var(--chip); border-radius: 2px; overflow: hidden }
+.bar .track i { display: block; height: 100%; border-radius: 0 4px 4px 0 }
+.bar .n { text-align: right; font-variant-numeric: tabular-nums }
+.bar .x { text-align: right; font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums }
+.bar .x.hi { color: var(--ink); font-weight: 700 }
+.legend .ramp { display: inline-block; width: 90px; height: 9px; border-radius: 2px; vertical-align: -1px; margin: 0 4px }
 button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600 }
 .opp { display: flex; flex-direction: column; gap: 8px }
 .opp .o { border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 2px 8px; font-size: .85rem; cursor: pointer }
@@ -128,14 +146,10 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
     <select id="grp"></select>
     <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="custp"> Only customer-facing (shops, food, health, care…)</label>
     <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="hidero"> Hide registered-office-only companies</label>
-    <label class="lbl" for="cat">Business type</label>
-    <select id="cat"></select>
-    <label class="lbl" for="sub">Detailed type</label>
-    <select id="sub"></select>
-    <label class="lbl" for="cfam">Cuisine family</label>
-    <select id="cfam"></select>
-    <label class="lbl" for="cui">Cuisine</label>
-    <select id="cui"></select>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><label class="lbl" for="spq">Detailed type</label><button id="clear-spec" style="font-size:.78rem;padding:2px 6px">Clear</button></div>
+    <input type="search" id="spq" placeholder="Find a type: bubble tea, Korean, barber…">
+    <p class="hint" id="spec-sel">Tick one or more. Click a heading to tick its whole group.</p>
+    <div class="flaglist" id="spec" role="group" aria-label="Detailed types"></div>
     <label class="lbl" for="src">Seen in</label>
     <select id="src"></select>
     <label class="lbl" for="conf">Minimum confidence: <span id="conf-v">0</span></label>
@@ -147,9 +161,11 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   </aside>
   <section class="mapwrap" aria-label="Map">
     <canvas id="map" aria-label="Map of places; click a dot to inspect it"></canvas>
-    <div class="maptools"><div class="seg" role="group" aria-label="Map view" style="width:200px"><button id="mv-pts" aria-pressed="true">Places</button><button id="mv-area" aria-pressed="false">Areas</button></div>
+    <div class="maptools"><div class="seg" role="group" aria-label="Map view" style="grid-template-columns:repeat(4,auto)"><button id="mv-pts" aria-pressed="true">Places</button><button id="mv-heat" aria-pressed="false">Heatmap</button><button id="mv-pop" aria-pressed="false">Popular</button><button id="mv-area" aria-pressed="false">Per 1,000</button></div>
+      <select id="popmode" hidden aria-label="What counts as popular" style="width:auto;background:var(--panel)"><option value="top">Most common type</option><option value="lq">Stands out vs city</option></select>
       <button id="opp" class="primary">Suggest spots to open</button></div>
     <div class="mapbtns"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit city" style="font-size:.7rem">FIT</button></div>
+    <div class="maptip" id="maptip" hidden></div>
     <div class="legend" id="legend"></div>
   </section>
 </div>
@@ -161,7 +177,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
       <div style="display:flex;gap:6px"><button id="copy-csv">Copy filtered rows as CSV</button><span class="hint" id="copy-msg"></span></div>
     </div>
     <div class="tablewrap"><table id="tbl"><thead><tr>
-      <th data-k="name">Name</th><th data-k="industry_group">Industry group</th><th data-k="category">Type</th><th data-k="postcode">Postcode</th><th data-k="sources">Sources</th>
+      <th data-k="name">Name</th><th data-k="industry_group">Industry group</th><th data-k="spec">Detailed type</th><th data-k="postcode">Postcode</th><th data-k="sources">Sources</th>
       <th data-k="confidence">Confidence</th><th data-k="flags">Flags</th></tr></thead><tbody></tbody></table></div>
   </section>
   <section class="card" id="detail" aria-live="polite"></section>
@@ -262,6 +278,9 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
       confidence: +p.confidence || 0, n_sources: +p.n_sources || 1, inside_city: String(p.inside_city).toLowerCase() === "true",
       flagList: (p.flags || "").split(";").filter(Boolean), customer_facing: String(p.customer_facing).toLowerCase() === "true",
       industry_group: p.industry_group || "Other" }));
+    // one detailed label per place (built in build_places.specialty_of); older files fall back to cuisine / subtype
+    for (const p of S.places) p.spec = p.specialty || p.cuisine || p.subtype || `${catLabel(p.category)} (no detail)`;
+    S.spec = new Set(); $("spq").value = "";
     S.atPoint = {}; for (const p of S.places) if (Number.isFinite(p.lat)) (S.atPoint[p.lat.toFixed(5) + "," + p.lon.toFixed(5)] ||= []).push(p);
     const grps = {}; for (const p of S.places) grps[p.industry_group] = (grps[p.industry_group] || 0) + 1;
     const gsel = $("grp"); gsel.innerHTML = ""; gsel.add(new Option(`All groups (${S.places.length})`, ""));
@@ -275,26 +294,22 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
     S.catOrder = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([c]) => c);
     S.color = {}; S.catOrder.forEach((c, i) => (S.color[c] = PALETTE[Math.min(i, PALETTE.length - 1)]));
     $("dataset-tag").textContent = label;
-    const cat = $("cat"); cat.innerHTML = ""; cat.add(new Option(`All types (${S.places.length})`, ""));
-    for (const c of S.catOrder) cat.add(new Option(`${catLabel(c)} (${cats[c]})`, c));
     const srcs = {}; for (const p of S.places) for (const s of (p.sources || "").split("|")) if (s) srcs[s] = (srcs[s] || 0) + 1;
     const src = $("src"); src.innerHTML = ""; src.add(new Option("Any register", ""));
     src.add(new Option("Two or more registers", "multi"));
     for (const [s, n] of Object.entries(srcs)) src.add(new Option(`${s} (${n})`, s));
-    refreshOptions("grp"); fit(); update();
+    fit(); update();
   }
 
   // ---------- filtering
-  function filtered() {
-    const q = $("q").value.trim().toLowerCase(), cat = $("cat").value, src = $("src").value, min = +$("conf").value, inside = $("inside").checked;
+  function filtered(skipSpec, skipWard) {
+    const q = $("q").value.trim().toLowerCase(), src = $("src").value, min = +$("conf").value, inside = $("inside").checked;
+    const grp = $("grp").value;
     return S.places.filter((p) => {
       if (inside && !p.inside_city) return false;
-      if (cat && p.category !== cat) return false;
-      const sub = $("sub").value, cfam = $("cfam").value, cui = $("cui").value;
-      if (sub && p.subtype !== sub) return false;
-      if (cfam && p.cuisine_family !== cfam) return false;
-      if (cui && p.cuisine !== cui) return false;
-      const grp = $("grp").value; if (grp && p.industry_group !== grp) return false;
+      if (!skipWard && S.ward && p.ward !== S.ward) return false;
+      if (grp && p.industry_group !== grp) return false;
+      if (!skipSpec && S.spec.size && !S.spec.has(p.spec)) return false;
       if ($("custp").checked && !p.customer_facing) return false;
       if ($("hidero").checked && p.flagList.includes("REGISTERED_OFFICE_ONLY")) return false;
       if (src === "multi" ? p.n_sources < 2 : src && !(p.sources || "").split("|").includes(src)) return false;
@@ -315,8 +330,8 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
     const rows = filtered();
     const [k, dir] = S.sort;
     rows.sort((a, b) => (typeof a[k] === "number" ? (a[k] - b[k]) : String(a[k]).localeCompare(String(b[k]))) * dir);
-    S.rows = rows;
-    stats(); flagList(rows); table(rows); draw(); detail(); legendArea();
+    S.rows = rows; S.rowsArea = S.ward ? filtered(false, true) : rows;  // ward colours always compare the whole city
+    stats(); flagList(rows); specList(); table(rows); draw(); detail(); legendArea();
   }
 
   function stats() {
@@ -351,11 +366,11 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   const pills = (fl) => fl.filter((f) => f !== "SINGLE_SOURCE" && f !== "OUTSIDE_CITY").map((f) => `<span class="pill ${sev(f)}" title="${esc((FLAGS[f] || [, f])[1])}">${esc(f.replace(/_/g, " ").toLowerCase())}</span>`).join("");
 
   function table(rows) {
-    $("count").textContent = `${fmt(rows.length)} shown`;
+    $("count").innerHTML = `${fmt(rows.length)} shown${S.ward ? ` in <b>${esc(S.ward)}</b> <button data-unward style="font-size:.75rem;padding:1px 6px">× whole city</button>` : ""}`;
     const show = rows.slice(0, 600);
     $("tbl").querySelector("tbody").innerHTML = show.map((p) => `<tr data-id="${p.place_id}" aria-selected="${S.sel === p.place_id}">
       <td><b>${esc(p.name)}</b>${p.names_seen && p.names_seen !== p.name ? `<div class="hint">also: ${esc(p.names_seen.split(" | ").filter((n) => n !== p.name).join(", "))}</div>` : ""}</td>
-      <td>${esc(p.industry_group)}</td><td>${esc(catLabel(p.category))}</td><td>${esc(p.postcode)}</td><td>${esc((p.sources || "").replace(/\|/g, " + "))}</td>
+      <td>${esc(p.industry_group)}</td><td>${esc(p.spec)}<div class="hint">${esc(catLabel(p.category))}</div></td><td>${esc(p.postcode)}</td><td>${esc((p.sources || "").replace(/\|/g, " + "))}</td>
       <td>${confBar(p.confidence)}</td><td>${pills(p.flagList)}</td></tr>`).join("") +
       (rows.length > show.length ? `<tr><td colspan="7" class="hint">Showing the first 600 of ${fmt(rows.length)}. Narrow the filters to see the rest.</td></tr>` : "");
     $("tbl").querySelectorAll("tbody tr[data-id]").forEach((tr) => (tr.onclick = () => select(tr.dataset.id, true)));
@@ -389,6 +404,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   function dist(a, b, c, d) { const R = 6371008.8, r = Math.PI / 180, x = Math.sin(((c - a) * r) / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin(((d - b) * r) / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); }
 
   function detail() {
+    if (S.ward && !S.sel && !S.opp) { $("detail").innerHTML = wardHTML(); return; }
     if (S.opp && !S.sel) { $("detail").innerHTML = oppHTML(); $("detail").querySelectorAll("[data-oi]").forEach((d) => (d.onclick = (e) => { if (e.target.tagName === "A") return; const p = S.opp.picks[+d.dataset.oi]; V.cx = p.lo; V.cy = p.la; V.s = Math.max(V.s, 40000); draw(); })); return; }
     const el = $("detail"), p = S.places.find((x) => x.place_id === S.sel);
     if (!p) { el.innerHTML = `<h2>Inspect a place</h2><p>Click a row or a dot on the map to see every source record behind it, where each one puts the pin, the flags, and links to check it on Google Maps and the original register.</p>`; return; }
@@ -405,6 +421,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
       ${confBar(p.confidence)}
       <dl>
         <dt>Industry group</dt><dd>${esc(p.industry_group)}${p.customer_facing ? " · customer-facing" : ""}</dd>
+        <dt>Detailed type</dt><dd>${esc(p.spec)}${p.specialty_from ? ` <span class="hint">· from ${esc(p.specialty_from)}${p.specialty_from === "name" ? " (a guess)" : ""}</span>` : ""}</dd>
         <dt>Name from</dt><dd>${esc(p.name_source || "–")}</dd>
         <dt>Place ID</dt><dd>${esc(p.place_id)}</dd>
         <dt>Coordinates</dt><dd>${Number.isFinite(p.lat) ? `${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}` : "none"}</dd>
@@ -448,7 +465,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   const V = { cx: -1.4, cy: 50.92, s: 1 };
   let bbox = [Infinity, Infinity, -Infinity, -Infinity];
   for (const l of GEO.lsoa) for (const r of l.rings) for (const [x, y] of r) { bbox = [Math.min(bbox[0], x), Math.min(bbox[1], y), Math.max(bbox[2], x), Math.max(bbox[3], y)]; }
-  function fit() { const w = cv.clientWidth || 600, h = cv.clientHeight || 400; V.cx = (bbox[0] + bbox[2]) / 2; V.cy = (bbox[1] + bbox[3]) / 2; V.s = 0.94 * Math.min(w / ((bbox[2] - bbox[0]) * KX), h / (bbox[3] - bbox[1])); }
+  function fit() { const w = cv.clientWidth || 600, h = cv.clientHeight || 400; V.cx = (bbox[0] + bbox[2]) / 2; V.cy = (bbox[1] + bbox[3]) / 2; V.s = 0.94 * Math.min(w / ((bbox[2] - bbox[0]) * KX), h / (bbox[3] - bbox[1])); S.fitS = V.s; }
   const px = (lon, lat) => [cv.clientWidth / 2 + (lon - V.cx) * KX * V.s, cv.clientHeight / 2 - (lat - V.cy) * V.s];
   const ll = (x, y) => [V.cy - (y - cv.clientHeight / 2) / V.s, V.cx + (x - cv.clientWidth / 2) / (KX * V.s)];
   const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -462,7 +479,17 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
     for (const [a, b, c, d] of GEO.edges) { const [x1, y1] = px(a, b), [x2, y2] = px(c, d); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); } ctx.stroke();
     if (S.mode === "comp") { drawComp(w, h); return; }
     if (S.mapView === "area") drawAreas(w, h);
-    const rows = S.mapView === "area" ? [] : (S.rows || []), sel = S.places.find((p) => p.place_id === S.sel);
+    if (S.mapView === "pop") drawPopular(w, h);
+    if (S.mapView === "heat") drawHeat();
+    if (S.ward) for (const l of GEO.lsoa) if (AREA.lsoa_ward[l.code] !== S.ward) {  // fade the rest of the city
+      ctx.beginPath(); for (const r of l.rings) r.forEach(([x, y], i) => { const [a, b] = px(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); });
+      ctx.globalAlpha = 0.6; ctx.fillStyle = css("--panel"); ctx.fill("evenodd"); ctx.globalAlpha = 1;
+    }
+    if (S.ward) {  // outline drawn only outside the ward, so the lines between its own small areas don't show
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); wardShape(S.ward, () => ctx.clip("evenodd"), true);
+      wardShape(S.ward, () => { ctx.lineWidth = 6; ctx.strokeStyle = css("--ink"); ctx.stroke(); }); ctx.restore();
+    }
+    const rows = S.mapView !== "pts" ? [] : (S.rows || []), sel = S.places.find((p) => p.place_id === S.sel);
     const r0 = Math.max(2.2, Math.min(5, V.s / 18000));
     for (const p of rows) {
       if (!Number.isFinite(p.lat)) continue;
@@ -508,6 +535,10 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
       if (best) { S.selAddr = best.address_id; update(); }
       drag = null; return;
     }
+    if (drag && !drag.moved && S.mapView !== "pts") {  // area views: click a ward to explore it
+      const r = cv.getBoundingClientRect(), ward = wardAt(e.clientX - r.left, e.clientY - r.top);
+      drag = null; if (ward) setWard(ward === S.ward ? null : ward); return;
+    }
     if (drag && !drag.moved) {
       const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
       let best = null, bd = 12;
@@ -525,25 +556,41 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
 
   // ---------- controls
-  ["q", "src", "inside", "ind", "cust", "hideshared", "custp", "hidero", "sub", "cui"].forEach((id) => $(id).addEventListener("input", () => { S.opp = null; update(); }));
-  ["grp", "cat", "cfam"].forEach((id) => $(id).addEventListener("input", () => { S.opp = null; refreshOptions(id); update(); }));
-  // ---------- advanced filter: options depend on the choices above them
-  function fillSel(id, label, counts) {
-    const el = $(id), v0 = el.value; el.innerHTML = ""; el.add(new Option(`Any ${label}`, ""));
-    for (const [k, n] of Object.entries(counts).sort((a, b) => b[1] - a[1])) el.add(new Option(`${k} (${n})`, k));
-    el.value = counts[v0] ? v0 : "";
-  }
-  function refreshOptions(changed) {
-    const g = $("grp").value, c = $("cat").value;
-    const base = S.places.filter((p) => (!g || p.industry_group === g));
-    if (changed === "grp") { const cc = {}; for (const p of base) cc[p.category] = (cc[p.category] || 0) + 1;
-      const el = $("cat"); el.innerHTML = ""; el.add(new Option(`All types (${base.length})`, ""));
-      for (const [k, n] of Object.entries(cc).sort((a, b) => b[1] - a[1])) el.add(new Option(`${catLabel(k)} (${n})`, k)); }
-    const b2 = base.filter((p) => !$("cat").value || p.category === $("cat").value);
-    const cnt = (arr, k) => { const o = {}; for (const p of arr) if (p[k]) o[p[k]] = (o[p[k]] || 0) + 1; return o; };
-    fillSel("sub", "detailed type", cnt(b2, "subtype"));
-    if (changed !== "cfam") fillSel("cfam", "cuisine family", cnt(b2, "cuisine_family"));
-    fillSel("cui", "cuisine", cnt(b2.filter((p) => !$("cfam").value || p.cuisine_family === $("cfam").value), "cuisine"));
+  ["q", "src", "inside", "ind", "cust", "hideshared", "custp", "hidero", "spq"].forEach((id) => $(id).addEventListener("input", () => { S.opp = null; update(); }));
+  $("grp").addEventListener("input", () => { S.opp = null; S.spec.clear(); update(); });
+  $("clear-spec").onclick = () => { S.spec.clear(); $("spq").value = ""; S.opp = null; update(); };
+
+  // ---------- advanced filter: industry group -> business type -> detailed type (tick any number)
+  // Search also understands everyday words for a type ("boba" finds Bubble tea, "sushi" finds Japanese).
+  const SYN = { "Bubble tea": "boba milk tea", "Japanese": "sushi ramen", "Korean": "kbbq k-food", "Coffee shop": "cafe café coffee",
+    "Café": "cafe coffee", "Dental practice": "dentist teeth", "GP practice": "doctor surgery gp", "GP or clinic": "doctor surgery gp",
+    "Fish and chips": "chippy chip shop", "Hairdresser or barber": "hair salon barber", "Barber": "hair", "Nail salon": "nails manicure",
+    "Gym or fitness centre": "fitness workout", "Day nursery or childcare": "nursery childcare kids", "Pub or bar": "pub bar drinks",
+    "Asian supermarket": "oriental grocery korean japanese chinese", "Pharmacy": "chemist", "Bakery or cake shop": "bakery cakes",
+    "Desserts or ice cream": "dessert ice cream gelato", "Veterinary practice": "vet pets", "Optician": "glasses eyes" };
+  function specList() {
+    if (S.mode === "comp") return;
+    const byGroup = !!$("grp").value, q = $("spq").value.trim().toLowerCase();
+    const base = filtered(true), groups = {};
+    for (const p of base) {
+      const g = byGroup ? catLabel(p.category) : p.industry_group;
+      const G = (groups[g] ||= { n: 0, items: {} }); G.n++; G.items[p.spec] = (G.items[p.spec] || 0) + 1;
+    }
+    const hit = (label, g) => !q || (label + " " + (SYN[label] || "") + " " + g).toLowerCase().includes(q);
+    const el = $("spec"), top = el.scrollTop;
+    el.innerHTML = Object.entries(groups).sort((a, b) => b[1].n - a[1].n).map(([g, G]) => {
+      const items = Object.entries(G.items).filter(([k]) => hit(k, g)).sort((a, b) => b[1] - a[1]);
+      if (!items.length) return "";
+      return `<button class="spech" data-g="${esc(g)}" title="Tick every type in this group"><span>${esc(g)}</span><span>${fmt(G.n)}</span></button>` +
+        items.map(([k, n]) => `<label class="flagopt"><input type="checkbox" data-s="${esc(k)}" ${S.spec.has(k) ? "checked" : ""}><span>${esc(k)}</span><span class="n">${fmt(n)}</span></label>`).join("");
+    }).join("") || `<p class="hint">No detailed type matches "${esc(q)}".</p>`;
+    el.scrollTop = top;
+    $("spec-sel").textContent = S.spec.size ? `${S.spec.size} ticked: ${[...S.spec].slice(0, 4).join(", ")}${S.spec.size > 4 ? "…" : ""}` : "Tick one or more. Click a heading to tick its whole group.";
+    el.querySelectorAll("input[data-s]").forEach((i) => (i.onchange = () => { i.checked ? S.spec.add(i.dataset.s) : S.spec.delete(i.dataset.s); S.opp = null; update(); }));
+    el.querySelectorAll(".spech").forEach((b) => (b.onclick = () => {
+      const ks = [...b.parentNode.querySelectorAll("input[data-s]")].filter((i) => { let n = i.closest("label").previousElementSibling; while (n && !n.classList.contains("spech")) n = n.previousElementSibling; return n === b; }).map((i) => i.dataset.s);
+      const all = ks.every((k) => S.spec.has(k)); ks.forEach((k) => (all ? S.spec.delete(k) : S.spec.add(k))); S.opp = null; update();
+    }));
   }
 
   // ---------- areas: wards shaded by matching places per 1,000 residents
@@ -553,7 +600,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   S.mapView = "pts";
   function wardStats() {
     const by = {};
-    for (const p of S.rows || []) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = p.cuisine || p.subtype || catLabel(p.category); b.top[k] = (b.top[k] || 0) + 1; }
+    for (const p of S.rowsArea || S.rows || []) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = p.spec; b.top[k] = (b.top[k] || 0) + 1; }
     for (const w in by) { by[w].rate = (1000 * by[w].n) / (AREA.ward_pop[w] || 1); by[w].best = Object.entries(by[w].top).sort((a, b) => b[1] - a[1])[0]; }
     return by;
   }
@@ -574,21 +621,168 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
       if (b && b.best) { ctx.font = "500 10px " + css("--body"); ctx.fillStyle = css("--muted"); ctx.fillText(`top: ${b.best[0]} (${b.best[1]})`, x, y + 17); }
     }
   }
-  function setView(v) { S.mapView = v; $("mv-pts").setAttribute("aria-pressed", v === "pts"); $("mv-area").setAttribute("aria-pressed", v === "area"); draw(); legendArea(); }
-  $("mv-pts").onclick = () => setView("pts"); $("mv-area").onclick = () => setView("area");
-  function legendArea() { if (S.mapView === "area") $("legend").innerHTML = `<span><i style="background:var(--accent)"></i>Darker = more matching places per 1,000 residents</span><span>Label: ward · count · rate · most common type</span><span>Uses the filters on the left</span>`; else legend(); }
+  // ---------- popular: each ward coloured by its leading detailed type (among the places the filters keep)
+  // "Most common" = the type with the most places in the ward; "Stands out" = the type whose share of the ward's
+  // places is highest relative to its share across the city (at least 3 places, so one shop can't win a ward).
+  function popular() {
+    const st = wardStats(), city = {}; let N = 0;
+    for (const w in st) for (const [k, n] of Object.entries(st[w].top)) { city[k] = (city[k] || 0) + n; N += n; }
+    const lq = $("popmode").value === "lq", win = {};
+    for (const [w, b] of Object.entries(st)) {
+      let best = null;
+      for (const [k, n] of Object.entries(b.top)) {
+        if (/not known|no detail/.test(k)) continue;  // "Restaurant (cuisine not known)" isn't a type anyone is popular for
+        const share = n / b.n, ratio = share / (city[k] / N);
+        if (lq ? n >= 3 && ratio > 1 && (!best || ratio > best.ratio) : !best || n > best.n) best = { k, n, share, ratio };
+      }
+      if (best) win[w] = best;
+    }
+    const wins = {}; for (const b of Object.values(win)) wins[b.k] = (wins[b.k] || 0) + 1;
+    const order = Object.entries(wins).sort((a, b) => b[1] - a[1] || (city[b[0]] - city[a[0]])).map(([k]) => k);
+    const color = {}; order.forEach((k, i) => (color[k] = i < 6 ? PALETTE[i] : "--c7"));  // 7th+ type folds into Other
+    return { st, win, color, order, lq };
+  }
+  function strength(b, lq) { return lq ? Math.min(1, (b.ratio - 1) / 2) : b.share; }
+  function drawPopular(w, h) {
+    const P = popular(); S.pop = P;
+    for (const l of GEO.lsoa) {
+      const b = P.win[AREA.lsoa_ward[l.code]]; if (!b) continue;
+      ctx.beginPath(); for (const r of l.rings) r.forEach(([x, y], i) => { const [a, bb] = px(x, y); i ? ctx.lineTo(a, bb) : ctx.moveTo(a, bb); });
+      ctx.globalAlpha = 0.22 + 0.6 * strength(b, P.lq); ctx.fillStyle = css(P.color[b.k]); ctx.fill("evenodd");
+    }
+    ctx.globalAlpha = 1; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    const label = (t, x, y, font, color) => { ctx.font = font; ctx.lineWidth = 3; ctx.strokeStyle = css("--panel"); ctx.strokeText(t, x, y); ctx.fillStyle = css(color); ctx.fillText(t, x, y); };
+    const zoomed = V.s > 1.5 * (S.fitS || V.s);  // the count line only once there's room for it
+    for (const [ward, [la, lo]] of Object.entries(WARD_C)) {
+      const [x, y] = px(lo, la), b = P.win[ward]; if (x < 0 || y < 0 || x > w || y > h) continue;
+      ctx.beginPath(); ctx.arc(x, y - 16, 6, 0, 7); ctx.fillStyle = b ? css(P.color[b.k]) : css("--line"); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = css("--panel"); ctx.stroke();
+      label(ward.toUpperCase(), x, y - 2, "700 12px " + css("--display"), "--ink");
+      label(b ? b.k : P.st[ward] ? (P.lq ? "nothing stands out" : "type not known") : "no matching places", x, y + 11, "600 11px " + css("--body"), "--ink");
+      if (b && zoomed) label(P.lq ? `${b.ratio.toFixed(1)}× its city share · ${b.n} places` : `${b.n} of ${P.st[ward].n} places`, x, y + 23, "500 10px " + css("--body"), "--muted");
+    }
+    ctx.textBaseline = "alphabetic";
+  }
+
+  // ---------- heatmap: where the places the filters keep cluster (each place spreads over ~250 m)
+  const heatCv = document.createElement("canvas");
+  function drawHeat() {
+    const pts = (S.rows || []).filter((p) => Number.isFinite(p.lat)); if (!pts.length) return;
+    heatCv.width = cv.width; heatCv.height = cv.height;
+    const o = heatCv.getContext("2d", { willReadFrequently: true }), dpr = devicePixelRatio || 1;
+    o.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const r = Math.max(8, (250 / 111250) * V.s), w = cv.clientWidth, h = cv.clientHeight;
+    for (const p of pts) {
+      const [x, y] = px(p.lon, p.lat); if (x < -r || y < -r || x > w + r || y > h + r) continue;
+      const g = o.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(0,0,0,0.12)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      o.fillStyle = g; o.fillRect(x - r, y - r, 2 * r, 2 * r);
+    }
+    const img = o.getImageData(0, 0, heatCv.width, heatCv.height), d = img.data;
+    let max = 1; for (let i = 3; i < d.length; i += 4) if (d[i] > max) max = d[i];
+    const hex = css("--accent").replace("#", ""), R = parseInt(hex.slice(0, 2), 16), G = parseInt(hex.slice(2, 4), 16), B = parseInt(hex.slice(4, 6), 16);
+    for (let i = 0; i < d.length; i += 4) { const t = d[i + 3] / max; d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = t < 0.02 ? 0 : Math.round(235 * Math.pow(t, 0.6)); }
+    o.putImageData(img, 0, 0);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(heatCv, 0, 0); ctx.restore();
+  }
+
+  // ---------- hover: what's in the ward under the pointer
+  function inRing(x, y, ring) { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c; } return c; }
+  function wardAt(mx_, my_) { const [la, lo] = ll(mx_, my_); for (const l of GEO.lsoa) { let c = false; for (const r of l.rings) if (inRing(lo, la, r)) c = !c; if (c) return AREA.lsoa_ward[l.code]; } return null; }
+  cv.addEventListener("pointermove", (e) => {
+    const tip = $("maptip"); cv.style.cursor = "";
+    if (drag || S.mapView === "pts" || S.mode === "comp") { tip.hidden = true; return; }
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, ward = wardAt(x, y);
+    if (!ward) { tip.hidden = true; return; }
+    const st = S.mapView === "pop" && S.pop ? S.pop.st : wardStats(), b = st[ward];
+    const items = b ? Object.entries(b.top).sort((a, c) => c[1] - a[1]).slice(0, 6) : [];
+    const col = (k) => (S.mapView === "pop" && S.pop && S.pop.color[k] ? `var(${S.pop.color[k]})` : "var(--line)");
+    cv.style.cursor = "pointer";
+    tip.innerHTML = `<b>${esc(ward)}</b><div class="hint">${ward === S.ward ? "Click to go back to the whole city" : "Click to explore this area"}</div>${b ? `<div class="hint" style="margin-bottom:4px">${fmt(b.n)} places · ${b.rate.toFixed(1)} per 1,000 residents</div>` +
+      items.map(([k, n]) => `<div class="r"><i style="background:${col(k)}"></i><span>${esc(k)}</span><span>${fmt(n)}</span></div>`).join("") : `<div class="hint">No matching places</div>`}`;
+    tip.hidden = false;
+    tip.style.left = Math.min(x + 14, cv.clientWidth - tip.offsetWidth - 6) + "px"; tip.style.top = Math.min(y + 14, cv.clientHeight - tip.offsetHeight - 6) + "px";
+  });
+  cv.addEventListener("pointerleave", () => ($("maptip").hidden = true));
+
+  // ---------- one ward in focus: zoom to it, filter the table to it, profile it in the panel
+  function wardShape(ward, paint, addToPath) {
+    if (!addToPath) ctx.beginPath();
+    for (const l of GEO.lsoa) if (AREA.lsoa_ward[l.code] === ward) for (const r of l.rings) r.forEach(([x, y], i) => { const [a, b] = px(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); });
+    paint();
+  }
+  function setWard(ward) {
+    S.ward = ward; S.sel = null; S.opp = null; $("maptip").hidden = true;
+    if (ward) {
+      let bb = [Infinity, Infinity, -Infinity, -Infinity];
+      for (const l of GEO.lsoa) if (AREA.lsoa_ward[l.code] === ward) for (const r of l.rings) for (const [x, y] of r) bb = [Math.min(bb[0], x), Math.min(bb[1], y), Math.max(bb[2], x), Math.max(bb[3], y)];
+      V.cx = (bb[0] + bb[2]) / 2; V.cy = (bb[1] + bb[3]) / 2;
+      V.s = Math.min(0.75 * Math.min(cv.clientWidth / ((bb[2] - bb[0]) * KX), cv.clientHeight / (bb[3] - bb[1])), 6 * (S.fitS || V.s));
+    } else fit();
+    update();
+  }
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-unward]")) { e.preventDefault(); setWard(null); }
+    const w = e.target.closest("[data-ward]"); if (w) { e.preventDefault(); setWard(w.dataset.ward); }
+    const t = e.target.closest("[data-tick]"); if (t) { e.preventDefault(); S.spec = new Set([t.dataset.tick]); S.opp = null; update(); }
+  });
+  function wardHTML() {
+    const ward = S.ward, all = S.rowsArea || [], here = all.filter((p) => p.ward === ward);
+    const pop = AREA.ward_pop[ward] || 0, cityPop = Object.values(AREA.ward_pop).reduce((a, b) => a + b, 0);
+    const inCity = all.filter((p) => p.ward).length, rate = (1000 * here.length) / Math.max(1, pop), cityRate = (1000 * inCity) / Math.max(1, cityPop);
+    let dep = 0; AREA.oa.ward.forEach((w, i) => { if (w === ward && AREA.oa.q[i] === 1) dep += AREA.oa.pop[i]; });
+    const cnt = (arr) => { const o = {}; for (const p of arr) o[p.spec] = (o[p.spec] || 0) + 1; return o; };
+    const H = cnt(here), C = cnt(all.filter((p) => p.ward)), ratio = (k) => (H[k] || 0) / Math.max(1, here.length) / ((C[k] || 0) / Math.max(1, inCity));
+    const top = Object.entries(H).sort((a, b) => b[1] - a[1]).slice(0, 10), max = top.length ? top[0][1] : 1;
+    const col = (k) => (S.mapView === "pop" && S.pop && S.pop.color[k] ? `var(${S.pop.color[k]})` : "var(--c7)");
+    const gaps = Object.entries(C).filter(([k, n]) => n >= 8 && !/not known|no detail/.test(k) && ratio(k) < 0.5).sort((a, b) => ratio(a[0]) - ratio(b[0])).slice(0, 5);
+    const others = Object.keys(AREA.ward_pop).filter((w) => w !== ward).sort();
+    return `<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><h2>${esc(ward)}</h2><button data-unward>× Whole city</button></div>
+      <p class="hint">Uses the filters on the left${$("grp").value ? ` (${esc($("grp").value)})` : ""}. Click another ward on the map to compare.</p>
+      <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:6px 0 10px">
+        <div class="stat"><div class="k">Places</div><div class="v">${fmt(here.length)}</div><div class="d">${fmt(Math.round((100 * here.length) / Math.max(1, inCity)))}% of the city's</div></div>
+        <div class="stat"><div class="k">Per 1,000 residents</div><div class="v">${rate.toFixed(1)}</div><div class="d">city average ${cityRate.toFixed(1)}</div></div>
+        <div class="stat"><div class="k">Residents</div><div class="v">${fmt(pop)}</div><div class="d">${fmt(Math.round((100 * dep) / Math.max(1, pop)))}% in the most deprived fifth</div></div>
+      </div>
+      <h3>What's here</h3>
+      ${top.length ? `<div class="bars">${top.map(([k, n]) => { const r = ratio(k);
+        return `<div class="bar" data-tick="${esc(k)}" title="Show only ${esc(k)}"><span>${esc(k)}</span><span class="track"><i style="width:${(100 * n) / max}%;background:${col(k)}"></i></span><span class="n">${fmt(n)}</span><span class="x ${r >= 1.5 ? "hi" : r <= 0.67 ? "lo" : ""}">${r.toFixed(1)}× city</span></div>`; }).join("")}</div>
+        <p class="hint">“× city” compares this type's share of the ward's places with its share across Southampton: 2.0× means twice as common here. Click a row to show only that type.</p>` : `<p class="hint">No matching places in this ward.</p>`}
+      ${gaps.length ? `<h3>Less of than the city average</h3><div class="links">${gaps.map(([k]) => `<a href="#" data-tick="${esc(k)}">${esc(k)} · ${fmt(H[k] || 0)} here</a>`).join("")}</div>
+        <p class="hint">Possible gaps. Tick one and press “Suggest spots to open” to rank sites.</p>` : ""}
+      <h3>Other areas</h3><div class="links">${others.map((w) => `<a href="#" data-ward="${esc(w)}">${esc(w)}</a>`).join("")}</div>`;
+  }
+
+  function setView(v) {
+    S.mapView = v; for (const k of ["pts", "heat", "pop", "area"]) $("mv-" + k).setAttribute("aria-pressed", v === k);
+    $("popmode").hidden = v !== "pop"; $("maptip").hidden = true; draw(); legendArea();
+  }
+  for (const k of ["pts", "heat", "pop", "area"]) $("mv-" + k).onclick = () => setView(k);
+  { const hv = (location.hash.match(/view=(heat|pop|area)/) || [])[1]; if (hv) setView(hv); }  // e.g. places_register.html#view=pop
+  $("popmode").addEventListener("input", () => { draw(); legendArea(); });
+  function legendArea() {
+    const L = $("legend");
+    if (S.mapView === "area") L.innerHTML = `<span><i style="background:var(--accent)"></i>Darker = more matching places per 1,000 residents</span><span>Label: ward · count · rate · most common type</span><span>Uses the filters on the left</span>`;
+    else if (S.mapView === "heat") L.innerHTML = `<span>Fewer<span class="ramp" style="background:linear-gradient(90deg,transparent,var(--accent))"></span>more places close together</span><span>${fmt((S.rows || []).length)} places from the filters on the left</span><span>Hover a ward for its top types</span>`;
+    else if (S.mapView === "pop") {
+      const P = S.pop || popular(), shown = P.order.slice(0, 6);
+      L.innerHTML = shown.map((k) => `<span><i class="sq" style="background:var(${P.color[k]})"></i>${esc(k)}</span>`).join("") +
+        (P.order.length > 6 ? `<span><i class="sq" style="background:var(--c7)"></i>Other (${P.order.length - 6} types)</span>` : "") +
+        `<span>${P.lq ? "Stronger colour = further above its city-wide share" : "Stronger colour = bigger share of the ward's places"}</span>` +
+        (!P.lq && P.order.length === 1 ? `<span>One type leads everywhere: try “Stands out vs city” or narrow the industry</span>` : "");
+    } else legend();
+  }
 
   // ---------- opportunity finder: where to open what the filters describe
   const OAN = AREA.oa.lat.length, mx = (la1, lo1, la2, lo2) => Math.hypot((lo2 - lo1) * 70000, (la2 - la1) * 111200);
   let OAD = null;
   function oaNear() { if (OAD) return OAD; OAD = []; for (let i = 0; i < OAN; i++) { const n = []; for (let j = 0; j < OAN; j++) if (mx(AREA.oa.lat[i], AREA.oa.lon[i], AREA.oa.lat[j], AREA.oa.lon[j]) <= 800) n.push(j); OAD.push(n); } return OAD; }
   function describeTarget() {
-    const parts = [$("cui").value || $("cfam").value, $("sub").value, $("cat").value ? catLabel($("cat").value) : "", $("grp").value].filter(Boolean);
-    return parts[0] || "";
+    if (S.spec.size) return [...S.spec].slice(0, 3).join(" / ") + (S.spec.size > 3 ? " and more" : "");
+    return $("grp").value;
   }
   $("opp").onclick = () => {
     const target = describeTarget();
-    if (!target) { S.opp = { error: "Choose what you want to open first: an industry, type, detailed type or cuisine in the filters on the left." }; S.sel = null; update(); return; }
+    if (!target) { S.opp = { error: "Choose what you want to open first: an industry group or one or more detailed types in the filters on the left." }; S.sel = null; update(); return; }
     const near = oaNear(), comp = (S.rows || []).filter((p) => Number.isFinite(p.lat));
     const foot = S.places.filter((p) => Number.isFinite(p.lat) && p.customer_facing && !p.flagList.includes("REGISTERED_OFFICE_ONLY"));
     const cand = [];
@@ -740,6 +934,8 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   requestAnimationFrame(() => {
     S.companies = {};
     setData(parseCSV($("sample-places").textContent), parseCSV($("sample-recs").textContent), "Sample · 17 Oct");
+    const hw = decodeURIComponent((location.hash.match(/ward=([^&]+)/) || [])[1] || "");  // e.g. #view=pop&ward=Portswood
+    if (hw && AREA.ward_pop[hw]) setWard(hw);
   });
 })();
 </script>

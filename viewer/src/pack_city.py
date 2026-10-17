@@ -61,7 +61,7 @@ def pip_many(x, y, rings):
 
 
 # LSOA polygons: drawing + inside-city check; boundary = edges used by exactly one LSOA
-lsoa = json.loads((P / "lsoa.geojson").read_text())
+lsoa = json.loads((P / "lsoa.geojson").read_text(encoding="utf-8"))
 segs = Counter()
 lsoa_out = []
 for f in lsoa["features"]:
@@ -79,7 +79,7 @@ edge = [s for s, n in segs.items() if n == 1]
 edge_out = [[round(a[0], 5), round(a[1], 5), round(b[0], 5), round(b[1], 5)] for a, b in edge]
 
 # Flood Zone 3: full-res flag per OA (as the Python engine does), simplified shapes for drawing / click checks
-fl = json.loads((P / "flood_zone3.geojson").read_text())
+fl = json.loads((P / "flood_zone3.geojson").read_text(encoding="utf-8"))
 rings_full = []
 flood_out = []
 for f in fl["features"]:
@@ -102,9 +102,9 @@ data = {
     "lsoa": lsoa_out,
     "edges": edge_out,
     "flood": flood_out,
-    "sources": json.loads((REPO / "data" / "raw" / "SOURCES.json").read_text()),
+    "sources": json.loads((REPO / "data" / "raw" / "SOURCES.json").read_text(encoding="utf-8")),
 }
-OUT.write_text(json.dumps(data, separators=(",", ":")))
+OUT.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
 print("OAs", len(oa), "facilities", Counter(fac.category), "flood OAs", int(oa_flood.sum()),
       "edges", len(edge_out), "lsoa verts", sum(len(r) for l in lsoa_out for r in l["rings"]),
       "flood verts", sum(len(r) for p in flood_out for r in p), "bytes", OUT.stat().st_size)

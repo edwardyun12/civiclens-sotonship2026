@@ -562,8 +562,14 @@ OSM_SUBTYPE = {
     "shop=dry_cleaning": "Laundry or dry cleaner", "leisure=fitness_centre": "Gym or fitness centre",
     "leisure=sports_centre": "Sports facility", "amenity=spa": "Spa, massage or wellbeing", "leisure=spa": "Spa, massage or wellbeing",
 }
-CUISINE = {  # OSM cuisine values and name keywords -> (cuisine, family)
-    "korean": ("Korean", "Asian"), "kimchi": ("Korean", "Asian"), "seoul": ("Korean", "Asian"), "bibimbap": ("Korean", "Asian"),
+CUISINE = {  # OSM cuisine values and name keywords -> (cuisine, family); first match wins, so specific before general
+    "bubble_tea": ("Bubble tea", "Café"), "bubble tea": ("Bubble tea", "Café"), "boba": ("Bubble tea", "Café"),
+    "茶": ("Bubble tea", "Café"),  # Chinese "tea" in a café name: almost always a bubble tea shop in Southampton
+    "korean": ("Korean", "Asian"), "bulgogi": ("Korean", "Asian"),
+    "japan": ("Japanese", "Asian"), "bento": ("Japanese", "Asian"), "katsu": ("Japanese", "Asian"),
+    "teriyaki": ("Japanese", "Asian"), "izakaya": ("Japanese", "Asian"), "udon": ("Japanese", "Asian"),
+    "taiwan": ("Taiwanese", "Asian"), "hotpot": ("Chinese", "Asian"), "hot pot": ("Chinese", "Asian"),
+    "filipino": ("Filipino", "Asian"), "indonesia": ("Indonesian", "Asian"), "mediterranean": ("Mediterranean", "Western"), "kimchi": ("Korean", "Asian"), "seoul": ("Korean", "Asian"), "bibimbap": ("Korean", "Asian"),
     "wok": ("Chinese", "Asian"), "dragon": ("Chinese", "Asian"), "canton": ("Chinese", "Asian"), "hong kong": ("Chinese", "Asian"),
     "szechuan": ("Chinese", "Asian"), "sichuan": ("Chinese", "Asian"), "noodle": ("Noodles", "Asian"),
     "india": ("Indian", "South Asian"), "bengal": ("Indian", "South Asian"), "punjab": ("Indian", "South Asian"),
@@ -586,7 +592,7 @@ CUISINE = {  # OSM cuisine values and name keywords -> (cuisine, family)
     "mexican": ("Mexican", "Latin American"), "caribbean": ("Caribbean", "Latin American"), "jamaican": ("Caribbean", "Latin American"),
     "brazilian": ("Brazilian", "Latin American"), "african": ("African", "African"), "ethiopian": ("Ethiopian", "African"),
     "coffee_shop": ("Coffee", "Café"), "coffee": ("Coffee", "Café"), "espresso": ("Coffee", "Café"),
-    "tea": ("Tea and bubble tea", "Café"), "bubble_tea": ("Tea and bubble tea", "Café"), "boba": ("Tea and bubble tea", "Café"),
+    "tea": ("Tea room", "Café"),
     "cake": ("Bakery and cakes", "Café"), "bakery": ("Bakery and cakes", "Café"), "dessert": ("Desserts", "Café"),
     "ice_cream": ("Desserts", "Café"), "gelato": ("Desserts", "Café"), "waffle": ("Desserts", "Café"),
     "sandwich": ("Sandwiches", "Café"), "breakfast": ("Breakfast", "Café"), "vegan": ("Vegan", "Other"),
@@ -596,6 +602,8 @@ CHAIN_CUISINE = {  # well-known brands whose names don't say the cuisine
     "greggs": "bakery", "subway": "sandwich", "mcdonald": "burger", "burger king": "burger", "five guys": "burger",
     "kfc": "chicken", "popeyes": "chicken", "nando": "peri", "domino": "pizza", "papa john": "pizza", "pizza hut": "pizza",
     "wagamama": "japanese", "itsu": "japanese", "yo sushi": "japanese", "wasabi": "japanese", "bubbleology": "bubble_tea",
+    "chatime": "bubble_tea", "gong cha": "bubble_tea", "mooboo": "bubble_tea", "tiger sugar": "bubble_tea",
+    "yi fang": "bubble_tea", "coco fresh": "bubble_tea", "ding tea": "bubble_tea", "sushi daily": "japanese", "kokoro": "japanese",
     "taco bell": "mexican", "chipotle": "mexican", "wildwood": "italian", "zizzi": "italian", "ask italian": "italian",
     "prezzo": "italian", "bella italia": "italian", "pizza express": "pizza", "turtle bay": "caribbean", "tortilla": "mexican",
 }
@@ -603,23 +611,85 @@ NAME_SUBTYPE = [  # (keywords in the name, subtype) for non-food places
     (("dental", "dentist", "orthodont", "smile"), "Dental practice"), (("surgery", "medical centre", "health centre", "gp "), "GP or clinic"),
     (("physio", "chiropract", "osteopath"), "Physiotherapist"), (("optician", "optometr", "eye care", "specsavers", "vision express"), "Optician"),
     (("spa", "massage", "wellness", "wellbeing", "sauna"), "Spa, massage or wellbeing"), (("nail",), "Nail salon"),
-    (("barber",), "Hairdresser or barber"), (("hair", "salon", "stylist"), "Hairdresser or barber"),
-    (("beauty", "lash", "brow", "aesthetic", "tanning"), "Beauty salon"), (("tattoo", "ink "), "Tattoo studio"),
+    (("barber",), "Hairdresser or barber"), (("hair", "hairdress", "salon", "stylist"), "Hairdresser or barber"),
+    (("beauty", "lash", "lashes", "brow", "aesthetic", "tanning"), "Beauty salon"), (("tattoo", "ink "), "Tattoo studio"),
     (("gym", "fitness", "crossfit", "pilates", "yoga"), "Gym or fitness centre"), (("nursery", "pre-school", "preschool", "playgroup"), "Day nursery or childcare"),
     (("vet", "veterinary"), "Veterinary practice"), (("laundr", "dry clean", "launderette"), "Laundry or dry cleaner"),
 ]
 FOOD_CATS = {"restaurant_cafe", "takeaway", "pub_bar", "other_catering", "mobile_caterer"}
 
 
+def has_word(text: str, key: str) -> bool:
+    """Key found at the start of a word in text. Short keys (4 letters or fewer) must be the whole word or its
+    plural: 'pho' is not in 'Phoenix', 'spa' not in 'Sparky', 'tea' not in 'Team'. Longer keys may start a word:
+    'india' in 'Indian', 'dental' in 'Dentalcare' but not 'Incidental'."""
+    k = key.strip().replace("_", " ")
+    tail = r"s?(?![a-z])" if len(k) <= 4 else ""
+    return re.search(r"(?<![a-z])" + re.escape(k) + tail, text) is not None
+
+
 def cuisine_from(text: str):
     t = " " + str(text or "").lower().replace(";", " ").replace("-", " ") + " "
     for brand, key in CHAIN_CUISINE.items():
-        if brand in t:
+        if has_word(t, brand):
             return CUISINE[key]
     for key, val in CUISINE.items():
-        if f" {key.replace('_', ' ')}" in t or f" {key} " in t or key in t.split():
+        if has_word(t, key):
             return val
     return None
+
+
+# One clear label per place for the advanced search ("Bubble tea", "Korean", "Barber", "Asian supermarket"),
+# built from the detailed type, cuisine and, failing those, words in the name or the company's SIC division.
+CUISINE_SPECIALTY = {"Coffee": "Coffee shop", "Bakery and cakes": "Bakery or cake shop", "Desserts": "Desserts or ice cream",
+                     "Sandwiches": "Sandwich shop", "Breakfast": "Breakfast or brunch", "Noodles": "Noodle bar"}
+SHOP_SPECIALTY = [  # (words in the name, label) for shops; checked before the generic detailed type
+    (("oriental", "asian supermarket", "asian food", "asian grocer", "chinese supermarket", "korean", "japanese",
+      "oseyo", "wing yip", "hiep hoa"), "Asian supermarket"),
+    (("polski", "polish", "polskie", "eastern european", "baltic"), "Polish or Eastern European shop"),
+    (("african", "caribbean", "afro"), "African or Caribbean shop"), (("halal",), "Halal food shop"),
+    (("vape", "vaping"), "Vape shop"),
+]
+
+
+def specialty_of(p) -> tuple[str, str]:
+    """(label, where it came from) for one place row. 'name' means guessed from words in the name."""
+    cat, sub, cui = (str(p.get(k) or "") if pd.notna(p.get(k)) else "" for k in ("category", "subtype", "cuisine"))
+    text = " ".join(str(p.get(k) or "") for k in ("name", "names_seen", "brand") if pd.notna(p.get(k)))
+    low = " " + text.lower() + " "
+    sub_from = str(p.get("subtype_from") or "") if pd.notna(p.get("subtype_from")) else ""
+    if cat in FOOD_CATS:
+        guess = cuisine_from(text)
+        if cui == "Tea and bubble tea":  # older builds lumped these together
+            cui = guess[0] if guess and guess[0] in ("Bubble tea", "Tea room") else "Tea room"
+        if cui:
+            return CUISINE_SPECIALTY.get(cui, cui), "name" if p.get("cuisine_from") == "name" else "map tag"
+        if guess:
+            return CUISINE_SPECIALTY.get(guess[0], guess[0]), "name"
+        if cat == "pub_bar":
+            return (sub if sub in ("Pub", "Bar", "Licensed club") else "Pub or bar"), sub_from or "business type"
+        if cat == "restaurant_cafe":
+            if "caf" in sub.lower() or any(has_word(low, w) for w in ("cafe", "café", "caffe", "caff")):
+                return "Café", sub_from or "name"
+            return "Restaurant (cuisine not known)", sub_from or "business type"
+        if cat == "takeaway":
+            return "Takeaway (food not known)", sub_from or "business type"
+    if cat in ("shop_food", "shop_other", "supermarket"):
+        for words, label in SHOP_SPECIALTY:
+            if any(has_word(low, w) for w in words):
+                return label, "name"
+    if sub.startswith("Hairdresser") and has_word(low, "barber"):
+        return "Barber", "name"
+    if sub.startswith("Hairdresser") and has_word(low, "nail"):
+        return "Nail salon", "name"
+    if sub_from == "name":  # re-check guesses from older builds, which matched parts of words ("Sparky" -> spa)
+        sub = "" if cat in FOOD_CATS else next((s for words, s in NAME_SUBTYPE if any(has_word(low, w) for w in words)), "")
+    if sub:
+        return sub, sub_from
+    ind = str(p.get("industry") or "") if pd.notna(p.get("industry")) else ""
+    if ind:  # companies: the SIC division, e.g. "Real estate", "Computer programming and IT"
+        return ind.split("; ")[0], "SIC code"
+    return "", ""
 
 
 def detailed_type(g: pd.DataFrame, category: str, name: str, sic: str) -> dict:
@@ -656,10 +726,10 @@ def detailed_type(g: pd.DataFrame, category: str, name: str, sic: str) -> dict:
         if c:
             out.update(cuisine=c[0], cuisine_family=c[1])
             out["cuisine_from"] = "name"
-    if not out["subtype"]:
+    if not out["subtype"] and category not in FOOD_CATS:
         low = " " + names.lower() + " "
         for words, sub in NAME_SUBTYPE:
-            if any(w in low for w in words):
+            if any(has_word(low, w) for w in words):
                 out.update(subtype=sub, subtype_from="name")
                 break
     if category in FOOD_CATS and out["cuisine_family"] in ("", None) and out["subtype"] in ("Fast food", "Takeaway"):
@@ -671,7 +741,8 @@ def detailed_type(g: pd.DataFrame, category: str, name: str, sic: str) -> dict:
 PENALTY = {
     "NOT_IN_SOUTHAMPTON": 25, "DORMANT_OR_NON_TRADING": 25, "NO_COORDINATES": 20,
     "SOURCES_DISAGREE_ON_LOCATION": 15, "TYPE_CONFLICT": 15, "FAR_FROM_OWN_POSTCODE": 15, "POSTCODE_INVALID": 15,
-    "NAME_DIFFERS_BETWEEN_SOURCES": 5,  # resolved by NAME_PRIORITY; the small penalty marks a possible rebrand "POSTCODE_TERMINATED": 10, "POSSIBLE_DUPLICATE": 10, "OSM_NOT_CHECKED_3Y": 10,
+    "NAME_DIFFERS_BETWEEN_SOURCES": 5,  # resolved by NAME_PRIORITY; the small penalty marks a possible rebrand
+    "POSTCODE_TERMINATED": 10, "POSSIBLE_DUPLICATE": 10, "OSM_NOT_CHECKED_3Y": 10,
     "SHARED_ADDRESS_5PLUS": 10, "COMPANY_SIC_DOESNT_FIT_TYPE": 10, "COMPANY_REGISTERED_ELSEWHERE": 5,
     "COORDS_FROM_2017_POSTCODE_FILE": 5, "FSA_INSPECTION_OVER_4Y": 5, "FSA_RATING_PENDING": 0,
 }
@@ -918,6 +989,9 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
         })
         recs.loc[g.index, "place_id"] = f"P{pid:05d}"
     places = pd.DataFrame(rows)
+    if len(places):
+        sp = places.apply(specialty_of, axis=1)
+        places["specialty"], places["specialty_from"] = sp.str[0], sp.str[1]
     recs = recs.drop(columns=["place_idx"])
     return places, recs
 

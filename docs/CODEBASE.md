@@ -186,6 +186,8 @@ record_date, extra` (JSON with source-specific fields: OSM tags, FSA rating flag
 | `DEDUP_SOURCES`, `DUP_M`, `COORD_RANK`, `SRC_LABEL` | Which registers can have internal duplicates; pin precision order (mapped point > building > FSA geocode > postcode centre) | Best pin wins |
 | `NAME_PRIORITY`, `display_name` | Name taken from NHS ODS / Ofsted, then FSA, then OSM, then Companies House (title-cased); a bare brand ("Well") gives way to a fuller name containing it | Final, most reliable names (`name_source`, `names_seen`) |
 | `SIC_SUBTYPE`, `OSM_SUBTYPE`, `CUISINE`, `CHAIN_CUISINE`, `NAME_SUBTYPE`, `FOOD_CATS`, `cuisine_from`, `detailed_type` | Detailed type (e.g. Dental practice, Spa, Fast food) and cuisine/cuisine family; source order: map tag → register → SIC code → words in the name (`subtype_from` / `cuisine_from = "name"` marks guesses) | Advanced filter ("Korean restaurants", "dentists") |
+| `has_word` | Name keyword at the start of a word; keys of 4 letters or fewer only as whole words ("spa" not in "Sparky") | Stops false guesses |
+| `CUISINE_SPECIALTY`, `SHOP_SPECIALTY`, `specialty_of(row)` | One clear label per place for the advanced search: cuisine for food (Bubble tea, Japanese, Korean, Coffee shop…), shop words (Asian supermarket, Polish shop…), Barber / Nail salon, else the detailed type, else the company's SIC division; `specialty_from` says where it came from ("name" = a guess) | Industry → detailed type search. `build_viewers.py` adds it to older files |
 | `PENALTY`, `exclusion_reason` | Points off confidence per flag; out-of-scope records (not in Southampton, dormant, registered outside the city, unlocatable) go to `excluded_places.csv` with the reason | Every flag costs something; nothing silently dropped |
 | `SIC_CATEGORY`, `SIM_FROM_CATEGORY`, `INDUSTRY_GROUP`, `CUSTOMER_FACING_GROUPS`, `sic_category` | SIC code → category → one of 11 industry groups; customer-facing yes/no | Sort and classify industries |
 | `ch_records(reg)` | Companies House register rows → standard records (pin = registered-office postcode) | Companies merge like any other source |
@@ -209,7 +211,7 @@ postcode). Companies House (postcode-centre pins) only joins on the strict rule.
 **`places.csv` columns:** `place_id, name, name_source, category, all_categories, sim_category, lat, lon,
 coord_source, coord_method, location_spread_m, address, postcode, brand, opening_hours, website, phone, quality,
 sources, n_sources, names_seen, inside_city, confidence, flags, excluded_reason, ward, subtype, cuisine,
-cuisine_family, subtype_from, industry_group, customer_facing, company_number, company_name, company_type,
+cuisine_family, subtype_from, specialty, specialty_from, industry_group, customer_facing, company_number, company_name, company_type,
 sic_codes, industry, incorporated, google_maps_url, google_maps_search`.
 
 **Flags** (meaning in `docs/DATA_PLAN.md` §7): SINGLE_SOURCE, NO_COORDINATES, SOURCES_DISAGREE_ON_LOCATION,
@@ -230,7 +232,7 @@ Open `viewer/places_register.html` or `viewer/site_simulator.html` by double-cli
 | `src/eval_places.js` | Evaluation on the places dataset with the JS engine (writes `tests/*_places.*`) |
 | `src/pack_city.py` | Packs OAs, sites, LSOA shapes (simplified), city edge, flood shapes into one JSON |
 | `src/site_simulator.template.html` | Simulator page: modes, dataset switch (database / baseline / load a newer `places.csv`), named nearby sites, "What's nearby" tab, map tooltips |
-| `src/places_register.template.html` | Register page: table + map, advanced filter (industry → type → detailed type → cuisine family → cuisine), flags filter, Areas view (wards shaded per 1,000 residents), **Suggest spots to open** (ranks OA centres: residents within 800 m × footfall stand-in ÷ (1 + 2 × same-type within 800 m); 5 picks ≥1 km apart) |
+| `src/places_register.template.html` | Register page: table + map, advanced search (industry group → tickable, searchable detailed types grouped by business type; everyday words like "boba" or "sushi" also match), flags filter, map views: Places, **Heatmap** (density of the filtered places, one-hue ramp), **Popular** (each ward coloured by its leading detailed type: most common, or stands out vs its city-wide share with ≥3 places; marker + label per ward; hover tooltip with the ward's top 6), Per 1,000 (wards shaded per 1,000 residents); click a ward (in any area view, or the ward links) to focus it: zoom, outline, rest faded, table filtered, and a ward profile (places, per 1,000 vs city, residents, % most deprived fifth, top 10 types as bars with "× city" share ratio, types it has less of than the city); `#view=heat|pop|area&ward=Portswood` opens a view and ward, **Suggest spots to open** (ranks OA centres: residents within 800 m × footfall stand-in ÷ (1 + 2 × same-type within 800 m); 5 picks ≥1 km apart) |
 | `build_viewers.py` | Fills the templates' `__PLACEHOLDERS__` with data and writes the two HTML files |
 
 ## 11. `tests/`

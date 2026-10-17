@@ -260,3 +260,25 @@ def test_detailed_types_and_cuisine():
     assert by.loc["Costa", "cuisine"] == "Coffee"
     dent = p[p["company_number"] == "5"].iloc[0]
     assert dent["subtype"] == "Dental practice" and dent["subtype_from"] == "SIC code" and dent["ward"]
+    assert by.loc["Seoul Kitchen", "specialty"] == "Korean" and by.loc["Costa", "specialty"] == "Coffee shop"
+    assert dent["specialty"] == "Dental practice"
+
+
+def test_specialty_labels_for_advanced_search():
+    sp = lambda **p: BP.specialty_of(p)[0]
+    assert sp(category="restaurant_cafe", name="Bubble Tea House") == "Bubble tea"
+    assert sp(category="restaurant_cafe", name="Chatime") == "Bubble tea"
+    assert sp(category="restaurant_cafe", name="Eling Tea Rooms") == "Tea room"
+    assert sp(category="takeaway", name="Tokyo Sushi") == "Japanese"
+    assert sp(category="takeaway", name="Phoenix Takeaway") == "Takeaway (food not known)"  # "pho" is not Vietnamese
+    assert sp(category="restaurant_cafe", name="Team Cafe") == "Café"  # "tea" not in "Team"
+    assert sp(category="restaurant_cafe", name="Boba Bar", cuisine="Tea and bubble tea") == "Bubble tea"
+    assert sp(category="shop_food", name="Oseyo Korean Supermarket", subtype="Supermarket") == "Asian supermarket"
+    assert sp(category="hair_beauty", name="Kings Barber", subtype="Hairdresser or barber") == "Barber"
+    assert sp(category="property", industry="Real estate; Building construction") == "Real estate"
+    # name guesses match whole words only: no tattoo in "Pink", no dentist in "Incidental", no spa in "Sparky"
+    assert BP.has_word(" pink olive cafe ", "ink ") is False and BP.has_word(" incidental finding ", "dental") is False
+    assert BP.has_word(" sparky renovations ", "spa") is False and BP.has_word(" kings hairdressing ", "hairdress")
+    assert sp(category="construction", name="Sparky Renovations Ltd", subtype="Spa, massage or wellbeing",
+              subtype_from="name", industry="Specialised construction trades") == "Specialised construction trades"
+    assert sp(category="restaurant_cafe", name="Pink Olive Cafe", subtype="Tattoo studio", subtype_from="name") == "Café"
