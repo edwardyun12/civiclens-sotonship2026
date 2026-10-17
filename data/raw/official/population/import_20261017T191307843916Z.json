@@ -1,0 +1,21 @@
+{
+  "year": 2021,
+  "reference_date": "2021-06-30",
+  "geography": "LSOA 2021",
+  "loaded_at_utc": "2026-10-17T19:13:07.843702+00:00",
+  "rows_prepared": 152,
+  "population_source": {
+    "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/lowersuperoutputareamidyearpopulationestimates/mid2021andmid2022/sapelsoasyoatablefinal.xlsx",
+    "sha256": "220166bf6ae7abc8568c35c3a96fddce0a93c9fc2f871b489ce04e45798b884a",
+    "retrieved_at_utc": "2026-10-17T19:12:35.822518+00:00",
+    "note": ""
+  },
+  "median_age_source": {
+    "url": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/adhocs/2093estimatesofmedianageforlowerlayersuperoutputareasinenglandandwalesmid2021andmid2022/lsoamedian2021and2022.xlsx",
+    "sha256": "820fc18d1fce8fd451d37a341f45524f40a1a374fb0d5b55ae8d4c55c16460b4",
+    "retrieved_at_utc": "2026-10-17T19:12:37.159847+00:00",
+    "note": ""
+  },
+  "income_source": null,
+  "missing_income_policy": "NULL on insert; preserve existing value on update"
+}
