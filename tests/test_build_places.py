@@ -192,3 +192,29 @@ def test_company_tables_one_point_per_address():
     assert comp["address_id"].nunique() == 2
     f = comp.set_index("company_number")["flags"]
     assert "SHARED_ADDRESS_5PLUS" in f["0"] and "NOT_IN_SOUTHAMPTON" in f["99"] and "DORMANT_OR_NON_TRADING" in f["99"]
+
+
+def test_company_merges_into_matching_place_and_others_stay_separate():
+    reg = pd.DataFrame([
+        {"company_number": "1", "company_name": "BEAN THERE CAFE LIMITED", "company_type": "ltd", "incorporated": "2018-01-01",
+         "sic_codes": "56102", "address": "1 High St Southampton", "postcode": "SO14 7DU"},
+        {"company_number": "2", "company_name": "ACME PROPERTY LTD", "company_type": "ltd", "incorporated": "2019-01-01",
+         "sic_codes": "68209", "address": "1 High St Southampton", "postcode": "SO14 7DU"}])
+    rows = [rec("osm", "node/1", "Bean There", "restaurant_cafe", 50.90475, -1.40445)] + \
+        BP.ch_records(reg).to_dict("records")
+    p, r = run(rows)
+    cafe = p[p["names_seen"].str.contains("Bean There")].iloc[0]
+    assert cafe["n_sources"] == 2 and cafe["company_number"] == "1" and cafe["name"] == "Bean There"
+    assert cafe["industry_group"] == "Food and drink" and cafe["customer_facing"]
+    prop = p[p["company_number"] == "2"].iloc[0]
+    assert prop["category"] == "property" and "REGISTERED_OFFICE_ONLY" in prop["flags"]
+    assert prop["industry_group"] == "Business and professional" and not prop["customer_facing"]
+    assert len(p) == 2
+
+
+def test_sic_category():
+    assert BP.sic_category(["56103"]) == "takeaway"
+    assert BP.sic_category(["47730"]) == "pharmacy"
+    assert BP.sic_category(["88910"]) == "nursery"
+    assert BP.sic_category(["99999"]) == "dormant"
+    assert BP.sic_category([]) == "other"

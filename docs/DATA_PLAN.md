@@ -117,10 +117,12 @@ python -m src.build_places --ch-key YOUR_COMPANIES_HOUSE_KEY
   office (the API version of the website's Advanced search), then matches locally. `--ch-mode search` instead
   runs one name search per place, which also finds chains registered elsewhere (slower: 600 requests / 5 min).
   Only active companies are ever linked.
-- Companies House website download: `--ch-file Companies-House-search-results.csv` reads the Advanced search
-  CSV (the site caps it at 5,000 rows, so it is a subset; `--ch-key` gets every active company). Every company is
-  kept in `companies.csv` with its industry, coordinates (postcode centre) and flags; companies sharing a registered
-  address become one row in `company_addresses.csv`, so the map never stacks duplicates on the same point.
+- Companies House: `--ch-file Companies-House-search-results.csv` (the website's Advanced search download, capped at
+  5,000 rows) or `--ch-key KEY` (every active Southampton-registered company). Companies are a **source like the
+  others**: a company whose name matches a shop or service within 300 m (or in the same postcode) is merged into that
+  place; every other company becomes its own place at its registered office, flagged `REGISTERED_OFFICE_ONLY`.
+  Each place gets `category` (from its source type or SIC code) and `industry_group` (11 broad groups) plus
+  `customer_facing`, so industries can be sorted and reclassified later in one table.
 - FSA file: `--fsa-file FHRS877en-GB.xml` (Southampton) if you've downloaded it; otherwise the API is used.
 - Optional Google check: add `--google-key KEY --google-limit 200`. It checks the lowest-confidence places first
   and writes `google_check.csv` (gitignored; Google's terms limit storing their content). Every place also gets
