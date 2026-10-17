@@ -85,6 +85,13 @@ Evidence: `python -m tests.run_evaluation`. Full docs: **`docs/SIMULATOR.md`** (
 
 ## Not done yet (priority order)
 
+**Sat 17 Oct ~22:00 update:** places database built (`src/build_places.py`, docs/DATA_PLAN.md): FSA, OSM, NHS ODS,
+Ofsted, Companies House (website CSV or API) merged into one `places` table with industry groups and flags;
+sample in `data/db/sample/` (OSM + NHS + 5,000-row CH download). The simulator (engine, app sidebar, browser
+playground) now reads `data/processed/facilities_places.csv` by default; `SIM_DATASET=baseline` = 17 Oct numbers.
+TODO on the PC: `python -m src.build_places --ch-key KEY --fsa-file FHRS877en-GB.xml`, then `pytest -q` and
+`python -m tests.run_evaluation` (writes the *_places files with Python), then commit.
+
 **Sat 17 Oct ~20:30 update:** the cloud workspace could not install Python packages or reach gov.uk,
 postcodes.io or Overpass this session, so nothing could be run here. Added: business section in
 `docs/SIMULATOR.md` (item 4 done, prices are hypotheses), `docs/SUBMISSION.md` (150-word summary, checklist,

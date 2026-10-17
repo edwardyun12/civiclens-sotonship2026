@@ -7,6 +7,7 @@ Distances are straight-line (a known underestimate of walking distance; see READ
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -97,9 +98,25 @@ class City:
         return id(self)
 
 
-def load_city(proc: Path = PROC) -> City:
+# Where existing sites come from. "places" = the merged places database (src/build_places.py), the default when
+# it exists; "baseline" = the 17 Oct 2026 OSM + NHS file the published test numbers were computed on.
+DATASETS = {"places": "facilities_places.csv", "baseline": "facilities.csv"}
+
+
+def dataset_file(proc: Path, dataset: str | None) -> tuple[str, Path]:
+    dataset = dataset or os.environ.get("SIM_DATASET") or "places"
+    if dataset not in DATASETS:
+        raise EngineError(f"Unknown dataset '{dataset}'. Choose one of: {', '.join(DATASETS)}.")
+    f = proc / DATASETS[dataset]
+    if not f.exists():  # no database built yet: fall back to the baseline file
+        dataset, f = "baseline", proc / DATASETS["baseline"]
+    return dataset, f
+
+
+def load_city(proc: Path = PROC, dataset: str | None = None) -> City:
     oa = pd.read_csv(proc / "oa.csv")
-    fac = pd.read_csv(proc / "facilities.csv")
+    dataset, fac_file = dataset_file(proc, dataset)
+    fac = pd.read_csv(fac_file)
     oa["x"], oa["y"] = to_bng(oa.lat, oa.lon)
     fac["x"], fac["y"] = to_bng(fac.lat, fac.lon)
     gj = json.loads((proc / "lsoa.geojson").read_text())
@@ -115,7 +132,9 @@ def load_city(proc: Path = PROC) -> City:
         geoms = [shape(f["geometry"]) for f in fj["features"]]
         if geoms:
             flood = transform(lambda x, y, z=None: _TO_BNG.transform(x, y), unary_union(geoms))
-    return City(oa=oa, fac=fac, boundary=bng, boundary_wgs=wgs, sources=sources, flood=flood)
+    city = City(oa=oa, fac=fac, boundary=bng, boundary_wgs=wgs, sources=sources, flood=flood)
+    city.dataset = dataset
+    return city
 
 
 # ------------------------------------------------------------------ helpers

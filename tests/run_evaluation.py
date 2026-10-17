@@ -32,7 +32,9 @@ CASES = [
 
 
 def main():
-    city = E.load_city()
+    import os
+    city = E.load_city()  # dataset from SIM_DATASET (places by default, baseline for the 17 Oct numbers)
+    print(f"Dataset: {city.dataset}")
     rows = []
     for i, (cat, wards) in enumerate(CASES, 1):
         sites = [E.ward_centroid(city, w) for w in wards]
@@ -48,7 +50,8 @@ def main():
             "people_gained_vs_baseline": res[ours]["newly_covered"] - res[base]["newly_covered"],
         })
     df = pd.DataFrame(rows)
-    df.to_csv(OUT / "baseline_results.csv", index=False)
+    sfx = "" if city.dataset == "baseline" else f"_{city.dataset}"  # keep the 17 Oct files as published
+    df.to_csv(OUT / f"baseline_results{sfx}.csv", index=False)
 
     opt = {}
     for cat in C.CATEGORIES:
@@ -61,7 +64,7 @@ def main():
     summary = {"baseline_cases": len(df), "baseline_differs": int(df.differs.sum()),
                "people_gained_vs_baseline_total": int(df.people_gained_vs_baseline.sum()),
                "optimiser": opt}
-    (OUT / "evaluation_summary.json").write_text(json.dumps(summary, indent=2))
+    (OUT / f"evaluation_summary{sfx}.json").write_text(json.dumps(summary, indent=2))
     pd.set_option("display.width", 220)
     print(df.drop(columns=["most_deprived_40pct_newly"]).to_string(index=False))
     print(json.dumps(summary, indent=1))

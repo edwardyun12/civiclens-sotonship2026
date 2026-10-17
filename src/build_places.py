@@ -114,12 +114,20 @@ def norm_name(s) -> str:
     return " ".join(w for w in s.split() if w not in STOP)
 
 
+GENERIC = {"surgery", "practice", "pharmacy", "chemist", "chemists", "gp", "health", "centre", "center", "medical",
+           "doctors", "group", "partnership", "clinic", "cafe", "coffee", "shop", "nursery", "nurseries", "day",
+           "pre", "school", "preschool", "library", "store"}
+
+
 def name_sim(a, b) -> float:
     a, b = norm_name(a), norm_name(b)
     if not a or not b:
         return 0.0
     if a == b or (len(a) > 4 and a in b) or (len(b) > 4 and b in a):
         return 1.0
+    ca, cb = set(a.split()) - GENERIC, set(b.split()) - GENERIC
+    if ca and ca == cb:  # same distinctive words, e.g. "Portswood Solent Surgery" / "Solent GP Surgery Portswood"
+        return 0.9
     ta, tb = set(a.split()), set(b.split())
     jac = len(ta & tb) / len(ta | tb)
     return max(jac, difflib.SequenceMatcher(None, a, b).ratio())
@@ -259,6 +267,9 @@ def fetch_osm(bbox) -> pd.DataFrame:
     s, w, n, e = bbox
     keys = ["shop", "amenity", "healthcare", "office", "leisure", "tourism", "craft"]
     body = "".join(f'nwr["name"]["{k}"]({s},{w},{n},{e});' for k in keys)
+    body += "".join(f'nwr["{k}"="{v}"]({s},{w},{n},{e});' for k, v in  # the simulator's uses, named or not
+                    [("amenity", "cafe"), ("amenity", "kindergarten"), ("amenity", "childcare"), ("amenity", "doctors"),
+                     ("healthcare", "doctor"), ("amenity", "pharmacy"), ("healthcare", "pharmacy"), ("amenity", "library")])
     q = f"[out:json][timeout:180];({body});out center meta;"
     last = None
     for url in OVERPASS:
@@ -285,12 +296,12 @@ def parse_osm(data: dict) -> pd.DataFrame:
         t = el.get("tags", {})
         lat = el.get("lat") or el.get("center", {}).get("lat")
         lon = el.get("lon") or el.get("center", {}).get("lon")
-        if lat is None or not t.get("name"):
-            continue
         kv, cat, sim = osm_type(t)
+        if lat is None or (not t.get("name") and not sim):
+            continue  # unnamed features are kept only for the simulator's five uses (an unnamed café still exists)
         addr = ", ".join(x for x in (" ".join(filter(None, [t.get("addr:housenumber"), t.get("addr:street")])),
                                      t.get("addr:city")) if x)
-        out.append({"source": "osm", "source_id": f"{el['type']}/{el['id']}", "name": t.get("name"),
+        out.append({"source": "osm", "source_id": f"{el['type']}/{el['id']}", "name": t.get("name") or f"Unnamed {kv.split('=')[1]}",
                     "raw_type": kv, "category": cat, "sim_category": sim, "lat": lat, "lon": lon,
                     "coord_method": "osm_mapped" if el["type"] == "node" else "osm_building_centre",
                     "address": addr, "postcode": norm_postcode(t.get("addr:postcode")),
@@ -673,6 +684,36 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
     places = pd.DataFrame(rows)
     recs = recs.drop(columns=["place_idx"])
     return places, recs
+
+
+# ------------------------------------------------------------------ hand the database to the simulator
+SIM_USES = ("nursery", "gp", "pharmacy", "cafe", "library")
+
+
+def export_facilities(places: pd.DataFrame, bbox=None) -> pd.DataFrame:
+    """Existing sites for the simulator, taken from the places database.
+    A place counts as an existing nursery / GP / pharmacy / café / library when a site-level register or the map
+    says so (sim_category). Companies known only by their registered office are NOT counted as sites: a company
+    registered at an accountant's office doesn't put a GP surgery there. Coworking is kept for the diversity count."""
+    f = places.copy()
+    flags = f["flags"].fillna("").astype(str)
+    use = f["sim_category"].fillna("").astype(str)
+    use = use.where(use.isin(SIM_USES), "")
+    use = use.mask((use == "") & (f["category"] == "coworking"), "coworking")
+    keep = (use != "") & f["lat"].notna() & ~flags.str.contains("REGISTERED_OFFICE_ONLY|NOT_IN_SOUTHAMPTON")
+    # where an official register exists, it decides: GP and pharmacy sites must be on the NHS register
+    # (the map also tags MRI units, counsellors and clinics as "doctors")
+    srcs = f["sources"].fillna("").astype(str)
+    if srcs.str.contains("NHS ODS").any():
+        keep &= ~use.isin(["gp", "pharmacy"]) | srcs.str.contains("NHS ODS")
+    if bbox:
+        s_, w_, n_, e_ = bbox
+        keep &= f["lat"].between(s_, n_) & f["lon"].between(w_, e_)
+    out = pd.DataFrame({"category": use[keep], "name": f.loc[keep, "name"], "lat": f.loc[keep, "lat"],
+                        "lon": f.loc[keep, "lon"], "osm_id": f.loc[keep, "place_id"],
+                        "source": "places:" + f.loc[keep, "sources"].astype(str),
+                        "confidence": f.loc[keep, "confidence"], "flags": flags[keep]})
+    return out.reset_index(drop=True)
 
 
 # ------------------------------------------------------------------ optional Google Places cross-check
@@ -1087,7 +1128,7 @@ def main(argv=None):
     RAW.mkdir(parents=True, exist_ok=True)
     polys, bbox = load_city()
     s, w, n, e = bbox
-    bbox = (s - 0.01, w - 0.015, n + 0.01, e + 0.015)  # include sites just over the boundary
+    bbox = (s - 0.02, w - 0.02, n + 0.02, e + 0.02)  # ~2 km, as fetch_data: sites just over the boundary still count
 
     parts = []
     steps = [("fsa", lambda: parse_fsa(read_fsa_xml(a.fsa_file)) if a.fsa_file else
@@ -1144,6 +1185,9 @@ def main(argv=None):
             places["flags"] = [";".join(sorted(set(filter(None, (f + ";" + cf.get(pid, "")).split(";")))))
                                for f, pid in zip(places["flags"], places["place_id"])]
     summary = save(places, recs, companies=companies)
+    fac = export_facilities(places, bbox)
+    fac.to_csv(PROC / "facilities_places.csv", index=False)
+    print(f"Simulator sites from the database: {fac['category'].value_counts().to_dict()} -> data/processed/facilities_places.csv")
     print(json.dumps({k: v for k, v in summary.items() if k != "sources"}, indent=1, default=str))
     print(f"Saved data/db/places.csv ({len(places)} places), source_records.csv, places.sqlite, summary.json")
 

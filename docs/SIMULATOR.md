@@ -97,7 +97,25 @@ The AI never computes a number. The numbers are deterministic on purpose so they
   3 candidate wards (`tests/baseline_results.csv`): our pick **differs in 5 of 10 cases**, and in those
   cases newly covers **8,457 more people** in total. Caveat: in several cases the baseline was a tie (0
   competitors at 2-3 sites) broken by list order. That is what a spreadsheet does, but it flatters us.
-- **Optimiser** (top 3, 800 m), under 0.01 s per run:
+- **Data used**: the simulator now reads existing sites from the merged places database
+  (`data/processed/facilities_places.csv`, written by `python -m src.build_places`). GP and pharmacy sites must be on
+  the NHS register (the map also tags MRI units and counsellors as "doctors"); companies known only by their
+  registered office are never counted as sites. The 17 Oct file stays available as `SIM_DATASET=baseline` (and in
+  the app's sidebar) so the numbers below can be reproduced. Places database results:
+  `tests/evaluation_summary_places.json` and `tests/baseline_results_places.csv`.
+
+| Use | Coverage now → after top 3 (places database) | 17 Oct baseline |
+|---|---|---|
+| Nursery (children 0-4) | 60.2% → 76.7% (Sholing, Bevois, Millbrook) | 60.2% → 76.7% |
+| GP | 83.1% → 91.1% (Redbridge, Sholing, Bassett) | 83.5% → 91.5% |
+| Pharmacy | 86.0% → 92.8% (Sholing, Bassett, Woolston) | 85.6% → 92.8% |
+| Café | 79.4% → 89.0% | 79.4% → 89.0% |
+| Library | 43.7% → 59.7% | 43.7% → 59.7% |
+
+  Baseline comparison on the places database: our pick differs in **5 of 10** cases and newly covers **9,403** more
+  people in those cases (17 Oct baseline: 5 of 10, 8,457).
+
+- **Optimiser on the 17 Oct baseline** (top 3, 800 m), under 0.01 s per run:
 
 | Use | Coverage now | After top 3 sites | Top 3 wards |
 |---|---|---|---|
