@@ -1,0 +1,79 @@
+{
+  "oa_lookup": {
+    "title": "ONS Output Area to LSOA to MSOA to LAD (Dec 2021) lookup",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/OA_LSOA_MSOA_EW_DEC_2021_LU_v3",
+    "licence": "OGL v3.0 (Source: Office for National Statistics)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 792
+  },
+  "ward_lookup": {
+    "title": "ONS LSOA (2021) to Ward to LTLA (May 2022) lookup",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LSOA_2021_to_Ward_to_Lower_Tier_Local_Authority_May_2022_Lookup_for_England_2022",
+    "licence": "OGL v3.0 (Source: Office for National Statistics)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 152
+  },
+  "oa_pwc": {
+    "title": "ONS Output Areas (Dec 2021) population-weighted centroids V4",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/OA_December_2021_EW_PWC_V4",
+    "licence": "OGL v3.0 (Source: Office for National Statistics)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 792
+  },
+  "lsoa_bounds": {
+    "title": "ONS LSOA (Dec 2021) boundaries EW BGC V5",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Lower_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V5",
+    "licence": "OGL v3.0 (Source: Office for National Statistics; contains OS data (c) Crown copyright and database right)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 152
+  },
+  "imd": {
+    "title": "English Indices of Deprivation 2019, IMD rank by LSOA (ONS lookup copy of MHCLG data)",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/Index_of_Multiple_Deprivation_Dec_2019_Lookup_in_England_2022",
+    "licence": "OGL v3.0 (Source: MHCLG, English Indices of Deprivation 2019)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 148
+  },
+  "census": {
+    "title": "Census 2021 TS007A Age by five-year age bands, Output Areas (Nomis)",
+    "url": "https://www.nomisweb.co.uk/api/v01/dataset/NM_2020_1",
+    "licence": "OGL v3.0 (Source: Office for National Statistics, Census 2021)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 792
+  },
+  "lsoa11_bounds": {
+    "title": "ONS LSOA (Dec 2011) boundaries BSC V4 (used only to place 2021 OAs in 2011 LSOAs for IMD)",
+    "url": "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LSOA_2011_Boundaries_Super_Generalised_Clipped_BSC_EW_V4",
+    "licence": "OGL v3.0 (Source: Office for National Statistics; contains OS data (c) Crown copyright and database right)",
+    "downloaded": "2026-10-17 17:29 UTC",
+    "rows": 148
+  },
+  "osm": {
+    "title": "OpenStreetMap facilities (Overpass API, OSM data as of 2026-10-17T17:31:06Z)",
+    "url": "https://overpass-api.de/api/interpreter",
+    "licence": "ODbL 1.0 (c) OpenStreetMap contributors",
+    "downloaded": "2026-10-17 17:33 UTC",
+    "rows": 312
+  },
+  "nhs_ods": {
+    "title": "NHS Organisation Data Service: active GP practices, branch surgeries, pharmacies",
+    "url": "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations",
+    "licence": "OGL v3.0 (NHS England, Organisation Data Service)",
+    "downloaded": "2026-10-17 17:33 UTC",
+    "rows": 104
+  },
+  "postcodes_io": {
+    "title": "postcodes.io (ONS Postcode Directory) for geocoding register postcodes",
+    "url": "https://api.postcodes.io",
+    "licence": "OGL v3.0; contains OS data (c) Crown copyright; Royal Mail data (c) Royal Mail copyright",
+    "downloaded": "2026-10-17 17:33 UTC",
+    "rows": 114
+  },
+  "flood": {
+    "title": "Environment Agency Flood Map for Planning: Flood Zones 2 and 3 (rivers and sea); Zone 3 used",
+    "url": "https://environment.data.gov.uk/spatialdata/flood-map-for-planning-flood-zones/wfs",
+    "licence": "OGL v3.0 (Environment Agency; contains OS data (c) Crown copyright)",
+    "downloaded": "2026-10-17 17:36 UTC",
+    "rows": 497
+  }
+}

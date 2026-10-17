@@ -1,0 +1,20 @@
+# secrets: never commit keys
+.env
+.streamlit/secrets.toml
+*.key
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# large or regenerated data
+data/raw/ea_flood_zones.json
+data/raw/osm_facilities.json
+data/cache/*.npy
+logs/
+
+.DS_Store
+Thumbs.db
