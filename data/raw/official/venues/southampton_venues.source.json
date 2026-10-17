@@ -1,0 +1,12 @@
+﻿{
+    "endpoint":  "https://overpass-api.de/api/interpreter",
+    "editor":  "https://overpass-turbo.eu/",
+    "retrieved_at_utc":  "2026-10-17T19:41:40.7670254Z",
+    "osm_base_timestamp":  "2026-10-17T19:40:14Z",
+    "sha256":  "3a24cb1cf56b46b92c14815d56b132e8e91c98c4d7ca91f0eaf4edbd28bc0c31",
+    "query_sha256":  "22e316a23d1ad3f00eca5befe9fb005300a08fdf7bf4e0fa9aac8b7b01935d4d",
+    "boundary_relation_id":  127864,
+    "attribution":  "© OpenStreetMap contributors",
+    "licence":  "https://www.openstreetmap.org/copyright",
+    "encoding":  "UTF-8; original HTTP response bytes preserved"
+}
