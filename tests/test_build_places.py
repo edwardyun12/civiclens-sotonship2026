@@ -231,3 +231,19 @@ def test_sic_category():
     assert BP.sic_category(["88910"]) == "nursery"
     assert BP.sic_category(["99999"]) == "dormant"
     assert BP.sic_category([]) == "other"
+
+
+def test_pharmacy_and_surgery_with_same_place_name_stay_separate():
+    p, _ = run([rec("nhs_ods", "FA1", "Bitterne Pharmacy", "pharmacy", 50.9174, -1.3587, sim="pharmacy"),
+                rec("osm", "node/8", "Bitterne Pharmacy", "pharmacy", 50.91751, -1.35884, sim="pharmacy"),
+                rec("osm", "node/9", "Bitterne Surgery", "gp", 50.91743, -1.35871, sim="gp")])
+    assert len(p) == 2 and sorted(p["category"]) == ["gp", "pharmacy"]
+
+
+def test_register_name_wins_but_bare_brand_gives_way():
+    p, _ = run([rec("nhs_ods", "FA2", "Sholing Pharmacy", "pharmacy", 50.9046, -1.4045, sim="pharmacy"),
+                rec("osm", "node/10", "Day Lewis Pharmacy", "pharmacy", 50.90462, -1.40452, sim="pharmacy")])
+    assert len(p) == 1 and p.iloc[0]["name"] == "Sholing Pharmacy" and p.iloc[0]["name_source"] == "NHS ODS"
+    p, _ = run([rec("nhs_ods", "FA3", "Well", "pharmacy", 50.9046, -1.4045, sim="pharmacy"),
+                rec("osm", "node/11", "Well Pharmacy", "pharmacy", 50.90462, -1.40452, sim="pharmacy")])
+    assert p.iloc[0]["name"] == "Well Pharmacy"

@@ -148,3 +148,15 @@ afterwards, because coverage numbers will change.
 - **Scored:** every remaining flag lowers the 0-100 confidence (`PENALTY` in `src/build_places.py`).
 - **Fixed by the PC run:** pins from the 2017 postcode file are replaced by live postcodes.io lookups, and
   `--ch-key` pulls every active Southampton company live from Companies House (the website download stops at 5,000).
+
+## 8. Which name is used
+
+When sources disagree, the place takes its name from the most reliable source for names (`NAME_PRIORITY`):
+1. **NHS ODS** (GPs, pharmacies) and **Ofsted** (childcare): statutory registers that must be told of changes.
+2. **FSA food hygiene register**: the council's register of food businesses, refreshed at each inspection.
+3. **OpenStreetMap**: volunteer-edited; can lag a rebrand or closure (e.g. old "Lloyds Pharmacy" names).
+4. **Companies House**: the legal entity's name ("X LIMITED"), not the name over the door; shown in title case
+   and always kept separately in `company_name`.
+
+A bare brand from a register ("Well") gives way to a fuller name that contains it ("Well Pharmacy").
+`name_source` records which source won; `names_seen` keeps every variant.
