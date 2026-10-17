@@ -1,0 +1,53 @@
+{
+ "built": "2026-10-17 20:21 UTC",
+ "places": 324,
+ "source_records": 382,
+ "records_by_source": {
+  "osm": 278,
+  "nhs_ods": 104
+ },
+ "places_by_category": {
+  "restaurant_cafe": 153,
+  "gp": 64,
+  "pharmacy": 58,
+  "nursery": 33,
+  "library": 14,
+  "coworking": 2
+ },
+ "places_by_n_sources": {
+  "1": 266,
+  "2": 58
+ },
+ "flags": {
+  "SINGLE_SOURCE": 266,
+  "OUTSIDE_CITY": 81,
+  "COORDS_FROM_POSTCODE_ONLY": 46,
+  "NAME_DIFFERS_BETWEEN_SOURCES": 11,
+  "POSSIBLE_DUPLICATE": 10
+ },
+ "inside_city": 243,
+ "company_links": {},
+ "sources": {
+  "osm": {
+   "title": "OpenStreetMap facilities (Overpass API, OSM data as of 2026-10-17T17:31:06Z)",
+   "url": "https://overpass-api.de/api/interpreter",
+   "licence": "ODbL 1.0 (c) OpenStreetMap contributors",
+   "downloaded": "2026-10-17 17:33 UTC",
+   "rows": 312
+  },
+  "nhs_ods": {
+   "title": "NHS Organisation Data Service: active GP practices, branch surgeries, pharmacies",
+   "url": "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations",
+   "licence": "OGL v3.0 (NHS England, Organisation Data Service)",
+   "downloaded": "2026-10-17 17:33 UTC",
+   "rows": 104
+  },
+  "postcodes_io": {
+   "title": "postcodes.io (ONS Postcode Directory) for geocoding register postcodes",
+   "url": "https://api.postcodes.io",
+   "licence": "OGL v3.0; contains OS data (c) Crown copyright; Royal Mail data (c) Royal Mail copyright",
+   "downloaded": "2026-10-17 17:33 UTC",
+   "rows": 114
+  }
+ }
+}

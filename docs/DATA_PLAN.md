@@ -103,3 +103,29 @@ and re-run `pytest` and `tests.run_evaluation` after swapping data (counts and c
 - Census 2021 TS045: https://www.ons.gov.uk/datasets/TS045
 - NaPTAN: https://findtransportdata.dft.gov.uk/dataset/national-public-transport-access-nodes-17f0ce86368
 - Public libraries dataset: https://www.data.gov.uk/dataset/public-libraries-in-england-basic-dataset
+
+## 6. How to build the database (on the PC)
+
+```bat
+git pull
+.venv\Scripts\activate
+python -m src.build_places --ch-key YOUR_COMPANIES_HOUSE_KEY
+```
+
+- Free Companies House key: register at developer.company-information.service.gov.uk, create an application,
+  choose a REST key. Default `--ch-mode advanced` pulls every **active** company with a Southampton registered
+  office (the API version of the website's Advanced search), then matches locally. `--ch-mode search` instead
+  runs one name search per place, which also finds chains registered elsewhere (slower: 600 requests / 5 min).
+  Only active companies are ever linked.
+- Optional Google check: add `--google-key KEY --google-limit 200`. It checks the lowest-confidence places first
+  and writes `google_check.csv` (gitignored; Google's terms limit storing their content). Every place also gets
+  free "Pin on Google Maps" and "Search on Google Maps" links for manual checks.
+- If a source fails, the others still build. `--offline` rebuilds from `data/db/raw/` without downloading.
+- Outputs: `data/db/places.csv`, `source_records.csv`, `company_links.csv`, `companies_register.csv`,
+  `places.sqlite`, `summary.json`. Load the CSVs into the Places Register viewer to inspect them.
+- Tests: `pytest -q tests/test_build_places.py` (11 tests: matching, flags, postcode checks, Companies House).
+- `data/db/sample/` is a small real build from the 17 Oct OSM and NHS files, for the viewer and tests.
+
+The simulator still reads `data/processed/facilities.csv`, so the published test numbers stay reproducible.
+Switching the engine to the new `places` table is a separate step: rerun `pytest` and `tests.run_evaluation`
+afterwards, because coverage numbers will change.

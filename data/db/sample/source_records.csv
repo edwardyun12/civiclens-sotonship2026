@@ -1,0 +1,383 @@
+source,source_id,name,raw_type,category,sim_category,lat,lon,coord_method,address,postcode,brand,opening_hours,website,phone,quality,record_date,extra,postcode_status,m_from_postcode,no_coords,dup_in_source,place_id
+osm,node/292812253,Well Pharmacy,pharmacy,pharmacy,pharmacy,50.9085632,-1.3342568,osm_mapped,,,,,,,,,{},missing,,False,False,P00001
+osm,node/292812303,Thornhill Library,library,library,library,50.9089864,-1.3347299,osm_mapped,,,,,,,,,{},missing,,False,False,P00002
+osm,node/339846149,High Wood Barn Visitor Centre,cafe,restaurant_cafe,cafe,50.9425057,-1.3453946,osm_mapped,,,,,,,,,{},missing,,False,False,P00003
+osm,node/568207055,Blackthorn Pharmacy,pharmacy,pharmacy,pharmacy,50.8760895,-1.3269605,osm_mapped,,,,,,,,,{},missing,,False,False,P00004
+osm,node/602788878,NHS Pharmacy,pharmacy,pharmacy,pharmacy,50.9305009,-1.4588844,osm_mapped,,,,,,,,,{},missing,,False,False,P00005
+osm,node/640321048,Woolston Pharmacy,pharmacy,pharmacy,pharmacy,50.8971316,-1.372078,osm_mapped,,,,,,,,,{},missing,,False,False,P00006
+osm,node/676403254,Telephone House Pharmacy,pharmacy,pharmacy,pharmacy,50.8975821,-1.4038685,osm_mapped,,,,,,,,,{},missing,,False,False,P00007
+osm,node/676403255,Telephone House Surgery,gp,gp,gp,50.8978443,-1.4037224,osm_mapped,,,,,,,,,{},missing,,False,False,P00008
+osm,node/700235920,Steam Coffee Shop,cafe,restaurant_cafe,cafe,50.8945399,-1.4059921,osm_mapped,,,,,,,,,{},missing,,False,False,P00009
+osm,node/700236017,Steam Coffee Shop,cafe,restaurant_cafe,cafe,50.8961907,-1.4051289,osm_mapped,,,,,,,,,{},missing,,False,False,P00010
+osm,node/852775948,Shirley Library,library,library,library,50.923946,-1.4343362,osm_mapped,,,,,,,,,{},missing,,False,False,P00011
+osm,node/856997807,The Lunch Lounge,cafe,restaurant_cafe,cafe,50.8994641,-1.3921902,osm_mapped,,,,,,,,,{},missing,,False,False,P00012
+osm,node/1195157081,Waterside Cafe,cafe,restaurant_cafe,cafe,50.8700301,-1.3994209,osm_mapped,,,,,,,,,{},missing,,False,False,P00013
+osm,node/1299353543,Costa,cafe,restaurant_cafe,cafe,50.90818,-1.4138612,osm_mapped,,,,,,,,,{},missing,,False,False,P00014
+osm,node/1559829089,The Precinct Pharmacy,pharmacy,pharmacy,pharmacy,50.9236982,-1.4344367,osm_mapped,,,,,,,,,{},missing,,False,False,P00015
+osm,node/1592839313,Starbucks,cafe,restaurant_cafe,cafe,50.9038114,-1.4045201,osm_mapped,,,,,,,,,{},missing,,False,False,P00016
+osm,node/1602142790,Costa,cafe,restaurant_cafe,cafe,50.9034346,-1.4075296,osm_mapped,,,,,,,,,{},missing,,False,False,P00017
+osm,node/1602159264,Asda Café,cafe,restaurant_cafe,cafe,50.9060164,-1.4077725,osm_mapped,,,,,,,,,{},missing,,False,False,P00018
+osm,node/1711741751,Fusion,cafe,restaurant_cafe,cafe,50.9613388,-1.422739,osm_mapped,,,,,,,,,{},missing,,False,False,P00019
+osm,node/1863560138,Lakeside Café,cafe,restaurant_cafe,cafe,50.9554175,-1.3643529,osm_mapped,,,,,,,,,{},missing,,False,False,P00020
+osm,node/1965732597,Eling Creek Tea Rooms,cafe,restaurant_cafe,cafe,50.9113717,-1.4824556,osm_mapped,,,,,,,,,{},missing,,False,False,P00021
+osm,node/1967361316,Be-Be's Cafe,cafe,restaurant_cafe,cafe,50.8702416,-1.3996937,osm_mapped,,,,,,,,,{},missing,,False,False,P00022
+osm,node/2026085749,Costa,cafe,restaurant_cafe,cafe,50.9334434,-1.4339823,osm_mapped,,,,,,,,,{},missing,,False,False,P00023
+osm,node/2107140318,Chartwell Pharmacy,pharmacy,pharmacy,pharmacy,50.9329736,-1.3523724,osm_mapped,,,,,,,,,{},missing,,False,False,P00024
+osm,node/2140837881,Sweet Soul Cafe,cafe,restaurant_cafe,cafe,50.8907294,-1.4502061,osm_mapped,,,,,,,,,{},missing,,False,False,P00025
+osm,node/2143335197,West End Library,library,library,library,50.9288175,-1.3372581,osm_mapped,,,,,,,,,{},missing,,False,False,P00026
+osm,node/2143335202,Playaway,nursery,nursery,nursery,50.9283002,-1.3370328,osm_mapped,,,,,,,,,{},missing,,False,False,P00027
+osm,node/2161913526,Superdrug,pharmacy,pharmacy,pharmacy,50.9146615,-1.3600695,osm_mapped,,,,,,,,,{},missing,,False,False,P00028
+osm,node/2164531862,Woodland Cafe,cafe,restaurant_cafe,cafe,50.9426075,-1.3454054,osm_mapped,,,,,,,,,{},missing,,False,False,P00029
+osm,node/2206817411,Café Local,cafe,restaurant_cafe,cafe,50.9508433,-1.3630051,osm_mapped,,,,,,,,,{},missing,,False,False,P00030
+osm,node/2322067048,Bürgshake,cafe,restaurant_cafe,cafe,50.9178151,-1.4272962,osm_mapped,,,,,,,,,{},missing,,False,False,P00031
+osm,node/2337102315,Tesco Pharmacy,pharmacy,pharmacy,pharmacy,50.8944201,-1.3208992,osm_mapped,,,,,,,,,{},missing,,False,False,P00032
+osm,node/2400215826,Bitterne Pharmacy,pharmacy,pharmacy,pharmacy,50.917511,-1.3588403,osm_mapped,,,,,,,,,{},missing,,False,False,P00033
+osm,node/2420875235,Costa,cafe,restaurant_cafe,cafe,50.9586482,-1.4483027,osm_mapped,,,,,,,,,{},missing,,False,False,P00034
+osm,node/2450390332,Day Lewis Pharmacy,pharmacy,pharmacy,pharmacy,50.9005832,-1.3398322,osm_mapped,,,,,,,,,{},missing,,False,False,P00035
+osm,node/2571357267,Costa,cafe,restaurant_cafe,cafe,50.9031587,-1.4059603,osm_mapped,,,,,,,,,{},missing,,False,False,P00036
+osm,node/2573542350,Sea City Museum Cafe,cafe,restaurant_cafe,cafe,50.9082697,-1.4076259,osm_mapped,,,,,,,,,{},missing,,False,False,P00037
+osm,node/2576450731,Costa,cafe,restaurant_cafe,cafe,50.905619,-1.4051475,osm_mapped,,,,,,,,,{},missing,,False,False,P00038
+osm,node/2851603270,LabelFood,cafe,restaurant_cafe,cafe,50.9312349,-1.4000356,osm_mapped,,,,,,,,,{},missing,,False,False,P00039
+osm,node/2937723290,Bracken Place Nursery,nursery,nursery,nursery,50.956176,-1.3983025,osm_mapped,,,,,,,,,{},missing,,False,False,P00040
+osm,node/3291437792,Starbucks,cafe,restaurant_cafe,cafe,50.8958802,-1.4048855,osm_mapped,,,,,,,,,{},missing,,False,False,P00041
+osm,node/3354590324,Fresh Food Cafe,cafe,restaurant_cafe,cafe,50.9562007,-1.4479679,osm_mapped,,,,,,,,,{},missing,,False,False,P00042
+osm,node/3899096651,Flying Aubergine Mediterranean Café,cafe,restaurant_cafe,cafe,50.9077285,-1.402103,osm_mapped,,,,,,,,,{},missing,,False,False,P00043
+osm,node/3950237076,Costa,cafe,restaurant_cafe,cafe,50.9377324,-1.3973487,osm_mapped,,,,,,,,,{},missing,,False,False,P00044
+osm,node/4074152800,Isaac's Cafe,cafe,restaurant_cafe,cafe,50.9074681,-1.4137258,osm_mapped,,,,,,,,,{},missing,,False,False,P00045
+osm,node/4074152950,Starbucks,cafe,restaurant_cafe,cafe,50.9072693,-1.4138182,osm_mapped,,,,,,,,,{},missing,,False,False,P00046
+osm,node/4075940150,Round About Cafe,cafe,restaurant_cafe,cafe,50.9418737,-1.3729261,osm_mapped,,,,,,,,,{},missing,,False,False,P00047
+osm,node/4091239357,League of Friends,cafe,restaurant_cafe,cafe,50.9125861,-1.3967093,osm_mapped,,,,,,,,,{},missing,,False,False,P00048
+osm,node/4361140464,Costa Drive Thru,cafe,restaurant_cafe,cafe,50.9573803,-1.4498046,osm_mapped,,,,,,,,,{},missing,,False,False,P00049
+osm,node/4501323189,Starbucks,cafe,restaurant_cafe,cafe,50.9081802,-1.4140406,osm_mapped,,,,,,,,,{},missing,,False,False,P00050
+osm,node/4509591430,Tesco Café,cafe,restaurant_cafe,cafe,50.8948994,-1.3206811,osm_mapped,,,,,,,,,{},missing,,False,False,P00051
+osm,node/4881220154,Doorsteps Cafe,cafe,restaurant_cafe,cafe,50.8898034,-1.3155434,osm_mapped,,,,,,,,,{},missing,,False,False,P00052
+osm,node/4941697784,Oasis Tea Bar (F Level),cafe,restaurant_cafe,cafe,50.9334824,-1.4352949,osm_mapped,,,,,,,,,{},missing,,False,False,P00053
+osm,node/5008079421,Sally Anne's,cafe,restaurant_cafe,cafe,50.8982756,-1.3991679,osm_mapped,,,,,,,,,{},missing,,False,False,P00054
+osm,node/5008321821,Bistro Baristo,cafe,restaurant_cafe,cafe,50.8973604,-1.4038515,osm_mapped,,,,,,,,,{},missing,,False,False,P00055
+osm,node/5047619535,Pats Sandwich Bar,cafe,restaurant_cafe,cafe,50.9189374,-1.4909413,osm_mapped,,,,,,,,,{},missing,,False,False,P00056
+osm,node/5047748625,Arrosto,cafe,restaurant_cafe,cafe,50.9184344,-1.4887376,osm_mapped,,,,,,,,,{},missing,,False,False,P00057
+osm,node/5047768731,Aroma,cafe,restaurant_cafe,cafe,50.919363,-1.488404,osm_mapped,,,,,,,,,{},missing,,False,False,P00058
+osm,node/5109382392,B level MRI,gp,gp,gp,50.9323174,-1.434661,osm_mapped,,,,,,,,,{},missing,,False,False,P00059
+osm,node/5254306742,Fusion,cafe,restaurant_cafe,cafe,50.9621992,-1.4304671,osm_mapped,,,,,,,,,{},missing,,False,False,P00060
+osm,node/5294173172,Waterstones Cafe,cafe,restaurant_cafe,cafe,50.9028959,-1.406215,osm_mapped,,,,,,,,,{},missing,,False,False,P00061
+osm,node/6116459956,Lordshill Health Centre,gp,gp,gp,50.9403482,-1.4488341,osm_mapped,,,,,,,,,{},missing,,False,False,P00062
+osm,node/6237209762,Lloyds Pharmacy,pharmacy,pharmacy,pharmacy,50.9053391,-1.3971519,osm_mapped,,,,,,,,,{},missing,,False,False,P00063
+osm,node/6347814252,Cafe Thrive Southampton,cafe,restaurant_cafe,cafe,50.9028339,-1.4018346,osm_mapped,,,,,,,,,{},missing,,False,False,P00064
+osm,node/6433953274,Aroma kitchen,cafe,restaurant_cafe,cafe,50.9217996,-1.4437267,osm_mapped,,,,,,,,,{},missing,,False,False,P00065
+osm,node/6468583941,Costa,cafe,restaurant_cafe,cafe,50.9564288,-1.44804,osm_mapped,,,,,,,,,{},missing,,False,False,P00066
+osm,node/6475129685,Rosemary Cafe & Bistro,cafe,restaurant_cafe,cafe,50.9016272,-1.4042738,osm_mapped,,,,,,,,,{},missing,,False,False,P00067
+osm,node/6502280602,Costa Drive Thru,cafe,restaurant_cafe,cafe,50.9570248,-1.449179,osm_mapped,,,,,,,,,{},missing,,False,False,P00068
+osm,node/6556282804,Options Counseling,gp,gp,gp,50.9102303,-1.4203751,osm_mapped,,,,,,,,,{},missing,,False,False,P00069
+osm,node/6653423155,Little Caterpillars Preschool,nursery,nursery,nursery,50.9269695,-1.4363377,osm_mapped,,,,,,,,,{},missing,,False,False,P00070
+osm,node/6702794787,Edison's,cafe,restaurant_cafe,cafe,50.8994344,-1.4039886,osm_mapped,,,,,,,,,{},missing,,False,False,P00071
+osm,node/6799001486,Room 2 Living room Coffee & Cocktail bar,cafe,restaurant_cafe,cafe,50.8979592,-1.4002105,osm_mapped,,,,,,,,,{},missing,,False,False,P00072
+osm,node/6934566505,Hoxton Bakehouse GHT Cafe,cafe,restaurant_cafe,cafe,50.8963317,-1.4025804,osm_mapped,,,,,,,,,{},missing,,False,False,P00073
+osm,node/7232525602,Cartland Truck Stop Cafe,cafe,restaurant_cafe,cafe,50.9175022,-1.4644332,osm_mapped,,,,,,,,,{},missing,,False,False,P00074
+osm,node/7510656090,Asda Café,cafe,restaurant_cafe,cafe,50.917919,-1.4886904,osm_mapped,,,,,,,,,{},missing,,False,False,P00075
+osm,node/8130663404,Empress Cafe,cafe,restaurant_cafe,cafe,50.9191815,-1.3928973,osm_mapped,,,,,,,,,{},missing,,False,False,P00076
+osm,node/8487532550,Chatime,cafe,restaurant_cafe,cafe,50.9017095,-1.4042927,osm_mapped,,,,,,,,,{},missing,,False,False,P00077
+osm,node/8946330499,Costa,cafe,restaurant_cafe,cafe,50.9505718,-1.3619359,osm_mapped,,,,,,,,,{},missing,,False,False,P00078
+osm,node/9318068192,Costa,cafe,restaurant_cafe,cafe,50.9179493,-1.312032,osm_mapped,,,,,,,,,{},missing,,False,False,P00079
+osm,node/9382166105,Play Away Day Nursery Ltd,nursery,nursery,nursery,50.9002485,-1.3916484,osm_mapped,,,,,,,,,{},missing,,False,False,P00080
+osm,node/9430961370,Yellow Welly,cafe,restaurant_cafe,cafe,50.9101179,-1.3799462,osm_mapped,,,,,,,,,{},missing,,False,False,P00081
+osm,node/9498421604,Coffee Ozzy,cafe,restaurant_cafe,cafe,50.9060668,-1.4088846,osm_mapped,,,,,,,,,{},missing,,False,False,P00082
+osm,node/9660477072,Cake & Bake,cafe,restaurant_cafe,cafe,50.9060394,-1.396924,osm_mapped,,,,,,,,,{},missing,,False,False,P00083
+osm,node/10135804817,Black Wax Coffee and Records,cafe,restaurant_cafe,cafe,50.8701064,-1.3988945,osm_mapped,,,,,,,,,{},missing,,False,False,P00084
+osm,node/10210460573,Costa,cafe,restaurant_cafe,cafe,50.9036128,-1.4063467,osm_mapped,,,,,,,,,{},missing,,False,False,P00085
+osm,node/10223395008,Costa,cafe,restaurant_cafe,cafe,50.950319,-1.3611017,osm_mapped,,,,,,,,,{},missing,,False,False,P00086
+osm,node/10548356588,Elsabel Cafe,cafe,restaurant_cafe,cafe,50.9192253,-1.4904977,osm_mapped,,,,,,,,,{},missing,,False,False,P00087
+osm,node/10769611871,Regus,coworking,coworking,,50.9102249,-1.406894,osm_mapped,,,,,,,,,{},missing,,False,False,P00088
+osm,node/10951317756,Mettricks,cafe,restaurant_cafe,cafe,50.8947954,-1.3826455,osm_mapped,,,,,,,,,{},missing,,False,False,P00089
+osm,node/10951332344,Woolston Library,library,library,library,50.8957151,-1.3807742,osm_mapped,,,,,,,,,{},missing,,False,False,P00090
+osm,node/11067743564,Stacey's Shack,cafe,restaurant_cafe,cafe,50.9146719,-1.3612528,osm_mapped,,,,,,,,,{},missing,,False,False,P00091
+osm,node/11138767016,Boots,pharmacy,pharmacy,pharmacy,50.9235472,-1.3732457,osm_mapped,,,,,,,,,{},missing,,False,False,P00092
+osm,node/11238909751,Bubbleology,cafe,restaurant_cafe,cafe,50.9034246,-1.4067319,osm_mapped,,,,,,,,,{},missing,,False,False,P00093
+osm,node/11351433351,Mettricks,cafe,restaurant_cafe,cafe,50.9037109,-1.4073186,osm_mapped,,,,,,,,,{},missing,,False,False,P00094
+osm,node/11643200065,Tickleford Preschool,nursery,nursery,nursery,50.8886654,-1.3527715,osm_mapped,,,,,,,,,{},missing,,False,False,P00095
+osm,node/11758981617,Co-operative Childcare,nursery,nursery,nursery,50.9298775,-1.441161,osm_mapped,,,,,,,,,{},missing,,False,False,P00096
+osm,node/12163262709,The Hatch Cafe,cafe,restaurant_cafe,cafe,50.9288468,-1.3370995,osm_mapped,,,,,,,,,{},missing,,False,False,P00097
+osm,node/12163531473,The Nest Coffee,cafe,restaurant_cafe,cafe,50.9231077,-1.4450597,osm_mapped,,,,,,,,,{},missing,,False,False,P00098
+osm,node/12303882357,Meet Point,cafe,restaurant_cafe,cafe,50.9110242,-1.3841755,osm_mapped,,,,,,,,,{},missing,,False,False,P00099
+osm,node/12373592886,Tea Rex 茶味,cafe,restaurant_cafe,cafe,50.9029276,-1.4053912,osm_mapped,,,,,,,,,{},missing,,False,False,P00100
+osm,node/12373592888,Poppins,cafe,restaurant_cafe,cafe,50.9023386,-1.4044917,osm_mapped,,,,,,,,,{},missing,,False,False,P00101
+osm,node/12373597466,Heytea,cafe,restaurant_cafe,cafe,50.9025212,-1.4045383,osm_mapped,,,,,,,,,{},missing,,False,False,P00102
+osm,node/12410206273,Hi Tea,cafe,restaurant_cafe,cafe,50.9031657,-1.4032549,osm_mapped,,,,,,,,,{},missing,,False,False,P00103
+osm,node/12410206278,Ding Tea 薡茶,cafe,restaurant_cafe,cafe,50.9029239,-1.403222,osm_mapped,,,,,,,,,{},missing,,False,False,P00104
+osm,node/12421770420,Costa,cafe,restaurant_cafe,cafe,50.9020959,-1.4038643,osm_mapped,,,,,,,,,{},missing,,False,False,P00105
+osm,node/12617838253,Little Berries Pre-School,nursery,nursery,nursery,50.9367099,-1.4139497,osm_mapped,,,,,,,,,{},missing,,False,False,P00106
+osm,node/12800726060,悸动烧仙草 Jidong Herbal Jelly,cafe,restaurant_cafe,cafe,50.9024696,-1.4045348,osm_mapped,,,,,,,,,{},missing,,False,False,P00107
+osm,node/12843633001,My Little Explorers Toothill,nursery,nursery,nursery,50.9626541,-1.4676052,osm_mapped,,,,,,,,,{},missing,,False,False,P00108
+osm,node/13308005594,Howley Coffee Co.,cafe,restaurant_cafe,cafe,50.8707186,-1.3993989,osm_mapped,,,,,,,,,{},missing,,False,False,P00109
+osm,node/13338520190,George's Cafe & Restaurant,cafe,restaurant_cafe,cafe,50.9226808,-1.4326643,osm_mapped,,,,,,,,,{},missing,,False,False,P00110
+osm,node/13421146859,The Nest Coffee House,cafe,restaurant_cafe,cafe,50.9113794,-1.404633,osm_mapped,,,,,,,,,{},missing,,False,True,P00111
+osm,node/13511066232,Ori Caffé,cafe,restaurant_cafe,cafe,50.9045067,-1.4081413,osm_mapped,,,,,,,,,{},missing,,False,False,P00112
+osm,node/13593247370,Timplado,cafe,restaurant_cafe,cafe,50.9018389,-1.4029272,osm_mapped,,,,,,,,,{},missing,,False,False,P00113
+osm,node/13593247397,Happy Lemon,cafe,restaurant_cafe,cafe,50.9018454,-1.4035644,osm_mapped,,,,,,,,,{},missing,,False,False,P00114
+osm,node/13624576758,Starbucks,cafe,restaurant_cafe,cafe,50.950182,-1.3612807,osm_mapped,,,,,,,,,{},missing,,False,False,P00115
+osm,node/13722976471,The Café at The Hawthorns,cafe,restaurant_cafe,cafe,50.9234682,-1.4077964,osm_mapped,,,,,,,,,{},missing,,False,False,P00116
+osm,node/13799737384,Coffee 8,cafe,restaurant_cafe,cafe,50.9007047,-1.4041565,osm_mapped,,,,,,,,,{},missing,,False,False,P00117
+osm,node/14160235851,Enhanced Care Services,gp,gp,gp,50.9419889,-1.4715463,osm_mapped,,,,,,,,,{},missing,,False,False,P00118
+osm,way/4724596,The Aviary Children's Centre,nursery,nursery,nursery,50.963841,-1.380771,osm_mapped,,,,,,,,,{},missing,,False,False,P00119
+osm,way/23134482,Totton Library,library,library,library,50.9196549,-1.4892545,osm_mapped,,,,,,,,,{},missing,,False,False,P00120
+osm,way/23134490,Totton Health Centre,gp,gp,gp,50.9205119,-1.4887927,osm_mapped,,,,,,,,,{},missing,,False,False,P00121
+osm,way/27047528,Mountbatten Library (ML),library,library,library,50.908161,-1.4009181,osm_mapped,,,,,,,,,{},missing,,False,False,P00122
+osm,way/27343029,Cafe Nautical Mile,cafe,restaurant_cafe,cafe,50.9077143,-1.4020547,osm_mapped,,,,,,,,,{},missing,,False,False,P00123
+osm,way/32678442,University Health Service,gp,gp,gp,50.9357028,-1.3994781,osm_mapped,,,,,,,,,{},missing,,False,False,P00124
+osm,way/33830050,Hartley Library,library,library,library,50.9350119,-1.3952718,osm_mapped,,,,,,,,,{},missing,,False,False,P00125
+osm,way/63231104,Victor Street Surgery,gp,gp,gp,50.9242578,-1.4325355,osm_mapped,,,,,,,,,{},missing,,False,False,P00126
+osm,way/66666475,Oasis Lord's Hill Pre-School,nursery,nursery,nursery,50.9339853,-1.4549174,osm_mapped,,,,,,,,,{},missing,,False,False,P00127
+osm,way/81163505,Burgess Road Library,library,library,library,50.9382986,-1.3955448,osm_mapped,,,,,,,,,{},missing,,False,False,P00128
+osm,way/87342819,Bitterne Library,library,library,library,50.9148227,-1.3552384,osm_mapped,,,,,,,,,{},missing,,False,False,P00129
+osm,way/94069832,Woolston Community Pre-school,nursery,nursery,nursery,50.8937729,-1.3779945,osm_mapped,,,,,,,,,{},missing,,False,False,P00130
+osm,way/95347194,Lordshill Library,library,library,library,50.9400043,-1.4494423,osm_mapped,,,,,,,,,{},missing,,False,False,P00131
+osm,way/97821914,Waterfront and Solent Surgery,gp,gp,gp,50.8708868,-1.4006904,osm_mapped,,,,,,,,,{},missing,,False,False,P00132
+osm,way/100689156,Lordshill Pharmacy,pharmacy,pharmacy,pharmacy,50.9408853,-1.4485588,osm_mapped,,,,,,,,,{},missing,,False,False,P00133
+osm,way/110288431,St James Park Road Nursery,nursery,nursery,nursery,50.928492,-1.4306282,osm_mapped,,,,,,,,,{},missing,,False,False,P00134
+osm,way/113617753,Portswood Library,library,library,library,50.9267387,-1.3918918,osm_mapped,,,,,,,,,{},missing,,False,False,P00135
+osm,way/117104808,A R Pharmacy,pharmacy,pharmacy,pharmacy,50.9195948,-1.4902063,osm_mapped,,,,,,,,,{},missing,,False,False,P00136
+osm,way/121222170,Yellow Dot Nursery,nursery,nursery,nursery,50.9649839,-1.4212641,osm_mapped,,,,,,,,,{},missing,,False,False,P00137
+osm,way/122706795,Chaiiwala,cafe,restaurant_cafe,cafe,50.9263196,-1.3916297,osm_mapped,,,,,,,,,{},missing,,False,False,P00138
+osm,way/123078085,Superdrug,pharmacy,pharmacy,pharmacy,50.9221733,-1.4328681,osm_mapped,,,,,,,,,{},missing,,False,False,P00139
+osm,way/126104790,PiXieS,nursery,nursery,nursery,50.8976369,-1.3718288,osm_mapped,,,,,,,,,{},missing,,False,False,P00140
+osm,way/126355318,Legends Cafe,cafe,restaurant_cafe,cafe,50.923058,-1.4348151,osm_mapped,,,,,,,,,{},missing,,False,False,P00141
+osm,way/129851881,The Kiosk,cafe,restaurant_cafe,cafe,50.897644,-1.407436,osm_mapped,,,,,,,,,{},missing,,False,False,P00142
+osm,way/131894132,Costa,cafe,restaurant_cafe,cafe,50.9055646,-1.3394121,osm_mapped,,,,,,,,,{},missing,,False,False,P00143
+osm,way/146618372,Boots,pharmacy,pharmacy,pharmacy,50.9034542,-1.4048136,osm_mapped,,,,,,,,,{},missing,,False,False,P00144
+osm,way/147294246,West End Surgery,gp,gp,gp,50.9284644,-1.3274534,osm_mapped,,,,,,,,,{},missing,,False,False,P00145
+osm,way/148590584,Corniche Restaurant & Cafe,cafe,restaurant_cafe,cafe,50.9382598,-1.392183,osm_mapped,,,,,,,,,{},missing,,False,False,P00146
+osm,way/148730262,Woolston Lodge Surgery,gp,gp,gp,50.8970671,-1.3722465,osm_mapped,,,,,,,,,{},missing,,False,False,P00147
+osm,way/148730890,The Old Fire Station Surgery,gp,gp,gp,50.8969368,-1.3717886,osm_mapped,,,,,,,,,{},missing,,False,False,P00148
+osm,way/148789311,Blackthorn Health Centre,gp,gp,gp,50.876031,-1.3270552,osm_mapped,,,,,,,,,{},missing,,False,False,P00149
+osm,way/149489081,Burgess Road Surgery,gp,gp,gp,50.9387962,-1.3872674,osm_mapped,,,,,,,,,{},missing,,False,False,P00150
+osm,way/149814017,Muse Coffee Co.,cafe,restaurant_cafe,cafe,50.9256429,-1.3924768,osm_mapped,,,,,,,,,{},missing,,False,False,P00151
+osm,way/160255120,Cafe 38,cafe,restaurant_cafe,cafe,50.9354743,-1.3971919,osm_mapped,,,,,,,,,{},missing,,False,False,P00152
+osm,way/160630503,Kate's Cafe,cafe,restaurant_cafe,cafe,50.9261895,-1.3925798,osm_mapped,,,,,,,,,{},missing,,False,False,P00153
+osm,way/160630506,Boots,pharmacy,pharmacy,pharmacy,50.9263469,-1.3923919,osm_mapped,,,,,,,,,{},missing,,False,False,P00154
+osm,way/160630513,Poppins,cafe,restaurant_cafe,cafe,50.9262875,-1.3924763,osm_mapped,,,,,,,,,{},missing,,False,False,P00155
+osm,way/160637251,Day Lewis Pharmacy,pharmacy,pharmacy,pharmacy,50.925465,-1.3934817,osm_mapped,,,,,,,,,{},missing,,False,False,P00156
+osm,way/160637268,Coffee#1,cafe,restaurant_cafe,cafe,50.9256559,-1.3932189,osm_mapped,,,,,,,,,{},missing,,False,False,P00157
+osm,way/161562744,Alma road Surgery,gp,gp,gp,50.9217217,-1.4005532,osm_mapped,,,,,,,,,{},missing,,False,False,P00158
+osm,way/164753216,Explorers Nursery,nursery,nursery,nursery,50.93716,-1.4693825,osm_mapped,,,,,,,,,{},missing,,False,False,P00159
+osm,way/165711758,Bright Horizons Nursery,nursery,nursery,nursery,50.9255457,-1.3999202,osm_mapped,,,,,,,,,{},missing,,False,False,P00160
+osm,way/166098841,Portswood Solent Surgery,gp,gp,gp,50.9223552,-1.3901629,osm_mapped,,,,,,,,,{},missing,,False,False,P00161
+osm,way/169379079,Mettricks,cafe,restaurant_cafe,cafe,50.9271155,-1.3908306,osm_mapped,,,,,,,,,{},missing,,False,False,P00162
+osm,way/170767686,The Trees,nursery,nursery,nursery,50.9237753,-1.3989084,osm_mapped,,,,,,,,,{},missing,,False,False,P00163
+osm,way/173807231,Highfield Pharmacy,pharmacy,pharmacy,pharmacy,50.932895,-1.3957765,osm_mapped,,,,,,,,,{},missing,,False,False,P00164
+osm,way/177910441,Brewed Awakening,cafe,restaurant_cafe,cafe,50.9376338,-1.3930833,osm_mapped,,,,,,,,,{},missing,,False,False,P00165
+osm,way/183440570,Secret Garden,cafe,restaurant_cafe,cafe,50.8979718,-1.3981767,osm_mapped,,,,,,,,,{},missing,,False,False,P00166
+osm,way/183876038,Boots,pharmacy,pharmacy,pharmacy,50.921424,-1.4318274,osm_mapped,,,,,,,,,{},missing,,False,False,P00167
+osm,way/183877084,Costa,cafe,restaurant_cafe,cafe,50.9224648,-1.4332502,osm_mapped,,,,,,,,,{},missing,,False,False,P00168
+osm,way/184068495,The Hungry Diner,cafe,restaurant_cafe,cafe,50.9217415,-1.4330747,osm_mapped,,,,,,,,,{},missing,,False,False,P00169
+osm,way/184068501,Cafe Aroma Shirley,cafe,restaurant_cafe,cafe,50.9218442,-1.4332376,osm_mapped,,,,,,,,,{},missing,,False,False,P00170
+osm,way/184138076,Victoria's coffe shop,cafe,restaurant_cafe,cafe,50.9209996,-1.4321097,osm_mapped,,,,,,,,,{},missing,,False,False,P00171
+osm,way/184143327,Coffee#1,cafe,restaurant_cafe,cafe,50.9206815,-1.4317317,osm_mapped,,,,,,,,,{},missing,,False,False,P00172
+osm,way/189758705,Board in the City,cafe,restaurant_cafe,cafe,50.9135032,-1.3988015,osm_mapped,,,,,,,,,{},missing,,False,False,P00173
+osm,way/190393749,Kingsland Cafe,cafe,restaurant_cafe,cafe,50.9054273,-1.3964906,osm_mapped,,,,,,,,,{},missing,,False,False,P00174
+osm,way/190394974,Bassil Pharmacy,pharmacy,pharmacy,pharmacy,50.9111752,-1.4053692,osm_mapped,,,,,,,,,{},missing,,False,False,P00175
+osm,way/190397757,Allsorts Psychic Cafe,cafe,restaurant_cafe,cafe,50.9126844,-1.4053598,osm_mapped,,,,,,,,,{},missing,,False,False,P00176
+osm,way/191972372,Boots,pharmacy,pharmacy,pharmacy,50.9042344,-1.4119648,osm_mapped,,,,,,,,,{},missing,,False,False,P00177
+osm,way/192359660,Cobbett Road Library,library,library,library,50.91776,-1.3734272,osm_mapped,,,,,,,,,{},missing,,False,False,P00178
+osm,way/193079368,Retro Cafe,cafe,restaurant_cafe,cafe,50.9130284,-1.406237,osm_mapped,,,,,,,,,{},missing,,False,False,P00179
+osm,way/193079380,Cafe Creme,cafe,restaurant_cafe,cafe,50.9128817,-1.4062336,osm_mapped,,,,,,,,,{},missing,,False,False,P00180
+osm,way/194680114,Avicenna Pharmacy,pharmacy,pharmacy,pharmacy,50.9360771,-1.4472383,osm_mapped,,,,,,,,,{},missing,,False,False,P00181
+osm,way/195012170,Happy Bean Coffee Bar,cafe,restaurant_cafe,cafe,50.913324,-1.4067299,osm_mapped,,,,,,,,,{},missing,,False,False,P00182
+osm,way/195012229,Barraquito,cafe,restaurant_cafe,cafe,50.9125353,-1.4066895,osm_mapped,,,,,,,,,{},missing,,False,False,P00183
+osm,way/196001534,Boots,pharmacy,pharmacy,pharmacy,50.9259185,-1.364416,osm_mapped,,,,,,,,,{},missing,,False,False,P00184
+osm,way/207101482,AR Pharmacy Testwood,pharmacy,pharmacy,pharmacy,50.9185497,-1.4888736,osm_mapped,,,,,,,,,{},missing,,False,False,P00185
+osm,way/208918419,Sangha Pharmacy,pharmacy,pharmacy,pharmacy,50.9143831,-1.3364867,osm_mapped,,,,,,,,,{},missing,,False,False,P00186
+osm,way/208966057,Ladies Walk Practice,gp,gp,gp,50.9145255,-1.3336713,osm_mapped,,,,,,,,,{},missing,,False,False,P00187
+osm,way/217951523,Lloyds Pharmacy,pharmacy,pharmacy,pharmacy,50.9648023,-1.3098401,osm_mapped,,,,,,,,,{},missing,,False,False,P00188
+osm,way/217951527,Stokewood Surgery,gp,gp,gp,50.9648898,-1.3102534,osm_mapped,,,,,,,,,{},missing,,False,False,P00189
+osm,way/219763539,Starbucks,cafe,restaurant_cafe,cafe,50.9123445,-1.4039259,osm_mapped,,,,,,,,,{},missing,,False,False,P00190
+osm,way/220386952,Burgess Road Pharmacy,pharmacy,pharmacy,pharmacy,50.9387282,-1.3875171,osm_mapped,,,,,,,,,{},missing,,False,False,P00191
+osm,way/223166941,Lloyds Pharmacy,pharmacy,pharmacy,pharmacy,50.916884,-1.4282885,osm_mapped,,,,,,,,,{},missing,,False,False,P00192
+osm,way/224302595,Walnut Tree Surgery,gp,gp,gp,50.9149038,-1.4066173,osm_mapped,,,,,,,,,{},missing,,False,False,P00193
+osm,way/224636037,Muse,cafe,restaurant_cafe,cafe,50.9107177,-1.4046166,osm_mapped,,,,,,,,,{},missing,,False,False,P00194
+osm,way/225402036,The Nest Coffee House,cafe,restaurant_cafe,cafe,50.9116213,-1.4044585,osm_mapped,,,,,,,,,{},missing,,False,True,P00195
+osm,way/226310529,Hardmoor Early Years Centre,nursery,nursery,nursery,50.9454602,-1.3895135,osm_mapped,,,,,,,,,{},missing,,False,False,P00196
+osm,way/235952419,Teddies Nurseries,nursery,nursery,nursery,50.9106683,-1.4172546,osm_mapped,,,,,,,,,{},missing,,False,True,P00197
+osm,way/235952425,Teddies Nurseries,nursery,nursery,nursery,50.9106587,-1.4170676,osm_mapped,,,,,,,,,{},missing,,False,True,P00198
+osm,way/235955002,Paint Pots,nursery,nursery,nursery,50.9146243,-1.4175688,osm_mapped,,,,,,,,,{},missing,,False,False,P00199
+osm,way/238299002,Shirley Avenue Surgery,gp,gp,gp,50.9209602,-1.4302081,osm_mapped,,,,,,,,,{},missing,,False,False,P00200
+osm,way/238313759,Cheviot Road Surgery,gp,gp,gp,50.921393,-1.4560141,osm_mapped,,,,,,,,,{},missing,,False,False,P00201
+osm,way/239062700,Learning Land,nursery,nursery,nursery,50.9211924,-1.4577558,osm_mapped,,,,,,,,,{},missing,,False,False,P00202
+osm,way/239741614,PharmacyDirect,pharmacy,pharmacy,pharmacy,50.9144549,-1.4236524,osm_mapped,,,,,,,,,{},missing,,False,False,P00203
+osm,way/239741617,Mad Café and Deli,cafe,restaurant_cafe,cafe,50.9145419,-1.4237624,osm_mapped,,,,,,,,,{},missing,,False,False,P00204
+osm,way/242171041,Chasha,cafe,restaurant_cafe,cafe,50.9258396,-1.3923388,osm_mapped,,,,,,,,,{},missing,,False,False,P00205
+osm,way/244925919,The Plant Pot,cafe,restaurant_cafe,cafe,50.9344279,-1.3977046,osm_mapped,,,,,,,,,{},missing,,False,False,P00206
+osm,way/256454832,Lattés,cafe,restaurant_cafe,cafe,50.9348964,-1.3959295,osm_mapped,,,,,,,,,{},missing,,False,False,P00207
+osm,way/271988390,Raymond Road Surgery,gp,gp,gp,50.9190727,-1.4192232,osm_mapped,,,,,,,,,{},missing,,False,False,P00208
+osm,way/274171329,ParkLife Cafe,cafe,restaurant_cafe,cafe,50.926564,-1.4291794,osm_mapped,,,,,,,,,{},missing,,False,False,P00209
+osm,way/280966429,Hill Lane Surgery,gp,gp,gp,50.9170012,-1.4157843,osm_mapped,,,,,,,,,{},missing,,False,False,P00210
+osm,way/281281391,Woodberry Day Nursery,nursery,nursery,nursery,50.9100452,-1.3685969,osm_mapped,,,,,,,,,{},missing,,False,False,P00211
+osm,way/284135085,Atherley House Surgery,gp,gp,gp,50.913303,-1.4215825,osm_mapped,,,,,,,,,{},missing,,False,False,P00212
+osm,way/285344002,Solent Pharmacy,pharmacy,pharmacy,pharmacy,50.9207434,-1.4215669,osm_mapped,,,,,,,,,{},missing,,False,False,P00213
+osm,way/285346906,Crews Mess,cafe,restaurant_cafe,cafe,50.9167058,-1.4257603,osm_mapped,,,,,,,,,{},missing,,False,False,P00214
+osm,way/286101382,Maurie's,cafe,restaurant_cafe,cafe,50.918685,-1.4042864,osm_mapped,,,,,,,,,{},missing,,False,False,P00215
+osm,way/290159530,Arlott Bar,cafe,restaurant_cafe,cafe,50.935327,-1.3971574,osm_mapped,,,,,,,,,{},missing,,False,False,P00216
+osm,way/292039239,Lattes,cafe,restaurant_cafe,cafe,50.9363558,-1.3955517,osm_mapped,,,,,,,,,{},missing,,False,False,P00217
+osm,way/293266062,Lattes,cafe,restaurant_cafe,cafe,50.9354768,-1.3973997,osm_mapped,,,,,,,,,{},missing,,False,False,P00218
+osm,way/305296881,Cafe No. 2,cafe,restaurant_cafe,cafe,50.9405218,-1.3790048,osm_mapped,,,,,,,,,{},missing,,False,False,P00219
+osm,way/315214526,Design Chapel,coworking,coworking,,50.9200466,-1.4135064,osm_mapped,,,,,,,,,{},missing,,False,False,P00220
+osm,way/351389474,Thornhill Doctors Surgery,gp,gp,gp,50.9097755,-1.3354048,osm_mapped,,,,,,,,,{},missing,,False,False,P00221
+osm,way/358517328,One-o-Four,cafe,restaurant_cafe,cafe,50.9059549,-1.4041741,osm_mapped,,,,,,,,,{},missing,,False,False,P00222
+osm,way/358517826,Brunch And Barista,cafe,restaurant_cafe,cafe,50.9057779,-1.4041691,osm_mapped,,,,,,,,,{},missing,,False,False,P00223
+osm,way/359892097,Valley Nursery,nursery,nursery,nursery,50.9312039,-1.4303869,osm_mapped,,,,,,,,,{},missing,,False,False,P00224
+osm,way/361875398,Starbucks,cafe,restaurant_cafe,cafe,50.9056049,-1.4047289,osm_mapped,,,,,,,,,{},missing,,False,False,P00225
+osm,way/365059981,Caffè Nero,cafe,restaurant_cafe,cafe,50.9053143,-1.4040584,osm_mapped,,,,,,,,,{},missing,,False,False,P00226
+osm,way/365061654,Coffee#1,cafe,restaurant_cafe,cafe,50.9054458,-1.4040652,osm_mapped,,,,,,,,,{},missing,,False,False,P00227
+osm,way/366967956,Bassett Pharmacy,pharmacy,pharmacy,pharmacy,50.9340157,-1.4184128,osm_mapped,,,,,,,,,{},missing,,False,False,P00228
+osm,way/368693693,YMCA Nursery,nursery,nursery,nursery,50.8951183,-1.3805456,osm_mapped,,,,,,,,,{},missing,,False,False,P00229
+osm,way/374847436,Stoneham Lane Surgery,gp,gp,gp,50.9398393,-1.3781404,osm_mapped,,,,,,,,,{},missing,,False,False,P00230
+osm,way/374847787,Lloyds Pharmacy,pharmacy,pharmacy,pharmacy,50.9397263,-1.378211,osm_mapped,,,,,,,,,{},missing,,False,False,P00231
+osm,way/377264396,Day Lewis Pharmacy,pharmacy,pharmacy,pharmacy,50.9401524,-1.4271681,osm_mapped,,,,,,,,,{},missing,,False,False,P00232
+osm,way/390880247,Everetts Pharmacy,pharmacy,pharmacy,pharmacy,50.9276052,-1.33423,osm_mapped,,,,,,,,,{},missing,,False,False,P00233
+osm,way/392922182,Southampton Central Library,library,library,library,50.9085096,-1.4062599,osm_mapped,,,,,,,,,{},missing,,False,False,P00234
+osm,way/411833996,The Orangery,cafe,restaurant_cafe,cafe,50.954562,-1.3176206,osm_mapped,,,,,,,,,{},missing,,False,False,P00235
+osm,way/512076970,Mettricks Tea & Coffee,cafe,restaurant_cafe,cafe,50.9081015,-1.4039577,osm_mapped,,,,,,,,,{},missing,,False,False,P00236
+osm,way/517384861,Costa,cafe,restaurant_cafe,cafe,50.919012,-1.4882379,osm_mapped,,,,,,,,,{},missing,,False,False,P00237
+osm,way/517399960,Testvale Surgery,gp,gp,gp,50.9197066,-1.4904487,osm_mapped,,,,,,,,,{},missing,,False,False,P00238
+osm,way/517412583,Play Away Day Nursery Totton,nursery,nursery,nursery,50.9174421,-1.4831973,osm_mapped,,,,,,,,,{},missing,,False,False,P00239
+osm,way/654424119,Tiny Toes Day Nursery,nursery,nursery,nursery,50.9444754,-1.4504481,osm_mapped,,,,,,,,,{},missing,,False,False,P00240
+osm,way/655743587,Brook House Surgery,gp,gp,gp,50.9216953,-1.4453867,osm_mapped,,,,,,,,,{},missing,,False,False,P00241
+osm,way/659929842,Harefield Surgery,gp,gp,gp,50.9189902,-1.3448372,osm_mapped,,,,,,,,,{},missing,,False,False,P00242
+osm,way/660008419,Acorns,nursery,nursery,nursery,50.9210297,-1.4870564,osm_mapped,,,,,,,,,{},missing,,False,False,P00243
+osm,way/672047493,Peartree Practice,gp,gp,gp,50.9136551,-1.3652547,osm_mapped,,,,,,,,,{},missing,,False,False,P00244
+osm,way/704356447,Regents Park Pharmacy,pharmacy,pharmacy,pharmacy,50.9167726,-1.4416245,osm_mapped,,,,,,,,,{},missing,,False,False,P00245
+osm,way/712089582,The Mulberry Bush Nursery School,nursery,nursery,nursery,50.9245511,-1.3610648,osm_mapped,,,,,,,,,{},missing,,False,False,P00246
+osm,way/734773351,Naked Coffee,cafe,restaurant_cafe,cafe,50.9083737,-1.4123543,osm_mapped,,,,,,,,,{},missing,,False,False,P00247
+osm,way/750102210,Stepping Stones,nursery,nursery,nursery,50.9131033,-1.4825405,osm_mapped,,,,,,,,,{},missing,,False,False,P00248
+osm,way/755413210,Midanbury Surgery - Ladies Walk Practice,gp,gp,gp,50.92681,-1.3650046,osm_mapped,,,,,,,,,{},missing,,False,False,P00249
+osm,way/755424709,Coffee Roasters,cafe,restaurant_cafe,cafe,50.9242119,-1.3763033,osm_mapped,,,,,,,,,{},missing,,False,False,P00250
+osm,way/758405118,Riverside Diner,cafe,restaurant_cafe,cafe,50.924505,-1.3755594,osm_mapped,,,,,,,,,{},missing,,False,False,P00251
+osm,way/758405125,Pink Olive Cafe,cafe,restaurant_cafe,cafe,50.9248432,-1.3755918,osm_mapped,,,,,,,,,{},missing,,False,False,P00252
+osm,way/758405130,Miss Ellie's Cafe,cafe,restaurant_cafe,cafe,50.9250509,-1.3755351,osm_mapped,,,,,,,,,{},missing,,False,False,P00253
+osm,way/773141975,St Peter's Surgery,gp,gp,gp,50.8977869,-1.3727037,osm_mapped,,,,,,,,,{},missing,,False,False,P00254
+osm,way/776608369,Bitterne Surgery,gp,gp,gp,50.9174331,-1.3587123,osm_mapped,,,,,,,,,{},missing,,False,False,P00255
+osm,way/792859718,Lloyds Pharmacy,pharmacy,pharmacy,pharmacy,50.9153021,-1.3556149,osm_mapped,,,,,,,,,{},missing,,False,False,P00256
+osm,way/793254041,Pharmacy Direct,pharmacy,pharmacy,pharmacy,50.9153831,-1.3540735,osm_mapped,,,,,,,,,{},missing,,False,False,P00257
+osm,way/794937653,The Boat Shop Cafe,cafe,restaurant_cafe,cafe,50.8985293,-1.3781102,osm_mapped,,,,,,,,,{},missing,,False,False,P00258
+osm,way/814926728,Woolston Cafe,cafe,restaurant_cafe,cafe,50.8977805,-1.3772382,osm_mapped,,,,,,,,,{},missing,,False,False,P00259
+osm,way/814982176,Coffee Woolston,cafe,restaurant_cafe,cafe,50.8979353,-1.3800067,osm_mapped,,,,,,,,,{},missing,,False,False,P00260
+osm,way/814982180,Annie's,cafe,restaurant_cafe,cafe,50.8979291,-1.3797224,osm_mapped,,,,,,,,,{},missing,,False,False,P00261
+osm,way/815018164,Superdrug,pharmacy,pharmacy,pharmacy,50.8973918,-1.3791829,osm_mapped,,,,,,,,,{},missing,,False,False,P00262
+osm,way/815054451,Piggy's Cafe,cafe,restaurant_cafe,cafe,50.8972457,-1.379929,osm_mapped,,,,,,,,,{},missing,,False,False,P00263
+osm,way/916003323,The Coffee Shop Cafe,cafe,restaurant_cafe,cafe,50.921076,-1.3541697,osm_mapped,,,,,,,,,{},missing,,False,False,P00264
+osm,way/937899395,Bassil Chemist,pharmacy,pharmacy,pharmacy,50.9139808,-1.4061235,osm_mapped,,,,,,,,,{},missing,,False,False,P00265
+osm,way/975254014,Kids Incorporated,nursery,nursery,nursery,50.9175441,-1.4819671,osm_mapped,,,,,,,,,{},missing,,False,False,P00266
+osm,way/1009721990,Starbucks,cafe,restaurant_cafe,cafe,50.9173892,-1.3124528,osm_mapped,,,,,,,,,{},missing,,False,False,P00267
+osm,way/1060470004,Woodmill coffee kitchen,cafe,restaurant_cafe,cafe,50.9348239,-1.3764818,osm_mapped,,,,,,,,,{},missing,,False,False,P00268
+osm,way/1060494659,Peartree Practice,gp,gp,gp,50.9005674,-1.339904,osm_mapped,,,,,,,,,{},missing,,False,False,P00269
+osm,way/1060495838,On The Water Cafe,cafe,restaurant_cafe,cafe,50.8867573,-1.374033,osm_mapped,,,,,,,,,{},missing,,False,False,P00270
+osm,way/1065519214,Play Away Day Nurseries,nursery,nursery,nursery,50.9280679,-1.3372595,osm_mapped,,,,,,,,,{},missing,,False,True,P00271
+osm,way/1065519215,Play Away Day Nurseries,nursery,nursery,nursery,50.9282638,-1.3371155,osm_mapped,,,,,,,,,{},missing,,False,True,P00272
+osm,way/1129713958,Netley Library,library,library,library,50.8731266,-1.3521162,osm_mapped,,,,,,,,,{},missing,,False,False,P00273
+osm,way/1176411143,Costa Drive Thru,cafe,restaurant_cafe,cafe,50.9351334,-1.4684793,osm_mapped,,,,,,,,,{},missing,,False,False,P00274
+osm,way/1343459334,The Edge Hub,cafe,restaurant_cafe,cafe,50.9289342,-1.3575088,osm_mapped,,,,,,,,,{},missing,,False,False,P00275
+osm,way/1504432138,Starbucks,cafe,restaurant_cafe,cafe,50.9243481,-1.3090309,osm_mapped,,,,,,,,,{},missing,,False,False,P00276
+osm,way/1508812600,Starbucks,cafe,restaurant_cafe,cafe,50.9445804,-1.3700851,osm_mapped,,,,,,,,,{},missing,,False,False,P00277
+osm,relation/11003833,Bitterne Health Clinic,gp,gp,gp,50.9155559,-1.3546158,osm_mapped,,,,,,,,,{},missing,,False,False,P00278
+nhs_ods,J82081,Southampton Sea City Partnership,GP practice,gp,gp,50.905737,-1.397466,postcode_centre,,SO14 1LT,,,,,,,{},live,0.0,False,False,P00279
+nhs_ods,J82122,Alma Road Surgery,GP practice,gp,gp,50.921768,-1.400361,postcode_centre,,SO14 6UX,,,,,,,{},live,0.0,False,False,P00158
+nhs_ods,J82217,Homeless Healthcare Team,GP practice,gp,gp,50.91397,-1.394871,postcode_centre,,SO14 0LT,,,,,,,{},live,0.0,False,False,P00280
+nhs_ods,J82022,Victor Street Surgery,GP practice,gp,gp,50.92423,-1.432456,postcode_centre,,SO15 5SY,,,,,,,{},live,0.0,False,True,P00126
+nhs_ods,J82062,Cheviot Road Surgery,GP practice,gp,gp,50.92101,-1.430276,postcode_centre,,SO15 5RP,,,,,,,{},live,0.0,False,False,P00200
+nhs_ods,J82088,The Shirley Health Partnership,GP practice,gp,gp,50.919395,-1.429257,postcode_centre,,SO15 3JD,,,,,,,{},live,0.0,False,False,P00281
+nhs_ods,J82115,Atherley House Surgery,GP practice,gp,gp,50.913332,-1.421565,postcode_centre,,SO15 3FH,,,,,,,{},live,0.0,False,False,P00212
+nhs_ods,J82126,Raymond Road Surgery,GP practice,gp,gp,50.919402,-1.419739,postcode_centre,,SO15 5AL,,,,,,,{},live,0.0,False,False,P00208
+nhs_ods,J82207,Hill Lane Surgery,GP practice,gp,gp,50.915794,-1.415702,postcode_centre,,SO15 5DD,,,,,,,{},live,0.0,False,False,P00210
+nhs_ods,J82605,Walnut Tree Surgery,GP practice,gp,gp,50.915172,-1.406548,postcode_centre,,SO15 2HQ,,,,,,,{},live,0.0,False,False,P00193
+nhs_ods,J82001,Burgess Road Surgery,GP practice,gp,gp,50.938661,-1.385868,postcode_centre,,SO16 3BD,,,,,,,{},live,0.0,False,False,P00150
+nhs_ods,J82002,Lordshill Health Centre,GP practice,gp,gp,50.940926,-1.448635,postcode_centre,,SO16 8HY,,,,,,,{},live,0.0,False,False,P00062
+nhs_ods,J82024,Solent Gp Surgery,GP practice,gp,gp,50.924655,-1.447788,postcode_centre,,SO16 4XE,,,,,,,{},live,0.0,False,False,P00282
+nhs_ods,J82087,Stoneham Lane Surgery,GP practice,gp,gp,50.939296,-1.378459,postcode_centre,,SO16 2JA,,,,,,,{},live,0.0,False,False,P00230
+nhs_ods,J82092,Aldermoor Surgery,GP practice,gp,gp,50.940689,-1.427288,postcode_centre,,SO16 5ST,,,,,,,{},live,0.0,False,False,P00283
+nhs_ods,J82213,Brook House Surgery,GP practice,gp,gp,50.921786,-1.445873,postcode_centre,,SO16 4NZ,,,,,,,{},live,0.0,False,False,P00241
+nhs_ods,J82080,University Health Service Southampton,GP practice,gp,gp,50.934091,-1.395705,postcode_centre,,SO17 1BJ,,,,,,,{},live,0.0,False,False,P00284
+nhs_ods,J82040,West End Road Surgery,GP practice,gp,gp,50.916693,-1.359271,postcode_centre,,SO18 6TG,,,,,,,{},live,0.0,False,False,P00285
+nhs_ods,J82076,Woolston And Chartwell Partnership,GP practice,gp,gp,50.89728,-1.372833,postcode_centre,,SO19 9AL,,,,,,,{},live,0.0,False,False,P00286
+nhs_ods,J82101,The Peartree Practice,GP practice,gp,gp,50.900314,-1.339331,postcode_centre,,SO19 0HS,,,,,,,{},live,0.0,False,False,P00269
+nhs_ods,J82128,Old Fire Station Surgery,GP practice,gp,gp,50.896299,-1.369476,postcode_centre,,SO19 9AN,,,,,,,{},live,0.0,False,False,P00148
+nhs_ods,J82208,St. Peters Surgery,GP practice,gp,gp,50.897819,-1.372783,postcode_centre,,SO19 9RL,,,,,,,{},live,0.0,False,False,P00254
+nhs_ods,J82622,Living Well Partnership,GP practice,gp,gp,50.888213,-1.370694,postcode_centre,,SO19 9GH,,,,,,,{},live,0.0,False,True,P00287
+nhs_ods,Y07819,Spcl Surgery,GP practice,gp,gp,50.897819,-1.372783,postcode_centre,,SO19 9RL,,,,,,,{},live,0.0,False,False,P00288
+nhs_ods,J82051,Hamble Valley Health,GP practice,gp,gp,50.875251,-1.325017,postcode_centre,,SO31 4NQ,,,,,,,{},live,0.0,False,False,P00289
+nhs_ods,J82132,Testvale Surgery,GP practice,gp,gp,50.919398,-1.489889,postcode_centre,,SO40 3PY,,,,,,,{},live,0.0,False,False,P00238
+nhs_ods,J82156,Waterfront And Solent Surgery,GP practice,gp,gp,50.870004,-1.40337,postcode_centre,,SO45 6AW,,,,,,,{},live,0.0,False,False,P00132
+nhs_ods,J82018,Stokewood Surgery,GP practice,gp,gp,50.964876,-1.310304,postcode_centre,,SO50 8AU,,,,,,,{},live,0.0,False,False,P00189
+nhs_ods,J82020,Eastleigh Medical Practice,GP practice,gp,gp,50.970948,-1.353169,postcode_centre,,SO50 9AG,,,,,,,{},live,0.0,False,False,P00290
+nhs_ods,J82071,St. Andrew'S Surgery,GP practice,gp,gp,50.965081,-1.35241,postcode_centre,,SO50 5PT,,,,,,,{},live,0.0,False,False,P00291
+nhs_ods,J82024001,Solent Gp Surgery - Nicholstown,Branch surgery,gp,gp,50.912381,-1.397068,postcode_centre,,SO14 0YG,,,,,,,{},live,0.0,False,False,P00292
+nhs_ods,J82081002,Telephone House Surgery,Branch surgery,gp,gp,50.897559,-1.403743,postcode_centre,,SO14 2NW,,,,,,,{},live,0.0,False,False,P00008
+nhs_ods,J82062001,Branch Surgery,Branch surgery,gp,gp,50.92101,-1.430276,postcode_centre,,SO15 5RP,,,,,,,{},live,0.0,False,False,P00293
+nhs_ods,J82217001,Patrick House,Branch surgery,gp,gp,50.913317,-1.438748,postcode_centre,,SO15 0HW,,,,,,,{},live,0.0,False,False,P00294
+nhs_ods,S0V0Q,Victor Street Surgery,Branch surgery,gp,gp,50.92423,-1.432456,postcode_centre,,SO15 5SY,,,,,,,{},live,0.0,False,True,P00295
+nhs_ods,J82024002,Solent Gp Surgery -Portswood,Branch surgery,gp,gp,50.923701,-1.389836,postcode_centre,,SO17 2GD,,,,,,,{},live,0.0,False,False,P00296
+nhs_ods,M8J7O,Mulberry House Surgery,Branch surgery,gp,gp,50.925954,-1.390802,postcode_centre,,SO17 2GN,,,,,,,{},live,0.0,False,False,P00297
+nhs_ods,P1G2E,Highfield Health,Branch surgery,gp,gp,50.931643,-1.402382,postcode_centre,,SO17 1PJ,,,,,,,{},live,0.0,False,False,P00298
+nhs_ods,J82622001,Living Well Partnership - Midanbury Surgery,Branch surgery,gp,gp,50.927985,-1.365362,postcode_centre,,SO18 2PA,,,,,,,{},live,0.0,False,False,P00299
+nhs_ods,J82622002,Living Well Partnership - Thornhill Park Surgery,Branch surgery,gp,gp,50.914682,-1.332598,postcode_centre,,SO18 5TS,,,,,,,{},live,0.0,False,False,P00300
+nhs_ods,J82622003,Living Well Partnership - Bitterne Park Surgery,Branch surgery,gp,gp,50.923884,-1.371935,postcode_centre,,SO18 1HZ,,,,,,,{},live,0.0,False,False,P00301
+nhs_ods,J82622004,Living Well Partnership - Harefield Surgery,Branch surgery,gp,gp,50.919032,-1.344827,postcode_centre,,SO18 5JL,,,,,,,{},live,0.0,False,False,P00242
+nhs_ods,N9R9U,Chartwell Green Surgery,Branch surgery,gp,gp,50.932967,-1.352287,postcode_centre,,SO18 3RA,,,,,,,{},live,0.0,False,False,P00302
+nhs_ods,J82040001,Thornhill Surgery,Branch surgery,gp,gp,50.909642,-1.33651,postcode_centre,,SO19 6PJ,,,,,,,{},live,0.0,False,False,P00221
+nhs_ods,J82101001,Peartree Practice - Bitterne Branch,Branch surgery,gp,gp,50.913596,-1.365259,postcode_centre,,SO19 4AA,,,,,,,{},live,0.0,False,False,P00244
+nhs_ods,J82622005,Living Well Partnership - Weston Lane Surgery,Branch surgery,gp,gp,50.888213,-1.370694,postcode_centre,,SO19 9GH,,,,,,,{},live,0.0,False,True,P00303
+nhs_ods,H0X1V,Living Well Partnership - West End Surgery,Branch surgery,gp,gp,50.928501,-1.327292,postcode_centre,,SO30 3PY,,,,,,,{},live,0.0,False,False,P00145
+nhs_ods,T3Y0Y,Lowford Centre Surgery,Branch surgery,gp,gp,50.889682,-1.31679,postcode_centre,,SO31 8ES,,,,,,,{},live,0.0,False,False,P00304
+nhs_ods,J82072001,Forestside Medical Practice,Branch surgery,gp,gp,50.89103,-1.449552,postcode_centre,,SO40 4UZ,,,,,,,{},live,0.0,False,False,P00305
+nhs_ods,J82112001,Totton Health Centre,Branch surgery,gp,gp,50.920643,-1.48878,postcode_centre,,SO40 3ZN,,,,,,,{},live,0.0,False,False,P00121
+nhs_ods,I2M4Y,Eastleigh Health Centre,Branch surgery,gp,gp,50.970948,-1.353169,postcode_centre,,SO50 9AG,,,,,,,{},live,0.0,False,False,P00306
+nhs_ods,J82018001,Old Anchor Surgery,Branch surgery,gp,gp,50.97149,-1.337509,postcode_centre,,SO50 6LQ,,,,,,,{},live,0.0,False,False,P00307
+nhs_ods,FA316,Spiralstone Pharmacy,Pharmacy,pharmacy,pharmacy,50.909115,-1.396911,postcode_centre,,SO14 0DB,,,,,,,{},live,0.0,False,False,P00308
+nhs_ods,FF708,Boots,Pharmacy,pharmacy,pharmacy,50.903283,-1.404595,postcode_centre,,SO14 7DX,,,,,,,{},live,0.0,False,False,P00144
+nhs_ods,FKH63,Kingsland Pharmacy,Pharmacy,pharmacy,pharmacy,50.905447,-1.396958,postcode_centre,,SO14 1NY,,,,,,,{},live,0.0,False,False,P00063
+nhs_ods,FVV05,Sk Roy Dispensing Chemists,Pharmacy,pharmacy,pharmacy,50.909097,-1.398646,postcode_centre,,SO14 0BG,,,,,,,{},live,0.0,False,False,P00309
+nhs_ods,FXX18,Telephone House Pharmacy,Pharmacy,pharmacy,pharmacy,50.897559,-1.403743,postcode_centre,,SO14 2NW,,,,,,,{},live,0.0,False,False,P00007
+nhs_ods,FAE86,The Precinct Pharmacy,Pharmacy,pharmacy,pharmacy,50.923736,-1.434425,postcode_centre,,SO15 5LL,,,,,,,{},live,0.0,False,False,P00015
+nhs_ods,FEK34,Bassil Chemist,Pharmacy,pharmacy,pharmacy,50.91112,-1.405519,postcode_centre,,SO15 2BY,,,,,,,{},live,0.0,False,False,P00175
+nhs_ods,FEV03,Boots,Pharmacy,pharmacy,pharmacy,50.903921,-1.40992,postcode_centre,,SO15 1BA,,,,,,,{},live,0.0,False,False,P00177
+nhs_ods,FHG20,Boots,Pharmacy,pharmacy,pharmacy,50.92144,-1.431949,postcode_centre,,SO15 3NJ,,,,,,,{},live,0.0,False,False,P00167
+nhs_ods,FN377,Regent'S Park Pharmacy,Pharmacy,pharmacy,pharmacy,50.91648,-1.442096,postcode_centre,,SO15 8PF,,,,,,,{},live,0.0,False,False,P00245
+nhs_ods,FQ024,Shirley Pharmacy,Pharmacy,pharmacy,pharmacy,50.916756,-1.426629,postcode_centre,,SO15 3HL,,,,,,,{},live,0.0,False,False,P00310
+nhs_ods,FVE30,Pharmacy Direct,Pharmacy,pharmacy,pharmacy,50.919395,-1.429257,postcode_centre,,SO15 3JD,,,,,,,{},live,0.0,False,False,P00311
+nhs_ods,FW416,Solent Pharmacy,Pharmacy,pharmacy,pharmacy,50.920805,-1.421657,postcode_centre,,SO15 5FB,,,,,,,{},live,0.0,False,False,P00213
+nhs_ods,FA340,Lordshill Pharmacy,Pharmacy,pharmacy,pharmacy,50.940926,-1.448635,postcode_centre,,SO16 8HY,,,,,,,{},live,0.0,False,False,P00133
+nhs_ods,FA585,Bassett Pharmacy,Pharmacy,pharmacy,pharmacy,50.934139,-1.417663,postcode_centre,,SO16 7AP,,,,,,,{},live,0.0,False,False,P00228
+nhs_ods,FHF20,Maybush Pharmacy,Pharmacy,pharmacy,pharmacy,50.936495,-1.447164,postcode_centre,,SO16 5EB,,,,,,,{},live,0.0,False,False,P00181
+nhs_ods,FL465,Tesco Instore Pharmacy,Pharmacy,pharmacy,pharmacy,50.924004,-1.445207,postcode_centre,,SO16 4QE,,,,,,,{},live,0.0,False,False,P00312
+nhs_ods,FM090,Day Lewis Pharmacy,Pharmacy,pharmacy,pharmacy,50.940756,-1.426419,postcode_centre,,SO16 5LL,,,,,,,{},live,0.0,False,False,P00232
+nhs_ods,FMP21,Millbrook Pharmacy,Pharmacy,pharmacy,pharmacy,50.930398,-1.458578,postcode_centre,,SO16 9GA,,,,,,,{},live,0.0,False,False,P00005
+nhs_ods,FTX38,Carefirst Pharmacy,Pharmacy,pharmacy,pharmacy,50.939296,-1.378459,postcode_centre,,SO16 2JA,,,,,,,{},live,0.0,False,False,P00231
+nhs_ods,FV016,Burgess Road Pharmacy,Pharmacy,pharmacy,pharmacy,50.938661,-1.385868,postcode_centre,,SO16 3BD,,,,,,,{},live,0.0,False,False,P00191
+nhs_ods,FWE94,The Adelaide Pharmacy,Pharmacy,pharmacy,pharmacy,50.924655,-1.447788,postcode_centre,,SO16 4XE,,,,,,,{},live,0.0,False,False,P00313
+nhs_ods,FA391,Boots,Pharmacy,pharmacy,pharmacy,50.925803,-1.39301,postcode_centre,,SO17 2NF,,,,,,,{},live,0.0,False,False,P00154
+nhs_ods,FP180,Pharmacy Direct,Pharmacy,pharmacy,pharmacy,50.922334,-1.395118,postcode_centre,,SO17 2FW,,,,,,,{},live,0.0,False,False,P00314
+nhs_ods,FQ771,Day Lewis Pharmacy,Pharmacy,pharmacy,pharmacy,50.925803,-1.39301,postcode_centre,,SO17 2NF,,,,,,,{},live,0.0,False,False,P00156
+nhs_ods,FWC83,Highfield Pharmacy,Pharmacy,pharmacy,pharmacy,50.932769,-1.395736,postcode_centre,,SO17 1TL,,,,,,,{},live,0.0,False,False,P00164
+nhs_ods,FCK06,Dean Road Pharmacy,Pharmacy,pharmacy,pharmacy,50.916168,-1.355295,postcode_centre,,SO18 6AP,,,,,,,{},live,0.0,False,False,P00256
+nhs_ods,FDC03,Sangha Pharmacy,Pharmacy,pharmacy,pharmacy,50.914426,-1.33657,postcode_centre,,SO18 5TQ,,,,,,,{},live,0.0,False,False,P00186
+nhs_ods,FFC01,Boots,Pharmacy,pharmacy,pharmacy,50.925785,-1.364382,postcode_centre,,SO18 4QD,,,,,,,{},live,0.0,False,False,P00184
+nhs_ods,FFH81,Chartwell Pharmacy,Pharmacy,pharmacy,pharmacy,50.932967,-1.352287,postcode_centre,,SO18 3RA,,,,,,,{},live,0.0,False,False,P00024
+nhs_ods,FG654,Pharmacy Direct,Pharmacy,pharmacy,pharmacy,50.915289,-1.354126,postcode_centre,,SO18 6LW,,,,,,,{},live,0.0,False,False,P00257
+nhs_ods,FKC17,Bitterne Pharmacy,Pharmacy,pharmacy,pharmacy,50.916693,-1.359271,postcode_centre,,SO18 6TG,,,,,,,{},live,0.0,False,False,P00033
+nhs_ods,FMN78,Superdrug Pharmacy,Pharmacy,pharmacy,pharmacy,50.914677,-1.360621,postcode_centre,,SO18 5RR,,,,,,,{},live,0.0,False,False,P00028
+nhs_ods,FRM48,Boots,Pharmacy,pharmacy,pharmacy,50.92416,-1.373098,postcode_centre,,SO18 1JB,,,,,,,{},live,0.0,False,False,P00092
+nhs_ods,FA919,Superdrug Pharmacy,Pharmacy,pharmacy,pharmacy,50.896948,-1.379663,postcode_centre,,SO19 9DY,,,,,,,{},live,0.0,False,False,P00262
+nhs_ods,FJW20,Woolston Pharmacy,Pharmacy,pharmacy,pharmacy,50.89728,-1.372833,postcode_centre,,SO19 9AL,,,,,,,{},live,0.0,False,False,P00006
+nhs_ods,FK769,Pharmacy Direct,Pharmacy,pharmacy,pharmacy,50.888213,-1.370694,postcode_centre,,SO19 9GH,,,,,,,{},live,0.0,False,False,P00315
+nhs_ods,FQ218,Well,Pharmacy,pharmacy,pharmacy,50.908234,-1.334013,postcode_centre,,SO19 6DF,,,,,,,{},live,0.0,False,False,P00316
+nhs_ods,FVL77,Sholing Pharmacy,Pharmacy,pharmacy,pharmacy,50.900314,-1.339331,postcode_centre,,SO19 0HS,,,,,,,{},live,0.0,False,False,P00035
+nhs_ods,FNC19,H J Everett,Pharmacy,pharmacy,pharmacy,50.92764,-1.334091,postcode_centre,,SO30 3DS,,,,,,,{},live,0.0,False,False,P00317
+nhs_ods,FH482,Tesco Instore Pharmacy,Pharmacy,pharmacy,pharmacy,50.894874,-1.320496,postcode_centre,,SO31 8GN,,,,,,,{},live,0.0,False,False,P00032
+nhs_ods,FQQ13,Nightingale Pharmacy,Pharmacy,pharmacy,pharmacy,50.872927,-1.351273,postcode_centre,,SO31 5BN,,,,,,,{},live,0.0,False,False,P00318
+nhs_ods,FRJ93,Blackthorn Pharmacy,Pharmacy,pharmacy,pharmacy,50.875251,-1.325017,postcode_centre,,SO31 4NQ,,,,,,,{},live,0.0,False,False,P00004
+nhs_ods,FAL06,A R Pharmacy,Pharmacy,pharmacy,pharmacy,50.919398,-1.489889,postcode_centre,,SO40 3PY,,,,,,,{},live,0.0,False,False,P00136
+nhs_ods,FC236,A R Pharmacy,Pharmacy,pharmacy,pharmacy,50.918599,-1.488305,postcode_centre,,SO40 3BY,,,,,,,{},live,0.0,False,False,P00185
+nhs_ods,FR396,Day Lewis Pharmacy,Pharmacy,pharmacy,pharmacy,50.890794,-1.450991,postcode_centre,,SO40 4SF,,,,,,,{},live,0.0,False,False,P00319
+nhs_ods,FHN73,Boots,Pharmacy,pharmacy,pharmacy,50.870213,-1.398535,postcode_centre,,SO45 6AG,,,,,,,{},live,0.0,False,False,P00320
+nhs_ods,FD442,Strawberry Fields Pharmacy,Pharmacy,pharmacy,pharmacy,50.964876,-1.310304,postcode_centre,,SO50 8AU,,,,,,,{},live,0.0,False,False,P00188
+nhs_ods,FKV27,Wainwrights Chemist,Pharmacy,pharmacy,pharmacy,50.970353,-1.336785,postcode_centre,,SO50 6LP,,,,,,,{},live,0.0,False,False,P00321
+nhs_ods,FXY08,Boots,Pharmacy,pharmacy,pharmacy,50.966847,-1.353155,postcode_centre,,SO50 5SG,,,,,,,{},live,0.0,False,False,P00322
+nhs_ods,FE436,Falkland Pharmacy,Pharmacy,pharmacy,pharmacy,50.971989,-1.382751,postcode_centre,,SO53 3GA,,,,,,,{},live,0.0,False,False,P00323
+nhs_ods,FNG94,Asda Pharmacy,Pharmacy,pharmacy,pharmacy,50.965477,-1.390897,postcode_centre,,SO53 3YJ,,,,,,,{},live,0.0,False,False,P00324
