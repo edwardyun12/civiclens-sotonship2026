@@ -1,0 +1,745 @@
+<title>Southampton Places Register</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: summary strip, then filters | map, then register table + record inspector. Same survey-paper palette as the simulator. */
+:root {
+  --paper: #f4f5ef; --panel: #fbfbf7; --ink: #1c2420; --muted: #5d675f; --line: #d7dbcf; --chip: #e9ece2;
+  --accent: #b02a66; --accent-soft: #f6e3ec; --water: #3c7fa6; --good: #2f7a4f; --warn: #b26a12; --bad: #b3362f;
+  --c1: #b02a66; --c2: #2f6f8f; --c3: #c07a12; --c4: #4f7f3a; --c5: #6b4fa0; --c6: #8a5a3c; --c7: #7a8079;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833; --chip: #242b27;
+  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
+  --c1: #e0699f; --c2: #6fb1d6; --c3: #e2a14a; --c4: #8cc06f; --c5: #a993dc; --c6: #c99a78; --c7: #a5ada6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833; --chip: #242b27;
+  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
+  --c1: #e0699f; --c2: #6fb1d6; --c3: #e2a14a; --c4: #8cc06f; --c5: #a993dc; --c6: #c99a78; --c7: #a5ada6; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance }
+h1 { font-size: 1.9rem; line-height: 1 }
+h2 { font-size: 1.2rem; text-transform: uppercase; letter-spacing: .06em }
+h3 { font-size: .95rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted) }
+p { margin: 0 }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 18px; margin-bottom: 12px }
+.top p { color: var(--muted); max-width: 72ch }
+.tag { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; border: 1px solid var(--accent); color: var(--accent); padding: 2px 8px; border-radius: 3px }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px }
+.stat { border-top: 2px solid var(--line); padding-top: 6px }
+.stat .k { font-family: var(--display); text-transform: uppercase; letter-spacing: .07em; font-size: .76rem; color: var(--muted) }
+.stat .v { font-family: var(--display); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1 }
+.stat .d { font-size: .78rem; color: var(--muted) }
+.grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 14px; align-items: start }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.lbl { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; color: var(--muted) }
+input[type=search], select { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; width: 100% }
+input[type=range] { width: 100%; accent-color: var(--accent) }
+button, .filebtn { font: inherit; cursor: pointer; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px }
+button:hover, .filebtn:hover { border-color: var(--muted) }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.flaglist { display: flex; flex-direction: column; gap: 3px; max-height: 360px; overflow: auto }
+.flagopt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; font-size: .82rem; padding: 3px 4px; border-radius: 3px; cursor: pointer }
+.flagopt:hover { background: var(--chip) }
+.flagopt input { margin: 0 }
+.flagopt .n { font-variant-numeric: tabular-nums; color: var(--muted) }
+.sev { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle }
+.sev.bad { background: var(--bad) } .sev.warn { background: var(--warn) } .sev.info { background: var(--muted) }
+.mapwrap { position: relative; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel) }
+canvas { display: block; width: 100%; height: min(60vh, 520px); min-height: 320px; touch-action: none; cursor: pointer }
+.mapbtns { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px }
+.mapbtns button { width: 32px; height: 32px; padding: 0; font-weight: 700; background: var(--panel) }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--muted) }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px }
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 14px; margin-top: 14px; align-items: start }
+@media (max-width: 1100px) { .lower { grid-template-columns: minmax(0, 1fr) } }
+.tablewrap { overflow: auto; max-height: 620px; border: 1px solid var(--line); border-radius: 4px }
+table { border-collapse: collapse; width: 100%; font-size: .84rem; font-variant-numeric: tabular-nums }
+th, td { padding: 5px 7px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top }
+thead th { position: sticky; top: 0; background: var(--panel); font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; color: var(--muted); font-weight: 600; cursor: pointer; white-space: nowrap }
+tbody tr { cursor: pointer }
+tbody tr:hover { background: var(--chip) }
+tbody tr[aria-selected="true"] { background: var(--accent-soft) }
+td.num { text-align: right }
+.pill { display: inline-block; font-size: .72rem; font-weight: 600; padding: 0 6px; border-radius: 999px; border: 1px solid currentColor; margin: 1px 2px 1px 0; white-space: nowrap }
+.pill.bad { color: var(--bad) } .pill.warn { color: var(--warn) } .pill.info { color: var(--muted) } .pill.good { color: var(--good) }
+.conf { display: inline-flex; align-items: center; gap: 6px }
+.conf .bar { width: 46px; height: 6px; background: var(--chip); border-radius: 3px; overflow: hidden }
+.conf .bar span { display: block; height: 100% }
+dl { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 4px 10px; margin: 0; font-size: .86rem }
+dt { color: var(--muted) } dd { margin: 0; overflow-wrap: anywhere }
+.links { display: flex; flex-wrap: wrap; gap: 6px }
+.links a { font-size: .84rem; color: var(--accent); text-decoration: none; border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px }
+.links a:hover { border-color: var(--accent) }
+.srcrow { border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 2px; font-size: .84rem }
+.srcrow b { font-family: var(--display); letter-spacing: .05em; text-transform: uppercase; font-size: .9rem }
+.hint { color: var(--muted); font-size: .8rem }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden }
+.seg button { border: 0; border-radius: 0; background: transparent; padding: 7px 4px; font-weight: 600 }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper) }
+.maptools { position: absolute; top: 8px; left: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; z-index: 2 }
+.maptools .seg { background: var(--panel) }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600 }
+.opp { display: flex; flex-direction: column; gap: 8px }
+.opp .o { border: 1px solid var(--line); border-radius: 4px; padding: 8px; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 2px 8px; font-size: .85rem; cursor: pointer }
+.opp .o:hover { border-color: var(--accent) }
+.opp .n { grid-row: span 3; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .8rem }
+.files { display: flex; flex-wrap: wrap; gap: 6px; align-items: center }
+.filebtn input { display: none }
+.extract { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-top: 14px }
+.extract .card { gap: 6px }
+.extract ul { margin: 0; padding-left: 18px; font-size: .84rem }
+</style>
+
+<header class="top">
+  <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap"><h1>Southampton Places Register</h1><span class="tag" id="dataset-tag">Sample</span></div>
+  <p id="intro">Every named place from the open registers, matched across sources, with the coordinates' origin and a flag wherever sources disagree. Load your own build from the PC to see the full set.</p>
+</header>
+
+<section class="stats" id="stats" aria-label="Summary"></section>
+
+<div class="grid">
+  <aside class="card" aria-label="Filters">
+    <div class="seg" role="group" aria-label="View" hidden><button id="v-places" aria-pressed="true">Places</button><button id="v-comp" aria-pressed="false">Companies</button></div>
+    <div class="files">
+      <label class="filebtn" for="f-places">Load places.csv<input type="file" id="f-places" accept=".csv"></label>
+      <label class="filebtn" for="f-recs">source_records.csv<input type="file" id="f-recs" accept=".csv"></label>
+      <label class="filebtn" for="f-co">company_links.csv<input type="file" id="f-co" accept=".csv"></label>
+
+    </div>
+    <p class="hint" id="file-msg">Files from <code>data/db/</code> after running the pipeline. They stay in your browser.</p>
+    <label class="lbl" for="q">Search</label>
+    <input type="search" id="q" placeholder="Name, postcode, brand, company…">
+    <div id="comp-filters" class="card" style="padding:0;border:0;gap:8px" hidden>
+      <label class="lbl" for="ind">Industry (SIC division)</label><select id="ind"></select>
+      <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="cust"> Only customer-facing industries</label>
+      <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="hideshared"> Hide addresses with 5+ companies</label>
+    </div>
+    <div id="place-filters" class="card" style="padding:0;border:0;gap:8px">
+    <label class="lbl" for="grp">Industry group</label>
+    <select id="grp"></select>
+    <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="custp"> Only customer-facing (shops, food, health, care…)</label>
+    <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="hidero"> Hide registered-office-only companies</label>
+    <label class="lbl" for="cat">Business type</label>
+    <select id="cat"></select>
+    <label class="lbl" for="sub">Detailed type</label>
+    <select id="sub"></select>
+    <label class="lbl" for="cfam">Cuisine family</label>
+    <select id="cfam"></select>
+    <label class="lbl" for="cui">Cuisine</label>
+    <select id="cui"></select>
+    <label class="lbl" for="src">Seen in</label>
+    <select id="src"></select>
+    <label class="lbl" for="conf">Minimum confidence: <span id="conf-v">0</span></label>
+    <input type="range" id="conf" min="0" max="100" step="5" value="0">
+    </div>
+    <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" id="inside" checked> Only inside the city</label>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">Flags</span><button id="clear-flags" style="font-size:.78rem;padding:2px 6px">Clear</button></div>
+    <div class="flaglist" id="flags"></div>
+  </aside>
+  <section class="mapwrap" aria-label="Map">
+    <canvas id="map" aria-label="Map of places; click a dot to inspect it"></canvas>
+    <div class="maptools"><div class="seg" role="group" aria-label="Map view" style="width:200px"><button id="mv-pts" aria-pressed="true">Places</button><button id="mv-area" aria-pressed="false">Areas</button></div>
+      <button id="opp" class="primary">Suggest spots to open</button></div>
+    <div class="mapbtns"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit city" style="font-size:.7rem">FIT</button></div>
+    <div class="legend" id="legend"></div>
+  </section>
+</div>
+
+<div class="lower">
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+      <h2>Register <span class="hint" id="count"></span></h2>
+      <div style="display:flex;gap:6px"><button id="copy-csv">Copy filtered rows as CSV</button><span class="hint" id="copy-msg"></span></div>
+    </div>
+    <div class="tablewrap"><table id="tbl"><thead><tr>
+      <th data-k="name">Name</th><th data-k="industry_group">Industry group</th><th data-k="category">Type</th><th data-k="postcode">Postcode</th><th data-k="sources">Sources</th>
+      <th data-k="confidence">Confidence</th><th data-k="flags">Flags</th></tr></thead><tbody></tbody></table></div>
+  </section>
+  <section class="card" id="detail" aria-live="polite"></section>
+</div>
+
+<section class="extract" id="extract-anchor" hidden></section>
+<section class="extract" id="extract" aria-label="What is extracted"></section>
+<footer class="hint" style="margin-top:14px;max-width:120ch">Map data: Census 2021 LSOA boundaries (ONS, OGL). Places: OpenStreetMap contributors (ODbL), NHS Organisation Data Service (OGL), FSA Food Hygiene Rating Scheme (OGL), Ofsted (OGL), Companies House. Google Maps links open Google's own map for a manual check; no Google data is stored on this page.</footer>
+
+<script id="sample-places" type="text/csv">__PLACES__</script>
+<script id="sample-recs" type="text/csv">__RECS__</script>
+<script id="geo" type="application/json">__GEO__</script>
+<script id="sample-summary" type="application/json">__SUMMARY__</script>
+<script id="area" type="application/json">__AREA__</script>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = (n) => Number(n).toLocaleString("en-GB");
+
+  // ---------- CSV
+  function parseCSV(text) {
+    const rows = []; let row = [], f = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true;
+      else if (c === ",") { row.push(f); f = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(f); rows.push(row); row = []; f = ""; }
+      else f += c;
+    }
+    if (f || row.length) { row.push(f); rows.push(row); }
+    const head = rows.shift() || [];
+    return rows.filter((r) => r.length > 1).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ""])));
+  }
+  function toCSV(rows, cols) {
+    const q = (v) => { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    return [cols.join(","), ...rows.map((r) => cols.map((c) => q(r[c])).join(","))].join("\n");
+  }
+
+  // ---------- flag dictionary: severity and plain meaning
+  const FLAGS = {
+    SOURCES_DISAGREE_ON_LOCATION: ["bad", "Sources put this place more than 75 m apart"],
+    NAME_DIFFERS_BETWEEN_SOURCES: ["warn", "Registers use different names (rebrand, new owner or old map data)"],
+    TYPE_CONFLICT: ["bad", "Sources disagree on what kind of business it is"],
+    FAR_FROM_OWN_POSTCODE: ["bad", "Pin is more than 250 m from the centre of its own postcode"],
+    POSTCODE_TERMINATED: ["warn", "Postcode no longer in use"],
+    POSTCODE_INVALID: ["bad", "Postcode not found"],
+    COORDS_FROM_POSTCODE_ONLY: ["warn", "Location is the postcode centre, not the building"],
+    NO_COORDINATES: ["bad", "No location at all"],
+    POSSIBLE_DUPLICATE: ["warn", "Similar company names at one address (separate legal entities)"],
+    MERGED_DUPLICATE: ["info", "Listed twice in one register; merged into one place"],
+    OSM_NOT_CHECKED_3Y: ["info", "Map entry not edited or checked for 3+ years"],
+    FSA_INSPECTION_OVER_4Y: ["info", "Food hygiene inspection over 4 years old"],
+    FSA_RATING_PENDING: ["info", "New hygiene rating pending"],
+    SINGLE_SOURCE: ["info", "Only one register has this place"],
+    OUTSIDE_CITY: ["info", "Outside the Southampton boundary"],
+    COMPANY_REGISTERED_ELSEWHERE: ["info", "Linked company's office is outside this postcode district"],
+    COMPANY_SIC_DOESNT_FIT_TYPE: ["warn", "Linked company's industry code doesn't fit this business type"],
+    COMPANY_NOT_ACTIVE: ["bad", "Linked company is dissolved or in liquidation"],
+    REGISTERED_OFFICE_ONLY: ["info", "Registered office: the legal address, not always where it trades"],
+    COORDS_FROM_2017_POSTCODE_FILE: ["warn", "Placed with a 2017 postcode file (preview only; PC run uses live data)"],
+    POSTCODE_NOT_FOUND: ["bad", "Postcode not in the postcode file (new or wrong)"],
+    NO_POSTCODE: ["bad", "No postcode in the address"],
+    NOT_IN_SOUTHAMPTON: ["bad", "Not in Southampton (e.g. Southampton Row, London)"],
+    SHARED_ADDRESS_5PLUS: ["warn", "5+ companies at this address: accountant, formation agent or virtual office"],
+    BUSY_POSTCODE: ["info", "10+ companies in this postcode"],
+    DORMANT_OR_NON_TRADING: ["warn", "Dormant or non-trading company (SIC 99999 / 74990)"],
+    GOOGLE_NOT_FOUND: ["warn", "Google check found nothing here"],
+    GOOGLE_LOCATION_DIFFERS: ["bad", "Google's pin is more than 50 m away"],
+    GOOGLE_NAME_DIFFERS: ["warn", "Google shows a different name"],
+    GOOGLE_CLOSED_PERMANENTLY: ["bad", "Google lists it as permanently closed"],
+    GOOGLE_CLOSED_TEMPORARILY: ["warn", "Google lists it as temporarily closed"],
+  };
+  const sev = (f) => (FLAGS[f] || ["info"])[0];
+  const CAT_LABEL = { restaurant_cafe: "Restaurant / café", takeaway: "Takeaway", pub_bar: "Pub / bar", supermarket: "Supermarket",
+    shop_food: "Food shop", shop_other: "Other shop", nursery: "Nursery / childcare", gp: "GP surgery", pharmacy: "Pharmacy",
+    dentist: "Dentist", library: "Library", education: "School / college", care_childcare_health: "Care / health premises",
+    hotel: "Hotel / B&B", community: "Community / worship", leisure: "Leisure", coworking: "Coworking", finance: "Bank",
+    post_office: "Post office", hospital: "Hospital", mobile_caterer: "Mobile caterer", other_catering: "Other catering",
+    food_manufacturer: "Food manufacturer", health_other: "Other health", hair_beauty: "Hair and beauty",
+    personal_services: "Personal services", professional: "Professional services", finance: "Finance", property: "Property",
+    construction: "Construction", it_tech: "IT and tech", business_services: "Business services", wholesale: "Wholesale",
+    motor: "Motor trade", transport_logistics: "Transport and logistics", manufacturing: "Manufacturing",
+    utilities_primary: "Utilities and primary", dormant: "Dormant / non-trading", food_distributor: "Food distributor", food_producer: "Food producer", other: "Other" };
+  const catLabel = (c) => CAT_LABEL[c] || c;
+  const PALETTE = ["--c1", "--c2", "--c3", "--c4", "--c5", "--c6", "--c7"];
+
+  // ---------- state
+  const GEO = JSON.parse($("geo").textContent);
+  const S = { places: [], recs: [], companies: {}, label: "Sample", sort: ["confidence", -1], sel: null, flags: new Set(),
+    mode: "places", comp: [], addr: {}, selAddr: null, csort: ["company_name", 1] };
+  const PLACE_HEAD = document.querySelector("#tbl thead").innerHTML;
+  function setData(places, recs, label) {
+    S.places = places.map((p) => ({ ...p, lat: p.lat === "" ? NaN : +p.lat, lon: p.lon === "" ? NaN : +p.lon,
+      confidence: +p.confidence || 0, n_sources: +p.n_sources || 1, inside_city: String(p.inside_city).toLowerCase() === "true",
+      flagList: (p.flags || "").split(";").filter(Boolean), customer_facing: String(p.customer_facing).toLowerCase() === "true",
+      industry_group: p.industry_group || "Other" }));
+    S.atPoint = {}; for (const p of S.places) if (Number.isFinite(p.lat)) (S.atPoint[p.lat.toFixed(5) + "," + p.lon.toFixed(5)] ||= []).push(p);
+    const grps = {}; for (const p of S.places) grps[p.industry_group] = (grps[p.industry_group] || 0) + 1;
+    const gsel = $("grp"); gsel.innerHTML = ""; gsel.add(new Option(`All groups (${S.places.length})`, ""));
+    for (const [g, k] of Object.entries(grps).sort((a, b) => b[1] - a[1])) gsel.add(new Option(`${g} (${k})`, g));
+    S.recs = recs; S.label = label; S.sel = null; S.flags.clear();
+    S.byPlace = {}; for (const r of recs) (S.byPlace[r.place_id] ||= []).push(r);
+    const cats = {}; for (const p of S.places) cats[p.category] = (cats[p.category] || 0) + 1;
+    const gcount = {}; for (const p of S.places) gcount[p.industry_group] = (gcount[p.industry_group] || 0) + 1;
+    S.grpOrder = Object.entries(gcount).sort((a, b) => b[1] - a[1]).map(([g]) => g);
+    S.gcolor = {}; S.grpOrder.forEach((g, i) => (S.gcolor[g] = PALETTE[Math.min(i, PALETTE.length - 1)]));
+    S.catOrder = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+    S.color = {}; S.catOrder.forEach((c, i) => (S.color[c] = PALETTE[Math.min(i, PALETTE.length - 1)]));
+    $("dataset-tag").textContent = label;
+    const cat = $("cat"); cat.innerHTML = ""; cat.add(new Option(`All types (${S.places.length})`, ""));
+    for (const c of S.catOrder) cat.add(new Option(`${catLabel(c)} (${cats[c]})`, c));
+    const srcs = {}; for (const p of S.places) for (const s of (p.sources || "").split("|")) if (s) srcs[s] = (srcs[s] || 0) + 1;
+    const src = $("src"); src.innerHTML = ""; src.add(new Option("Any register", ""));
+    src.add(new Option("Two or more registers", "multi"));
+    for (const [s, n] of Object.entries(srcs)) src.add(new Option(`${s} (${n})`, s));
+    refreshOptions("grp"); fit(); update();
+  }
+
+  // ---------- filtering
+  function filtered() {
+    const q = $("q").value.trim().toLowerCase(), cat = $("cat").value, src = $("src").value, min = +$("conf").value, inside = $("inside").checked;
+    return S.places.filter((p) => {
+      if (inside && !p.inside_city) return false;
+      if (cat && p.category !== cat) return false;
+      const sub = $("sub").value, cfam = $("cfam").value, cui = $("cui").value;
+      if (sub && p.subtype !== sub) return false;
+      if (cfam && p.cuisine_family !== cfam) return false;
+      if (cui && p.cuisine !== cui) return false;
+      const grp = $("grp").value; if (grp && p.industry_group !== grp) return false;
+      if ($("custp").checked && !p.customer_facing) return false;
+      if ($("hidero").checked && p.flagList.includes("REGISTERED_OFFICE_ONLY")) return false;
+      if (src === "multi" ? p.n_sources < 2 : src && !(p.sources || "").split("|").includes(src)) return false;
+      if (p.confidence < min) return false;
+      for (const f of S.flags) if (!p.flagList.includes(f)) return false;
+      if (q) {
+        const co = S.companies[p.place_id] || {};
+        const hay = [p.name, p.names_seen, p.postcode, p.brand, p.address, p.company_name, p.company_number, p.industry, co.company_name].join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function update() {
+    if (S.mode === "comp") return compUpdate();
+    document.querySelector("#tbl thead").innerHTML = PLACE_HEAD; wireSort();
+    const rows = filtered();
+    const [k, dir] = S.sort;
+    rows.sort((a, b) => (typeof a[k] === "number" ? (a[k] - b[k]) : String(a[k]).localeCompare(String(b[k]))) * dir);
+    S.rows = rows;
+    stats(); flagList(rows); table(rows); draw(); detail(); legendArea();
+  }
+
+  function stats() {
+    const all = S.places.filter((p) => !$("inside").checked || p.inside_city);
+    const multi = all.filter((p) => p.n_sources > 1).length;
+    const pin = all.filter((p) => ["osm_mapped", "osm_building_centre", "fsa_geocode"].includes(p.coord_method)).length;
+    const serious = all.filter((p) => p.flagList.some((f) => sev(f) === "bad")).length;
+    const co = all.filter((p) => S.companies[p.place_id]?.ch_status === "matched").length;
+    const recs = S.recs.length;
+    $("stats").innerHTML = [
+      ["Places", fmt(all.length), `${fmt(recs)} source records merged`],
+      ["Confirmed by 2+ registers", fmt(multi), `${Math.round((100 * multi) / Math.max(1, all.length))}% of places`],
+      ["Building-level pins", fmt(pin), "the rest sit on postcode centres"],
+      ["Serious flags", fmt(serious), "location, type or postcode problems"],
+      ["With a company record", fmt(all.filter((p) => p.company_number).length), `${fmt(all.filter((p) => p.company_number && p.n_sources > 1).length)} merged with a shop or service`],
+    ].map(([k, v, d]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
+  }
+
+  function flagList(rows) {
+    const base = S.places.filter((p) => !$("inside").checked || p.inside_city);
+    const counts = {}; for (const p of base) for (const f of p.flagList) counts[f] = (counts[f] || 0) + 1;
+    const order = Object.keys(counts).sort((a, b) => ["bad", "warn", "info"].indexOf(sev(a)) - ["bad", "warn", "info"].indexOf(sev(b)) || counts[b] - counts[a]);
+    $("flags").innerHTML = order.map((f) => `<label class="flagopt" title="${esc((FLAGS[f] || [, f])[1])}"><input type="checkbox" data-f="${f}" ${S.flags.has(f) ? "checked" : ""}>
+      <span><span class="sev ${sev(f)}"></span>${esc((FLAGS[f] || [, f])[1])}</span><span class="n">${fmt(counts[f])}</span></label>`).join("") || `<p class="hint">No flags.</p>`;
+    $("flags").querySelectorAll("input").forEach((i) => (i.onchange = () => { i.checked ? S.flags.add(i.dataset.f) : S.flags.delete(i.dataset.f); update(); }));
+  }
+
+  function confBar(c) {
+    const col = c >= 70 ? "var(--good)" : c >= 45 ? "var(--warn)" : "var(--bad)";
+    return `<span class="conf"><span class="bar"><span style="width:${c}%;background:${col}"></span></span>${c}</span>`;
+  }
+  const pills = (fl) => fl.filter((f) => f !== "SINGLE_SOURCE" && f !== "OUTSIDE_CITY").map((f) => `<span class="pill ${sev(f)}" title="${esc((FLAGS[f] || [, f])[1])}">${esc(f.replace(/_/g, " ").toLowerCase())}</span>`).join("");
+
+  function table(rows) {
+    $("count").textContent = `${fmt(rows.length)} shown`;
+    const show = rows.slice(0, 600);
+    $("tbl").querySelector("tbody").innerHTML = show.map((p) => `<tr data-id="${p.place_id}" aria-selected="${S.sel === p.place_id}">
+      <td><b>${esc(p.name)}</b>${p.names_seen && p.names_seen !== p.name ? `<div class="hint">also: ${esc(p.names_seen.split(" | ").filter((n) => n !== p.name).join(", "))}</div>` : ""}</td>
+      <td>${esc(p.industry_group)}</td><td>${esc(catLabel(p.category))}</td><td>${esc(p.postcode)}</td><td>${esc((p.sources || "").replace(/\|/g, " + "))}</td>
+      <td>${confBar(p.confidence)}</td><td>${pills(p.flagList)}</td></tr>`).join("") +
+      (rows.length > show.length ? `<tr><td colspan="7" class="hint">Showing the first 600 of ${fmt(rows.length)}. Narrow the filters to see the rest.</td></tr>` : "");
+    $("tbl").querySelectorAll("tbody tr[data-id]").forEach((tr) => (tr.onclick = () => select(tr.dataset.id, true)));
+  }
+  function wireSort() {
+    document.querySelectorAll("#tbl thead th").forEach((th) => (th.onclick = () => {
+      const k = th.dataset.k, key = S.mode === "comp" ? "csort" : "sort";
+      S[key] = [k, S[key][0] === k ? -S[key][1] : (k === "confidence" || k === "n_at_address" ? -1 : 1)]; update();
+    }));
+  }
+
+  function select(id, pan) {
+    S.sel = id;
+    const p = S.places.find((x) => x.place_id === id);
+    if (pan && p && Number.isFinite(p.lat)) { V.cx = p.lon; V.cy = p.lat; V.s = Math.max(V.s, 60000); }
+    update();
+  }
+
+  // ---------- detail panel
+  function srcLink(r) {
+    const id = r.source_id;
+    if (r.source === "osm") return `https://www.openstreetmap.org/${id}`;
+    if (r.source === "fsa") return `https://ratings.food.gov.uk/business/${id}`;
+    if (r.source === "ofsted") return `https://reports.ofsted.gov.uk/provider/16/${id}`;
+    if (r.source === "ch") return `https://find-and-update.company-information.service.gov.uk/company/${id}`;
+    if (r.source === "nhs_ods") return `https://www.odsdatasearchandexport.nhs.uk/?search=${id}`;
+    return "";
+  }
+  const SRC = { osm: "OpenStreetMap", fsa: "Food Standards Agency", ofsted: "Ofsted", nhs_ods: "NHS ODS", ch: "Companies House" };
+  const METHOD = { osm_mapped: "Mapped point (OSM)", osm_building_centre: "Building centre (OSM)", fsa_geocode: "FSA geocode", postcode_centre: "Postcode centre" };
+  function dist(a, b, c, d) { const R = 6371008.8, r = Math.PI / 180, x = Math.sin(((c - a) * r) / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin(((d - b) * r) / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)); }
+
+  function detail() {
+    if (S.opp && !S.sel) { $("detail").innerHTML = oppHTML(); $("detail").querySelectorAll("[data-oi]").forEach((d) => (d.onclick = (e) => { if (e.target.tagName === "A") return; const p = S.opp.picks[+d.dataset.oi]; V.cx = p.lo; V.cy = p.la; V.s = Math.max(V.s, 40000); draw(); })); return; }
+    const el = $("detail"), p = S.places.find((x) => x.place_id === S.sel);
+    if (!p) { el.innerHTML = `<h2>Inspect a place</h2><p>Click a row or a dot on the map to see every source record behind it, where each one puts the pin, the flags, and links to check it on Google Maps and the original register.</p>`; return; }
+    const recs = S.byPlace[p.place_id] || [];
+    const co = p.company_number ? { ch_status: "matched", company_name: p.company_name, company_number: p.company_number, company_status: "active",
+      incorporated: p.incorporated, sic_codes: (p.sic_codes || "") + (p.industry ? " · " + p.industry : ""), last_accounts_made_up_to: "", accounts_type: p.company_type,
+      match_confidence: p.n_sources > 1 ? "merged with " + (p.sources || "").replace(/\|/g, ", ") : "company only (registered office)",
+      companies_house_url: `https://find-and-update.company-information.service.gov.uk/company/${p.company_number}`,
+      filed_accounts_url: `https://find-and-update.company-information.service.gov.uk/company/${p.company_number}/filing-history?category=accounts` } : S.companies[p.place_id];
+    const same = Number.isFinite(p.lat) ? (S.atPoint[p.lat.toFixed(5) + "," + p.lon.toFixed(5)] || []).filter((x) => x.place_id !== p.place_id) : [];
+    const fl = p.flagList.map((f) => `<div><span class="pill ${sev(f)}">${esc(f.replace(/_/g, " ").toLowerCase())}</span> <span class="hint">${esc((FLAGS[f] || [, ""])[1])}</span></div>`).join("");
+    el.innerHTML = `
+      <div><h2>${esc(p.name)}</h2><p class="hint">${esc(catLabel(p.category))}${p.all_categories && p.all_categories.includes("|") ? ` · also typed as ${esc(p.all_categories.split("|").slice(1).map(catLabel).join(", "))}` : ""}</p></div>
+      ${confBar(p.confidence)}
+      <dl>
+        <dt>Industry group</dt><dd>${esc(p.industry_group)}${p.customer_facing ? " · customer-facing" : ""}</dd>
+        <dt>Name from</dt><dd>${esc(p.name_source || "–")}</dd>
+        <dt>Place ID</dt><dd>${esc(p.place_id)}</dd>
+        <dt>Coordinates</dt><dd>${Number.isFinite(p.lat) ? `${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}` : "none"}</dd>
+        <dt>Pin from</dt><dd>${esc(METHOD[p.coord_method] || p.coord_method)} · ${esc(p.coord_source)}</dd>
+        <dt>Sources spread</dt><dd>${fmt(p.location_spread_m || 0)} m</dd>
+        ${p.address ? `<dt>Address</dt><dd>${esc(p.address)}</dd>` : ""}
+        <dt>Postcode</dt><dd>${esc(p.postcode || "–")}</dd>
+        ${p.brand ? `<dt>Brand</dt><dd>${esc(p.brand)}</dd>` : ""}
+        ${p.opening_hours ? `<dt>Opening hours</dt><dd>${esc(p.opening_hours)}</dd>` : ""}
+        ${p.quality ? `<dt>Quality</dt><dd>${esc(p.quality)}</dd>` : ""}
+        ${p.website ? `<dt>Website</dt><dd>${esc(p.website)}</dd>` : ""}
+      </dl>
+      <div class="links">
+        ${p.google_maps_url ? `<a href="${esc(p.google_maps_url)}" target="_blank" rel="noopener">Pin on Google Maps</a>` : ""}
+        ${p.google_maps_search ? `<a href="${esc(p.google_maps_search)}" target="_blank" rel="noopener">Search name on Google Maps</a>` : ""}
+        ${co && co.companies_house_url ? `<a href="${esc(co.companies_house_url)}" target="_blank" rel="noopener">Companies House</a>` : ""}
+        ${co && co.filed_accounts_url ? `<a href="${esc(co.filed_accounts_url)}" target="_blank" rel="noopener">Filed accounts</a>` : ""}
+      </div>
+      <h3>Flags</h3>${fl || `<p class="hint">No flags.</p>`}
+      <h3>Company</h3>${co ? (co.ch_status === "matched" ? `<dl>
+        <dt>Company</dt><dd>${esc(co.company_name)} (${esc(co.company_number)})</dd><dt>Status</dt><dd>${esc(co.company_status)}</dd>
+        <dt>Incorporated</dt><dd>${esc(co.incorporated)}</dd><dt>SIC codes</dt><dd>${esc(co.sic_codes)}</dd>
+        ${co.last_accounts_made_up_to ? `<dt>Last accounts</dt><dd>${esc(co.last_accounts_made_up_to)}</dd>` : ""}${co.accounts_type ? `<dt>Company type</dt><dd>${esc(co.accounts_type)}</dd>` : ""}
+        <dt>Match</dt><dd>${esc(co.match_confidence)}</dd></dl>` : `<p class="hint">${co.ch_status === "no_match" ? "No company with a matching name: likely a sole trader, partnership or a branch of a group." : esc(co.ch_status)}</p>`)
+        : `<p class="hint">No matching active company: a sole trader, partnership, public service, or a branch of a group registered elsewhere.</p>`}
+      ${same.length ? `<h3>Also at exactly this point (${same.length})</h3><p class="hint">Usually companies sharing one registered address or postcode centre.</p>
+        <div class="links">${same.slice(0, 40).map((x) => `<a href="#" data-goto="${x.place_id}">${esc(x.name)}</a>`).join("")}${same.length > 40 ? `<span class="hint">+${same.length - 40} more</span>` : ""}</div>` : ""}
+      <h3>Source records (${recs.length})</h3>
+      ${recs.map((r) => { const d = Number.isFinite(p.lat) && r.lat !== "" ? Math.round(dist(p.lat, p.lon, +r.lat, +r.lon)) : null; const L = srcLink(r);
+        return `<div class="srcrow"><b>${esc(SRC[r.source] || r.source)}</b>
+          <span>${esc(r.name)} · <span class="hint">${esc(r.raw_type)}</span></span>
+          <span class="hint">${r.lat !== "" ? `${(+r.lat).toFixed(6)}, ${(+r.lon).toFixed(6)} · ${esc(METHOD[r.coord_method] || r.coord_method)}${d != null ? ` · ${d} m from the chosen pin` : ""}` : "no coordinates"}</span>
+          <span class="hint">${r.postcode ? "Postcode " + esc(r.postcode) : ""}${r.m_from_postcode !== "" && r.m_from_postcode != null ? ` · ${esc(r.m_from_postcode)} m from postcode centre` : ""}${r.record_date ? " · dated " + esc(r.record_date) : ""}</span>
+          ${L ? `<a class="hint" href="${esc(L)}" target="_blank" rel="noopener" style="color:var(--accent)">Open in ${esc(SRC[r.source] || r.source)} (${esc(r.source_id)})</a>` : ""}</div>`; }).join("")}`;
+  }
+
+  document.addEventListener("click", (e) => { const a = e.target.closest("[data-goto]"); if (a) { e.preventDefault(); select(a.dataset.goto, true); } });
+  // ---------- map
+  const cv = $("map"), ctx = cv.getContext("2d");
+  const LAT0 = 50.92, KX = Math.cos((LAT0 * Math.PI) / 180);
+  const V = { cx: -1.4, cy: 50.92, s: 1 };
+  let bbox = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const l of GEO.lsoa) for (const r of l.rings) for (const [x, y] of r) { bbox = [Math.min(bbox[0], x), Math.min(bbox[1], y), Math.max(bbox[2], x), Math.max(bbox[3], y)]; }
+  function fit() { const w = cv.clientWidth || 600, h = cv.clientHeight || 400; V.cx = (bbox[0] + bbox[2]) / 2; V.cy = (bbox[1] + bbox[3]) / 2; V.s = 0.94 * Math.min(w / ((bbox[2] - bbox[0]) * KX), h / (bbox[3] - bbox[1])); }
+  const px = (lon, lat) => [cv.clientWidth / 2 + (lon - V.cx) * KX * V.s, cv.clientHeight / 2 - (lat - V.cy) * V.s];
+  const ll = (x, y) => [V.cy - (y - cv.clientHeight / 2) / V.s, V.cx + (x - cv.clientWidth / 2) / (KX * V.s)];
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function draw() {
+    const dpr = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = css("--panel"); ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = css("--paper"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 0.6;
+    for (const l of GEO.lsoa) { ctx.beginPath(); for (const r of l.rings) r.forEach(([x, y], i) => { const [a, b] = px(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.fill("evenodd"); ctx.stroke(); }
+    ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.2; ctx.beginPath();
+    for (const [a, b, c, d] of GEO.edges) { const [x1, y1] = px(a, b), [x2, y2] = px(c, d); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); } ctx.stroke();
+    if (S.mode === "comp") { drawComp(w, h); return; }
+    if (S.mapView === "area") drawAreas(w, h);
+    const rows = S.mapView === "area" ? [] : (S.rows || []), sel = S.places.find((p) => p.place_id === S.sel);
+    const r0 = Math.max(2.2, Math.min(5, V.s / 18000));
+    for (const p of rows) {
+      if (!Number.isFinite(p.lat)) continue;
+      const [x, y] = px(p.lon, p.lat); if (x < -5 || y < -5 || x > w + 5 || y > h + 5) continue;
+      ctx.fillStyle = css(S.gcolor[p.industry_group] || "--c7"); ctx.globalAlpha = p.flagList.includes("REGISTERED_OFFICE_ONLY") ? 0.45 : 0.9;
+      ctx.beginPath(); ctx.arc(x, y, r0, 0, 7); ctx.fill();
+      if (p.flagList.some((f) => sev(f) === "bad")) { ctx.globalAlpha = 1; ctx.strokeStyle = css("--bad"); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, r0 + 2, 0, 7); ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
+    if (sel && Number.isFinite(sel.lat)) {
+      for (const r of S.byPlace[sel.place_id] || []) {
+        if (r.lat === "") continue;
+        const [x, y] = px(+r.lon, +r.lat), [sx, sy] = px(sel.lon, sel.lat);
+        ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = css("--panel"); ctx.strokeStyle = css("--ink"); ctx.beginPath(); ctx.rect(x - 4, y - 4, 8, 8); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = css("--ink"); ctx.font = "600 11px " + css("--body"); ctx.textAlign = "left"; ctx.fillText((r.source || "").toUpperCase(), x + 7, y + 4);
+      }
+      const [x, y] = px(sel.lon, sel.lat);
+      ctx.fillStyle = css("--accent"); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill(); ctx.strokeStyle = css("--panel"); ctx.lineWidth = 2; ctx.stroke();
+    }
+    if (S.opp && S.opp.picks) S.opp.picks.forEach((p, k) => {
+      const [x, y] = px(p.lo, p.la), rp = (800 / 111250) * V.s;
+      ctx.strokeStyle = css("--accent"); ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(x, y, rp, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = css("--accent"); ctx.beginPath(); ctx.arc(x, y, 11, 0, 7); ctx.fill(); ctx.strokeStyle = css("--panel"); ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.font = "700 12px " + css("--body"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(k + 1), x, y + 0.5);
+    });
+    ctx.textBaseline = "alphabetic";
+    const len = (500 / 111250) * V.s; ctx.fillStyle = css("--ink"); ctx.fillRect(12, h - 16, len, 3);
+    ctx.font = "600 11px " + css("--body"); ctx.textAlign = "left"; ctx.fillText("500 m", 12, h - 20);
+  }
+  function legend() {
+    $("legend").innerHTML = S.grpOrder.slice(0, 7).map((g, i) => `<span><i style="background:var(${PALETTE[Math.min(i, 6)]})"></i>${esc(i === 6 && S.grpOrder.length > 7 ? "Other groups" : g)}</span>`).join("") + `<span>Faded = registered office only</span>` +
+      `<span><i style="background:transparent;border:1.5px solid var(--bad)"></i>Serious flag</span><span>Selected place shows each source's own pin</span>`;
+  }
+  let drag = null;
+  cv.addEventListener("pointerdown", (e) => { cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, cx: V.cx, cy: V.cy, moved: false }; });
+  cv.addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true; if (drag.moved) { V.cx = drag.cx - dx / (KX * V.s); V.cy = drag.cy + dy / V.s; draw(); } });
+  cv.addEventListener("pointerup", (e) => {
+    if (drag && !drag.moved && S.mode === "comp") {
+      const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      let best = null, bd = 14;
+      for (const a of S.addrRows || []) { const [x, y] = px(a.lon, a.lat), d = Math.hypot(x - mx, y - my); if (d < bd) { bd = d; best = a; } }
+      if (best) { S.selAddr = best.address_id; update(); }
+      drag = null; return;
+    }
+    if (drag && !drag.moved) {
+      const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+      let best = null, bd = 12;
+      for (const p of S.rows || []) { if (!Number.isFinite(p.lat)) continue; const [x, y] = px(p.lon, p.lat), d = Math.hypot(x - mx, y - my); if (d < bd) { bd = d; best = p; } }
+      if (best) select(best.place_id, false);
+    }
+    drag = null;
+  });
+  function zoom(f, x, y) { const [la, lo] = ll(x, y); V.s *= f; const [la2, lo2] = ll(x, y); V.cx += lo - lo2; V.cy += la - la2; draw(); }
+  cv.addEventListener("wheel", (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  $("zin").onclick = () => zoom(1.4, cv.clientWidth / 2, cv.clientHeight / 2);
+  $("zout").onclick = () => zoom(1 / 1.4, cv.clientWidth / 2, cv.clientHeight / 2);
+  $("zfit").onclick = () => { fit(); draw(); };
+  new ResizeObserver(() => draw()).observe(cv);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+
+  // ---------- controls
+  ["q", "src", "inside", "ind", "cust", "hideshared", "custp", "hidero", "sub", "cui"].forEach((id) => $(id).addEventListener("input", () => { S.opp = null; update(); }));
+  ["grp", "cat", "cfam"].forEach((id) => $(id).addEventListener("input", () => { S.opp = null; refreshOptions(id); update(); }));
+  // ---------- advanced filter: options depend on the choices above them
+  function fillSel(id, label, counts) {
+    const el = $(id), v0 = el.value; el.innerHTML = ""; el.add(new Option(`Any ${label}`, ""));
+    for (const [k, n] of Object.entries(counts).sort((a, b) => b[1] - a[1])) el.add(new Option(`${k} (${n})`, k));
+    el.value = counts[v0] ? v0 : "";
+  }
+  function refreshOptions(changed) {
+    const g = $("grp").value, c = $("cat").value;
+    const base = S.places.filter((p) => (!g || p.industry_group === g));
+    if (changed === "grp") { const cc = {}; for (const p of base) cc[p.category] = (cc[p.category] || 0) + 1;
+      const el = $("cat"); el.innerHTML = ""; el.add(new Option(`All types (${base.length})`, ""));
+      for (const [k, n] of Object.entries(cc).sort((a, b) => b[1] - a[1])) el.add(new Option(`${catLabel(k)} (${n})`, k)); }
+    const b2 = base.filter((p) => !$("cat").value || p.category === $("cat").value);
+    const cnt = (arr, k) => { const o = {}; for (const p of arr) if (p[k]) o[p[k]] = (o[p[k]] || 0) + 1; return o; };
+    fillSel("sub", "detailed type", cnt(b2, "subtype"));
+    if (changed !== "cfam") fillSel("cfam", "cuisine family", cnt(b2, "cuisine_family"));
+    fillSel("cui", "cuisine", cnt(b2.filter((p) => !$("cfam").value || p.cuisine_family === $("cfam").value), "cuisine"));
+  }
+
+  // ---------- areas: wards shaded by matching places per 1,000 residents
+  const AREA = JSON.parse($("area").textContent);
+  const WARD_C = {}; AREA.oa.ward.forEach((w, i) => { const c = (WARD_C[w] ||= [0, 0, 0]); c[0] += AREA.oa.lat[i]; c[1] += AREA.oa.lon[i]; c[2]++; });
+  for (const w in WARD_C) WARD_C[w] = [WARD_C[w][0] / WARD_C[w][2], WARD_C[w][1] / WARD_C[w][2]];
+  S.mapView = "pts";
+  function wardStats() {
+    const by = {};
+    for (const p of S.rows || []) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = p.cuisine || p.subtype || catLabel(p.category); b.top[k] = (b.top[k] || 0) + 1; }
+    for (const w in by) { by[w].rate = (1000 * by[w].n) / (AREA.ward_pop[w] || 1); by[w].best = Object.entries(by[w].top).sort((a, b) => b[1] - a[1])[0]; }
+    return by;
+  }
+  function drawAreas(w, h) {
+    const st = wardStats(), max = Math.max(0.0001, ...Object.values(st).map((b) => b.rate));
+    for (const l of GEO.lsoa) {
+      const ward = AREA.lsoa_ward[l.code], b = st[ward], t = b ? b.rate / max : 0;
+      ctx.beginPath(); for (const r of l.rings) r.forEach(([x, y], i) => { const [a, bb] = px(x, y); i ? ctx.lineTo(a, bb) : ctx.moveTo(a, bb); });
+      ctx.globalAlpha = 0.08 + 0.72 * t; ctx.fillStyle = css("--accent"); ctx.fill("evenodd"); ctx.globalAlpha = 1;
+    }
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const [ward, [la, lo]] of Object.entries(WARD_C)) {
+      const [x, y] = px(lo, la), b = st[ward]; if (x < 0 || y < 0 || x > w || y > h) continue;
+      ctx.font = "700 12px " + css("--display"); ctx.fillStyle = css("--ink");
+      ctx.fillText(ward.toUpperCase(), x, y - 9);
+      ctx.font = "600 11px " + css("--body"); ctx.fillStyle = css("--ink");
+      ctx.fillText(b ? `${b.n} · ${b.rate.toFixed(1)}/1k` : "none", x, y + 4);
+      if (b && b.best) { ctx.font = "500 10px " + css("--body"); ctx.fillStyle = css("--muted"); ctx.fillText(`top: ${b.best[0]} (${b.best[1]})`, x, y + 17); }
+    }
+  }
+  function setView(v) { S.mapView = v; $("mv-pts").setAttribute("aria-pressed", v === "pts"); $("mv-area").setAttribute("aria-pressed", v === "area"); draw(); legendArea(); }
+  $("mv-pts").onclick = () => setView("pts"); $("mv-area").onclick = () => setView("area");
+  function legendArea() { if (S.mapView === "area") $("legend").innerHTML = `<span><i style="background:var(--accent)"></i>Darker = more matching places per 1,000 residents</span><span>Label: ward · count · rate · most common type</span><span>Uses the filters on the left</span>`; else legend(); }
+
+  // ---------- opportunity finder: where to open what the filters describe
+  const OAN = AREA.oa.lat.length, mx = (la1, lo1, la2, lo2) => Math.hypot((lo2 - lo1) * 70000, (la2 - la1) * 111200);
+  let OAD = null;
+  function oaNear() { if (OAD) return OAD; OAD = []; for (let i = 0; i < OAN; i++) { const n = []; for (let j = 0; j < OAN; j++) if (mx(AREA.oa.lat[i], AREA.oa.lon[i], AREA.oa.lat[j], AREA.oa.lon[j]) <= 800) n.push(j); OAD.push(n); } return OAD; }
+  function describeTarget() {
+    const parts = [$("cui").value || $("cfam").value, $("sub").value, $("cat").value ? catLabel($("cat").value) : "", $("grp").value].filter(Boolean);
+    return parts[0] || "";
+  }
+  $("opp").onclick = () => {
+    const target = describeTarget();
+    if (!target) { S.opp = { error: "Choose what you want to open first: an industry, type, detailed type or cuisine in the filters on the left." }; S.sel = null; update(); return; }
+    const near = oaNear(), comp = (S.rows || []).filter((p) => Number.isFinite(p.lat));
+    const foot = S.places.filter((p) => Number.isFinite(p.lat) && p.customer_facing && !p.flagList.includes("REGISTERED_OFFICE_ONLY"));
+    const cand = [];
+    for (let i = 0; i < OAN; i++) {
+      const la = AREA.oa.lat[i], lo = AREA.oa.lon[i];
+      let pop = 0; for (const j of near[i]) pop += AREA.oa.pop[j];
+      let c800 = 0, cNear = null; for (const p of comp) { const d = mx(la, lo, p.lat, p.lon); if (d <= 800) c800++; if (!cNear || d < cNear.d) cNear = { d, name: p.name }; }
+      let f400 = 0; for (const p of foot) if (mx(la, lo, p.lat, p.lon) <= 400) f400++;
+      const score = (pop / 1000) * (1 + Math.min(f400, 30) / 15) / (1 + 2 * c800) * (cNear && cNear.d < 200 ? 0.3 : 1);
+      cand.push({ i, la, lo, pop, c800, cNear, f400, score, ward: AREA.oa.ward[i] });
+    }
+    cand.sort((a, b) => b.score - a.score);
+    const picks = []; for (const c of cand) { if (picks.every((p) => mx(p.la, p.lo, c.la, c.lo) > 1000)) picks.push(c); if (picks.length === 5) break; }
+    S.opp = { target, picks, n: comp.length }; S.sel = null; update();
+  };
+  function oppHTML() {
+    const o = S.opp;
+    if (o.error) return `<h2>Suggest spots to open</h2><p>${esc(o.error)}</p>`;
+    return `<h2>Where to open: ${esc(o.target)}</h2>
+      <p class="hint">Ranks every Census area centre by residents within a 10-minute walk, fewer existing ${esc(o.target)} places within 800 m (${o.n} in the data), and busy shops and services within 400 m as a stand-in for footfall. Spots are at least 1 km apart.</p>
+      <div class="opp">${o.picks.map((p, k) => `<div class="o" data-oi="${k}"><span class="n">${k + 1}</span>
+        <b>${esc(p.ward)}</b>
+        <span>${fmt(p.pop)} residents within 800 m · ${p.c800} existing within 800 m${p.cNear ? ` (nearest: ${esc(p.cNear.name)}, ${fmt(Math.round(p.cNear.d))} m)` : ""}</span>
+        <span class="hint">${p.f400} shops and services within 400 m · ${p.la.toFixed(5)}, ${p.lo.toFixed(5)} · <a href="https://www.google.com/maps/search/?api=1&query=${p.la.toFixed(6)},${p.lo.toFixed(6)}" target="_blank" rel="noopener" style="color:var(--accent)">Google Maps</a></span></div>`).join("")}</div>
+      <p class="hint">A first screen, not a verdict: weights are our assumptions, it counts residents not visitors or students, and it can't see rents or vacant units. Check each spot on the ground.</p>`;
+  }
+  function setMode(m) {
+    S.mode = m; $("v-places").setAttribute("aria-pressed", m === "places"); $("v-comp").setAttribute("aria-pressed", m === "comp");
+    $("comp-filters").hidden = m !== "comp"; $("place-filters").hidden = m === "comp"; S.flags.clear();
+    $("q").placeholder = m === "comp" ? "Company name, number, postcode, address…" : "Name, postcode, brand, company…"; update();
+  }
+  $("v-places").onclick = () => setMode("places"); $("v-comp").onclick = () => setMode("comp");
+
+  // ---------- companies view
+  function setCompanies(rows) {
+    S.comp = rows.map((c) => ({ ...c, lat: c.lat === "" ? NaN : +c.lat, lon: c.lon === "" ? NaN : +c.lon,
+      inside_city: String(c.inside_city).toLowerCase() === "true", customer_facing: String(c.customer_facing).toLowerCase() === "true",
+      flagList: (c.flags || "").split(";").filter(Boolean), div: (c.industry || "").split("; ")[0] || "Not stated" }));
+    const n = {}; for (const c of S.comp) n[c.address_id] = (n[c.address_id] || 0) + 1;
+    for (const c of S.comp) c.n_at_address = n[c.address_id];
+    const inds = {}; for (const c of S.comp) for (const d of (c.industry || "Not stated").split("; ")) inds[d] = (inds[d] || 0) + 1;
+    const sel = $("ind"); sel.innerHTML = ""; sel.add(new Option(`All industries (${S.comp.length})`, ""));
+    for (const [d, k] of Object.entries(inds).sort((a, b) => b[1] - a[1])) sel.add(new Option(`${d} (${k})`, d));
+  }
+  function compFiltered() {
+    const q = $("q").value.trim().toLowerCase(), ind = $("ind").value, inside = $("inside").checked, cust = $("cust").checked, hide = $("hideshared").checked;
+    return S.comp.filter((c) => {
+      if (inside && !c.inside_city) return false;
+      if (ind && !(c.industry || "Not stated").split("; ").includes(ind)) return false;
+      if (cust && !c.customer_facing) return false;
+      if (hide && c.n_at_address >= 5) return false;
+      for (const f of S.flags) if (!c.flagList.includes(f)) return false;
+      if (q && ![c.company_name, c.company_number, c.postcode, c.address].join(" ").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+  function compUpdate() {
+    const rows = compFiltered(), [k, dir] = S.csort;
+    rows.sort((a, b) => (typeof a[k] === "number" ? a[k] - b[k] : String(a[k]).localeCompare(String(b[k]))) * dir);
+    const by = {}; for (const c of rows) { if (!Number.isFinite(c.lat)) continue; (by[c.address_id] ||= { address_id: c.address_id, lat: c.lat, lon: c.lon, list: [] }).list.push(c); }
+    S.crows = rows; S.addrRows = Object.values(by);
+    // stats
+    const all = S.comp.filter((c) => !$("inside").checked || c.inside_city);
+    const addrN = new Set(all.map((c) => c.address_id)).size, shared = all.filter((c) => c.n_at_address >= 5).length;
+    const cf = all.filter((c) => c.customer_facing).length, linked = all.filter((c) => c.linked_place_id).length;
+    $("stats").innerHTML = [["Active companies", fmt(all.length), "from the Companies House file"], ["Distinct addresses", fmt(addrN), "one map point each, no stacked duplicates"],
+      ["Customer-facing industries", fmt(cf), "shops, food, health, childcare, personal services"], ["At shared addresses", fmt(shared), "5+ companies: accountants or virtual offices"],
+      ["Linked to a place", fmt(linked), "matched by name to a register place"]].map(([k, v, d]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
+    // flags
+    const counts = {}; for (const c of all) for (const f of c.flagList) counts[f] = (counts[f] || 0) + 1;
+    const order = Object.keys(counts).filter((f) => f !== "REGISTERED_OFFICE_ONLY").sort((a, b) => ["bad", "warn", "info"].indexOf(sev(a)) - ["bad", "warn", "info"].indexOf(sev(b)) || counts[b] - counts[a]);
+    $("flags").innerHTML = order.map((f) => `<label class="flagopt"><input type="checkbox" data-f="${f}" ${S.flags.has(f) ? "checked" : ""}><span><span class="sev ${sev(f)}"></span>${esc((FLAGS[f] || [, f])[1])}</span><span class="n">${fmt(counts[f])}</span></label>`).join("");
+    $("flags").querySelectorAll("input").forEach((i) => (i.onchange = () => { i.checked ? S.flags.add(i.dataset.f) : S.flags.delete(i.dataset.f); update(); }));
+    // table
+    document.querySelector("#tbl thead").innerHTML = `<tr><th data-k="company_name">Company</th><th data-k="company_number">Number</th><th data-k="div">Industry</th><th data-k="incorporated">Incorporated</th><th data-k="postcode">Postcode</th><th data-k="n_at_address">At address</th><th data-k="flags">Flags</th></tr>`;
+    wireSort();
+    $("count").textContent = `${fmt(rows.length)} shown`;
+    const show = rows.slice(0, 600);
+    $("tbl").querySelector("tbody").innerHTML = show.map((c) => `<tr data-a="${c.address_id}" aria-selected="${S.selAddr === c.address_id}">
+      <td><b>${esc(c.company_name)}</b>${c.linked_place_id ? ` <span class="pill good">linked to ${esc(c.linked_place_id)}</span>` : ""}<div class="hint">${esc(c.address)}</div></td>
+      <td>${esc(c.company_number)}</td><td>${esc(c.industry || "Not stated")}</td><td>${esc(c.incorporated)}</td><td>${esc(c.postcode)}</td>
+      <td class="num">${c.n_at_address}</td><td>${c.flagList.filter((f) => !["REGISTERED_OFFICE_ONLY", "COORDS_FROM_2017_POSTCODE_FILE", "OUTSIDE_CITY"].includes(f)).map((f) => `<span class="pill ${sev(f)}">${esc(f.replace(/_/g, " ").toLowerCase())}</span>`).join("")}</td></tr>`).join("") +
+      (rows.length > show.length ? `<tr><td colspan="7" class="hint">Showing the first 600 of ${fmt(rows.length)}. Narrow the filters to see the rest.</td></tr>` : "");
+    $("tbl").querySelectorAll("tbody tr[data-a]").forEach((tr) => (tr.onclick = () => { S.selAddr = tr.dataset.a; const a = S.comp.find((c) => c.address_id === tr.dataset.a); if (a && Number.isFinite(a.lat)) { V.cx = a.lon; V.cy = a.lat; V.s = Math.max(V.s, 60000); } update(); }));
+    compDetail(); draw();
+    $("legend").innerHTML = `<span><i style="background:var(--c2)"></i>Registered address (size = number of companies)</span><span><i style="background:var(--c1)"></i>Has a customer-facing company</span><span><i style="background:transparent;border:1.5px solid var(--warn)"></i>5+ companies at one address</span>`;
+  }
+  function drawComp(w, h) {
+    const sel = S.selAddr;
+    for (const a of S.addrRows || []) {
+      const [x, y] = px(a.lon, a.lat); if (x < -10 || y < -10 || x > w + 10 || y > h + 10) continue;
+      const r = Math.min(14, 2.2 + Math.sqrt(a.list.length) * 1.6);
+      ctx.globalAlpha = 0.75; ctx.fillStyle = css(a.list.some((c) => c.customer_facing) ? "--c1" : "--c2");
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+      if (a.list.length >= 5) { ctx.strokeStyle = css("--warn"); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(x, y, r + 1.5, 0, 7); ctx.stroke(); }
+      if (a.address_id === sel) { ctx.strokeStyle = css("--ink"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, r + 4, 0, 7); ctx.stroke(); }
+    }
+    const len = (500 / 111250) * V.s; ctx.fillStyle = css("--ink"); ctx.fillRect(12, h - 16, len, 3);
+    ctx.font = "600 11px " + css("--body"); ctx.textAlign = "left"; ctx.fillText("500 m", 12, h - 20);
+  }
+  function compDetail() {
+    const el = $("detail"), list = S.comp.filter((c) => c.address_id === S.selAddr);
+    if (!list.length) { el.innerHTML = `<h2>Inspect an address</h2><p>Click a company or a dot. Companies registered at the same address share one point, so you see every company at that address in one place.</p>`; return; }
+    const a = list[0], g = Number.isFinite(a.lat) ? `https://www.google.com/maps/search/?api=1&query=${a.lat.toFixed(6)},${a.lon.toFixed(6)}` : "";
+    const gs = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(`${a.address} ${a.postcode}`);
+    el.innerHTML = `<div><h2>${esc(a.address)}</h2><p class="hint">${esc(a.postcode)} · ${list.length} active compan${list.length === 1 ? "y" : "ies"}</p></div>
+      <dl><dt>Coordinates</dt><dd>${Number.isFinite(a.lat) ? `${a.lat.toFixed(6)}, ${a.lon.toFixed(6)}` : "none"}</dd><dt>Pin from</dt><dd>Postcode centre${a.postcode_status === "approx_2017" ? " (2017 postcode file, preview)" : ""}</dd><dt>Inside the city</dt><dd>${a.inside_city ? "Yes" : "No"}</dd></dl>
+      <div class="links">${g ? `<a href="${esc(g)}" target="_blank" rel="noopener">Pin on Google Maps</a>` : ""}<a href="${esc(gs)}" target="_blank" rel="noopener">Search address on Google Maps</a></div>
+      <h3>Companies at this address</h3>
+      ${list.slice(0, 150).map((c) => `<div class="srcrow"><b>${esc(c.company_name)}</b>
+        <span class="hint">${esc(c.company_number)} · ${esc(c.company_type)} · incorporated ${esc(c.incorporated || "–")}</span>
+        <span class="hint">${esc(c.industry || "No SIC code")} ${c.sic_codes ? "(" + esc(c.sic_codes.replace(/\|/g, ", ")) + ")" : ""}</span>
+        ${c.linked_place_id ? `<span class="pill good">Runs place ${esc(c.linked_place_id)}</span>` : ""}
+        <span><a class="hint" style="color:var(--accent)" href="https://find-and-update.company-information.service.gov.uk/company/${esc(c.company_number)}" target="_blank" rel="noopener">Companies House</a> · <a class="hint" style="color:var(--accent)" href="https://find-and-update.company-information.service.gov.uk/company/${esc(c.company_number)}/filing-history?category=accounts" target="_blank" rel="noopener">Filed accounts</a> · <a class="hint" style="color:var(--accent)" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.company_name + " " + c.postcode)}" target="_blank" rel="noopener">Search name on Google Maps</a></span></div>`).join("")}
+      ${list.length > 150 ? `<p class="hint">and ${list.length - 150} more</p>` : ""}`;
+  }
+  $("conf").addEventListener("input", () => { $("conf-v").textContent = $("conf").value; update(); });
+  $("clear-flags").onclick = () => { S.flags.clear(); update(); };
+  $("copy-csv").onclick = async () => {
+    const cols = ["place_id", "name", "category", "lat", "lon", "coord_method", "postcode", "sources", "confidence", "flags", "google_maps_url"];
+    const text = toCSV(S.rows || [], cols);
+    try { await navigator.clipboard.writeText(text); $("copy-msg").textContent = `Copied ${fmt((S.rows || []).length)} rows`; }
+    catch (e) { $("copy-msg").textContent = "Clipboard blocked here: use places.csv from your PC run"; }
+  };
+  function readFile(input, fn) {
+    input.onchange = () => { const f = input.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { fn(parseCSV(r.result), f.name); } catch (e) { $("file-msg").textContent = "Couldn't read " + f.name + ": " + e.message; } }; r.readAsText(f); };
+  }
+  readFile($("f-places"), (rows, name) => {
+    if (!rows.length || !("place_id" in rows[0])) { $("file-msg").textContent = `${name} isn't a places.csv from the pipeline (no place_id column).`; return; }
+    setData(rows, [], "Your build"); $("file-msg").textContent = `Loaded ${fmt(rows.length)} places from ${name}. Add source_records.csv to see each source's pin.`;
+  });
+  readFile($("f-recs"), (rows, name) => { S.recs = rows; S.byPlace = {}; for (const r of rows) (S.byPlace[r.place_id] ||= []).push(r); $("file-msg").textContent = `Loaded ${fmt(rows.length)} source records.`; update(); });
+  if ($("f-comp")) readFile($("f-comp"), (rows, name) => { if (!rows.length || !("company_number" in rows[0])) { $("file-msg").textContent = name + " isn't companies.csv"; return; } setCompanies(rows); $("file-msg").textContent = `Loaded ${fmt(rows.length)} companies.`; update(); });
+  readFile($("f-co"), (rows, name) => { S.companies = {}; for (const r of rows) S.companies[r.place_id] = r; $("file-msg").textContent = `Loaded ${fmt(rows.length)} company lookups.`; update(); });
+
+  // ---------- what is extracted
+  $("extract").innerHTML = [
+    ["Food Standards Agency", "Every registered food business: cafés, restaurants, takeaways, pubs, shops, nursery and care kitchens.", ["Business name and FSA business type", "Address, postcode, coordinates", "Hygiene rating and inspection date", "FHRS ID (link to the record)"], "OGL v3 · updated daily"],
+    ["OpenStreetMap", "Every named shop, amenity, healthcare, office, leisure and tourism feature.", ["Name, brand, operator", "Exact mapped point or building centre", "Opening hours, website, phone", "Last edit or check date"], "ODbL · live"],
+    ["NHS ODS", "Active GP practices, branch surgeries and pharmacies.", ["Official name and ODS code", "Postcode (pin = postcode centre)", "Last change date"], "OGL v3 · live"],
+    ["Ofsted", "Registered nurseries and pre-schools (childminders are redacted by Ofsted and left out).", ["Setting name and URN", "Provider type and registered places", "Latest inspection grade", "Postcode (pin = postcode centre)"], "OGL v3 · twice a year"],
+    ["Companies House", "The company that most likely runs each business, matched by name and postcode district.", ["Company number, name, status", "Incorporation date and SIC codes", "Last accounts date and type, link to filed accounts", "Match confidence; no officers or home addresses stored"], "Public register · API or bulk file"],
+    ["postcodes.io + checks", "Every postcode is checked against the ONS Postcode Directory.", ["Postcode centre coordinates", "Terminated or invalid postcodes", "Distance from each pin to its postcode", "Google Maps links for manual checks; optional Google Places cross-check (not shipped)"], "OGL v3"],
+  ].map(([t, d, li, lic]) => `<div class="card"><h3>${t}</h3><p style="font-size:.86rem">${d}</p><ul>${li.map((x) => `<li>${x}</li>`).join("")}</ul><span class="hint">${lic}</span></div>`).join("");
+
+  // ---------- start with the sample
+  const summ = JSON.parse($("sample-summary").textContent);
+  $("intro").textContent = `One merged table: 17 Oct OpenStreetMap and NHS registers plus your ${fmt((summ.records_by_source || {}).ch || 0)} active Companies House companies. A company that runs an existing shop is merged into it; other companies are listed at their registered office. Company pins use a 2017 postcode file for this preview. Food hygiene and Ofsted are added when you run the pipeline on your PC.`;
+  requestAnimationFrame(() => {
+    S.companies = {};
+    setData(parseCSV($("sample-places").textContent), parseCSV($("sample-recs").textContent), "Sample · 17 Oct");
+  });
+})();
+</script>

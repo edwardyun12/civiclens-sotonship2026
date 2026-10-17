@@ -1,6 +1,6 @@
 # HANDOVER: SotonShip 2026, Module C planning simulator
 
-Paste this whole file into the next AI session. It is self-contained.
+Paste this whole file into the next AI session. It is self-contained. Code map: `docs/CODEBASE.md`.
 
 ## Context
 

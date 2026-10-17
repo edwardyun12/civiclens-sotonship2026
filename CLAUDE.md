@@ -1,6 +1,7 @@
 # Instructions for Claude working in this repo
 
-Read `HANDOVER.md` first: it has the deadline, status, files and the to-do list.
+Read `docs/CODEBASE.md` first (every file and function, how they connect, rules for changes), then `HANDOVER.md`
+(deadline, status, to-do list).
 
 ## Git rules (required)
 - Commit as `TYK3 <atyk0702@outlook.com>`: `git config user.name "TYK3"` and `git config user.email "atyk0702@outlook.com"`.
@@ -11,7 +12,8 @@ Read `HANDOVER.md` first: it has the deadline, status, files and the to-do list.
 - `src/engine.py` deterministic engine (no AI). `src/brief.py` AI brief + numbers audit. `src/app.py` Streamlit app.
 - `src/build_places.py` builds the places database (`data/db/`) and the simulator's site list
   (`data/processed/facilities_places.csv`). `SIM_DATASET=baseline` uses the 17 Oct file instead.
-- Docs: `docs/SIMULATOR.md` (method, results, limits), `docs/DATA_PLAN.md` (sources, flags), `docs/SUBMISSION.md`.
+- `viewer/` browser pages; rebuild with `python viewer/build_viewers.py`. `viewer/src/engine.js` must stay in step with `engine.py`.
+- Docs: `docs/CODEBASE.md` (code map), `docs/SIMULATOR.md` (method, results, limits), `docs/DATA_PLAN.md` (sources, flags, names), `docs/SUBMISSION.md`.
 
 ## Commands (Windows, in the repo folder)
 ```bat
