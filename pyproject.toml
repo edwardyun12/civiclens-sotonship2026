@@ -9,14 +9,17 @@ description = "Local RAG prototype for the Southampton Opportunity Engine"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi>=0.115,<1",
     "numpy>=2,<3",
     "pypdf>=5,<7",
     "rank-bm25>=0.2.2,<1",
     "streamlit>=1.40,<2",
+    "uvicorn>=0.34,<1",
 ]
 
 [project.scripts]
 sotonship-rag = "sotonship_rag.cli:main"
+sotonship-api = "sotonship_rag.api:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
