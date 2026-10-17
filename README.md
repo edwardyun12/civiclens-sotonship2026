@@ -93,11 +93,3 @@ streamlit run src/sotonship_rag/web.py
 
 Then open `http://localhost:8501`. The sidebar shows the active local models,
 index size, retrieval depth, and controls for rebuilding the document index.
-
-## Tests
-
-```bash
-python -m unittest discover -v
-```
-
-The current suite covers document chunking and vector similarity.
