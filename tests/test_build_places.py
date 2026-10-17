@@ -74,7 +74,20 @@ def test_missing_coordinates_and_outside_city():
 def test_stale_and_duplicate_flags():
     p, _ = run([rec("osm", "node/5", "Old Corner Shop", "shop_food", 50.9046, -1.4045, date="2019-01-01"),
                 rec("osm", "node/6", "Old Corner Shop", "shop_food", 50.90461, -1.40451, date="2019-01-01")])
-    assert all("OSM_NOT_CHECKED_3Y" in f and "POSSIBLE_DUPLICATE" in f for f in p["flags"])
+    assert len(p) == 1  # the same shop entered twice on the map is merged into one place
+    assert "OSM_NOT_CHECKED_3Y" in p.iloc[0]["flags"] and "MERGED_DUPLICATE" in p.iloc[0]["flags"]
+
+
+def test_out_of_scope_companies_are_excluded_with_a_reason():
+    reg = pd.DataFrame([
+        {"company_number": "1", "company_name": "LONDON ROW LTD", "company_type": "ltd", "incorporated": "", "sic_codes": "68209",
+         "address": "1 Southampton Row London", "postcode": "WC1B 5HA"},
+        {"company_number": "2", "company_name": "SLEEPY LTD", "company_type": "ltd", "incorporated": "", "sic_codes": "99999",
+         "address": "1 High St Southampton", "postcode": "SO14 7DU"}])
+    p, _ = run(BP.ch_records(reg).to_dict("records"))
+    r = p.set_index("company_number")["excluded_reason"]
+    assert "Not in Southampton" in r["1"] and "Dormant" in r["2"]
+    assert (p["confidence"] < 40).all()
 
 
 def test_confidence_rewards_agreement():

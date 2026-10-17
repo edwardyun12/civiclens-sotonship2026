@@ -452,15 +452,19 @@ def match(recs: pd.DataFrame) -> pd.Series:
     lat, lon = recs["lat"].to_numpy(), recs["lon"].to_numpy()
     src, names, pcs = recs["source"].to_numpy(), recs["name"].to_numpy(), recs["postcode"].to_numpy()
     order = sorted(range(n), key=lambda i: lat[i])  # sweep by latitude
-    cands = []
+    cands, dups = [], []
     dlat = MATCH_FAR_M / 111_000
     for a_i, a in enumerate(order):
         for b in order[a_i + 1:]:
             if lat[b] - lat[a] > dlat:
                 break
-            if src[a] == src[b]:
-                continue  # never merge two records from the same register (that's a duplicate flag instead)
             d = metres(lat[a], lon[a], lat[b], lon[b])
+            if src[a] == src[b]:
+                # the same business entered twice in one register (map or hygiene list): merge it.
+                # Never for Companies House or NHS: two records there are two legal entities / organisations.
+                if src[a] in DEDUP_SOURCES and d <= DUP_M and name_sim(names[a], names[b]) >= 0.9:
+                    dups.append((a, b))
+                continue
             if d > MATCH_FAR_M:
                 continue
             s = name_sim(names[a], names[b])
@@ -470,6 +474,11 @@ def match(recs: pd.DataFrame) -> pd.Series:
                 cands.append((d / MATCH_FAR_M - s, a, b))  # best pairs first
     # merge best pairs first; keep at most one record per source in a place
     srcs_of = {i: {src[i]} for i in range(n)}
+    for a, b in dups:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[rb] = ra
+            srcs_of[ra] |= srcs_of.pop(rb)
     for _, a, b in sorted(cands):
         ra, rb = find(a), find(b)
         if ra != rb and not (srcs_of[ra] & srcs_of[rb]):
@@ -478,8 +487,34 @@ def match(recs: pd.DataFrame) -> pd.Series:
     return pd.Series([find(i) for i in range(n)], index=recs.index)
 
 
+DEDUP_SOURCES, DUP_M = {"osm", "fsa"}, 30
 COORD_RANK = {"osm_mapped": 0, "osm_building_centre": 1, "fsa_geocode": 2, "postcode_centre": 3}
 SRC_LABEL = {"fsa": "FSA", "osm": "OSM", "nhs_ods": "NHS ODS", "ofsted": "Ofsted", "ch": "Companies House"}
+
+# Confidence penalty per flag (points off a 0-100 score). Every problem flag costs something.
+PENALTY = {
+    "NOT_IN_SOUTHAMPTON": 25, "DORMANT_OR_NON_TRADING": 25, "NO_COORDINATES": 20,
+    "SOURCES_DISAGREE_ON_LOCATION": 15, "TYPE_CONFLICT": 15, "FAR_FROM_OWN_POSTCODE": 15, "POSTCODE_INVALID": 15,
+    "NAME_DIFFERS_BETWEEN_SOURCES": 10, "POSTCODE_TERMINATED": 10, "POSSIBLE_DUPLICATE": 10, "OSM_NOT_CHECKED_3Y": 10,
+    "SHARED_ADDRESS_5PLUS": 10, "COMPANY_SIC_DOESNT_FIT_TYPE": 10, "COMPANY_REGISTERED_ELSEWHERE": 5,
+    "COORDS_FROM_2017_POSTCODE_FILE": 5, "FSA_INSPECTION_OVER_4Y": 5, "FSA_RATING_PENDING": 0,
+}
+
+
+def exclusion_reason(flags: list[str], sources: list[str]) -> str:
+    """Records that are out of scope for a Southampton places database: kept in excluded_places.csv with the
+    reason, never silently dropped."""
+    company_only = sources == ["ch"]
+    if "NOT_IN_SOUTHAMPTON" in flags:
+        return "Not in Southampton (the address only contains the word Southampton, e.g. Southampton Row, London)"
+    if company_only and "DORMANT_OR_NON_TRADING" in flags:
+        return "Dormant or non-trading company"
+    if company_only and "OUTSIDE_CITY" in flags:
+        return "Company registered outside the Southampton city boundary"
+    if company_only and "NO_COORDINATES" in flags:
+        return "Company postcode could not be located"
+    return ""
+
 
 # SIC 2007 code prefix -> our category (longest prefix wins). Lets companies sit in the same taxonomy as places.
 SIC_CATEGORY = {
@@ -619,7 +654,9 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
             flags.append("NAME_DIFFERS_BETWEEN_SOURCES")
         if not compatible(set(g["category"])):
             flags.append("TYPE_CONFLICT")
-        if g["dup_in_source"].any():
+        if g["source"].duplicated().any():
+            flags.append("MERGED_DUPLICATE")  # same business listed twice in one register, now one place
+        elif g["dup_in_source"].any():
             flags.append("POSSIBLE_DUPLICATE")
         for _, r in g.iterrows():
             try:
@@ -650,9 +687,7 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
         # confidence: sources agreeing, precise coordinates, no conflicts
         conf = 40 + 20 * (len(srcs) - 1)
         conf += {0: 20, 1: 15, 2: 10, 3: 0}.get(COORD_RANK.get(best["coord_method"], 3), 0)
-        conf -= 15 * sum(f in flags for f in ("SOURCES_DISAGREE_ON_LOCATION", "NAME_DIFFERS_BETWEEN_SOURCES",
-                                              "TYPE_CONFLICT", "FAR_FROM_OWN_POSTCODE", "POSTCODE_INVALID"))
-        conf -= 10 * sum(f in flags for f in ("POSTCODE_TERMINATED", "POSSIBLE_DUPLICATE", "OSM_NOT_CHECKED_3Y"))
+        conf -= sum(PENALTY.get(f, 0) for f in flags)
         sims = [s for s in g["sim_category"].dropna().unique() if s]
         # category: prefer what the place itself shows (map, registers) over the company's SIC code
         cats = list(dict.fromkeys(list(g[g["source"] != "ch"]["category"]) + list(ch["category"])))
@@ -670,6 +705,7 @@ def build(recs: pd.DataFrame, pcs: dict, polys) -> tuple[pd.DataFrame, pd.DataFr
             "sources": "|".join(SRC_LABEL[s] for s in srcs), "n_sources": len(srcs),
             "names_seen": " | ".join(dict.fromkeys(g["name"])), "inside_city": inside,
             "confidence": max(0, min(100, conf)), "flags": ";".join(flags),
+            "excluded_reason": exclusion_reason(flags, srcs),
             "industry_group": INDUSTRY_GROUP.get(cats[0], "Other"),
             "customer_facing": INDUSTRY_GROUP.get(cats[0], "Other") in CUSTOMER_FACING_GROUPS,
             "company_number": chx.get("company_number", ""), "company_name": ch.iloc[0]["name"] if len(ch) else "",
@@ -701,6 +737,8 @@ def export_facilities(places: pd.DataFrame, bbox=None) -> pd.DataFrame:
     use = use.where(use.isin(SIM_USES), "")
     use = use.mask((use == "") & (f["category"] == "coworking"), "coworking")
     keep = (use != "") & f["lat"].notna() & ~flags.str.contains("REGISTERED_OFFICE_ONLY|NOT_IN_SOUTHAMPTON")
+    if "excluded_reason" in f:
+        keep &= f["excluded_reason"].fillna("") == ""
     # where an official register exists, it decides: GP and pharmacy sites must be on the NHS register
     # (the map also tags MRI units, counsellors and clinics as "doctors")
     srcs = f["sources"].fillna("").astype(str)
@@ -1080,11 +1118,15 @@ def companies_house(places: pd.DataFrame, key: str | None, bulk: str | None, lim
 def save(places: pd.DataFrame, recs: pd.DataFrame, extra_sources: dict | None = None,
          companies: pd.DataFrame | None = None):
     DB.mkdir(parents=True, exist_ok=True)
+    excluded = places[places.get("excluded_reason", pd.Series("", index=places.index)).fillna("") != ""]
+    places = places.drop(excluded.index)
+    excluded.to_csv(DB / "excluded_places.csv", index=False)
     places.to_csv(DB / "places.csv", index=False)
     recs.to_csv(DB / "source_records.csv", index=False)
     srcs = {**(extra_sources or {}), **SOURCES}
     with sqlite3.connect(DB / "places.sqlite") as con:
         places.to_sql("places", con, if_exists="replace", index=False)
+        excluded.to_sql("excluded_places", con, if_exists="replace", index=False)
         recs.to_sql("source_records", con, if_exists="replace", index=False)
         pd.DataFrame([{"key": k, **v} for k, v in srcs.items()]).to_sql("sources", con, if_exists="replace", index=False)
         if companies is not None and len(companies):
@@ -1102,6 +1144,7 @@ def save(places: pd.DataFrame, recs: pd.DataFrame, extra_sources: dict | None = 
                "places_by_category": places["category"].value_counts().to_dict(),
                "places_by_n_sources": places["n_sources"].value_counts().sort_index().to_dict(),
                "flags": flag_counts, "inside_city": int(places["inside_city"].sum()),
+               "excluded": excluded["excluded_reason"].value_counts().to_dict(),
                "company_links": (companies["ch_status"].value_counts().to_dict() if companies is not None and len(companies) else {}),
                "sources": srcs}
     (DB / "summary.json").write_text(json.dumps(summary, indent=1, default=str))
