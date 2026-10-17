@@ -1,0 +1,696 @@
+<title>Southampton Site Simulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: control rail | survey map | results ledger. Ordnance-map paper, ink, water blue, OS magenta for anything proposed. */
+:root {
+  --paper: #f4f5ef; --panel: #fbfbf7; --ink: #1c2420; --muted: #5d675f; --line: #d7dbcf;
+  --accent: #b02a66; --accent-soft: #f6e3ec; --water: #3c7fa6; --water-soft: rgba(60,127,166,.22);
+  --covered: #8fae8a; --gap: #d98a2b; --good: #2f7a4f; --warn: #b26a12; --bad: #b3362f;
+  --chip: #e9ece2; --fac: #2b322e;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833;
+  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --water-soft: rgba(111,177,214,.22);
+  --covered: #5f7f5c; --gap: #e09a45; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d; --chip: #242b27; --fac: #dfe5de;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833;
+  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --water-soft: rgba(111,177,214,.22);
+  --covered: #5f7f5c; --gap: #e09a45; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d; --chip: #242b27; --fac: #dfe5de;
+  color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: .01em; margin: 0; text-wrap: balance }
+h1 { font-size: 1.9rem; line-height: 1 }
+h2 { font-size: 1.25rem; text-transform: uppercase; letter-spacing: .06em }
+h3 { font-size: 1.05rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; margin-bottom: 12px }
+.top p { margin: 0; color: var(--muted); max-width: 70ch }
+.badge-proto { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; border: 1px solid var(--accent); color: var(--accent); padding: 2px 8px; border-radius: 3px }
+.grid { display: grid; grid-template-columns: 260px minmax(0, 1fr) minmax(0, 430px); gap: 14px; align-items: start }
+@media (max-width: 1180px) { .grid { grid-template-columns: 250px minmax(0, 1fr) } .results { grid-column: 1 / -1 } }
+@media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.rail { display: flex; flex-direction: column; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0 }
+.field > label, .lbl { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: .82rem; color: var(--muted) }
+select, input[type=text], input[type=number], textarea { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; width: 100% }
+textarea { min-height: 170px; resize: vertical; line-height: 1.5 }
+button { font: inherit; cursor: pointer; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px }
+button:hover { border-color: var(--muted) }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600 }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 4px; overflow: hidden }
+.seg button { border: 0; border-radius: 0; background: transparent; padding: 7px 4px; font-weight: 600 }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper) }
+.row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chips button { font-size: .85rem; padding: 4px 8px }
+.check { display: flex; gap: 6px; align-items: center; font-size: .92rem }
+.hint { color: var(--muted); font-size: .82rem; margin: 0 }
+.mapwrap { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; min-width: 0 }
+canvas { display: block; width: 100%; height: min(72vh, 640px); min-height: 380px; touch-action: none; cursor: crosshair }
+.mapbtns { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px }
+.mapbtns button { width: 32px; height: 32px; padding: 0; font-weight: 700; background: var(--panel) }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: .8rem; color: var(--muted) }
+.legend span { display: inline-flex; align-items: center; gap: 5px }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block }
+.sw.sq { border-radius: 2px }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; font-size: .8rem; max-width: 260px; box-shadow: 0 2px 8px rgba(0,0,0,.12); z-index: 2 }
+.tip b { display: block }
+.near { display: flex; flex-direction: column; gap: 6px }
+.nrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; border-bottom: 1px solid var(--line); padding-bottom: 5px; font-size: .86rem }
+.nrow .m { font-variant-numeric: tabular-nums; color: var(--muted); text-align: right }
+.nrow .sub { grid-column: 1 / -1; color: var(--muted); font-size: .78rem }
+.coords { position: absolute; left: 8px; bottom: 44px; font-size: .75rem; background: var(--panel); border: 1px solid var(--line); padding: 2px 6px; border-radius: 3px; color: var(--muted); font-variant-numeric: tabular-nums }
+.results { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0 }
+.err { border-color: var(--bad); color: var(--bad) }
+.headline { font-size: 1.02rem }
+.headline b { font-family: var(--display); font-size: 1.5rem; font-weight: 700; color: var(--accent); line-height: 1 }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.metric { border-top: 2px solid var(--line); padding-top: 6px; min-width: 0 }
+.metric .k { font-family: var(--display); text-transform: uppercase; letter-spacing: .07em; font-size: .75rem; color: var(--muted) }
+.metric .v { font-family: var(--display); font-size: 1.45rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1 }
+.metric .d { font-size: .8rem; color: var(--muted) }
+.pill { display: inline-block; font-size: .78rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor }
+.pill.High, .pill.ok { color: var(--good) } .pill.Medium, .pill.warn { color: var(--warn) } .pill.Low, .pill.bad { color: var(--bad) }
+.tablewrap { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: .86rem; font-variant-numeric: tabular-nums }
+th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap }
+th:first-child, td:first-child { text-align: left; white-space: normal }
+thead th { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: .78rem; color: var(--muted); font-weight: 600 }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; padding: 6px 8px; font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: .9rem; color: var(--muted) }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent) }
+.audit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem }
+.brieftext { white-space: pre-wrap; margin: 0; font-size: .92rem }
+details summary { cursor: pointer; color: var(--muted); font-size: .85rem }
+pre.json { font-size: .74rem; max-height: 260px; overflow: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 8px; margin: 6px 0 0 }
+.bars { display: flex; flex-direction: column; gap: 5px }
+.bar { display: grid; grid-template-columns: 112px minmax(0, 1fr) 58px; gap: 8px; align-items: center; font-size: .82rem; font-variant-numeric: tabular-nums }
+.bar .track { height: 12px; background: var(--chip); border-radius: 2px; overflow: hidden }
+.bar .fill { height: 100%; background: var(--accent) }
+.bar .fill.light { background: var(--covered) }
+.bar span:last-child { text-align: right }
+footer { margin-top: 18px; color: var(--muted); font-size: .8rem; display: flex; flex-direction: column; gap: 6px; max-width: 120ch }
+footer ul { margin: 0; padding-left: 18px }
+.mark { background: var(--accent-soft); color: var(--accent); border-radius: 2px; padding: 0 2px }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<header class="top">
+  <div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap">
+    <h1>Southampton Site Simulator</h1>
+    <span class="badge-proto">Playground</span>
+  </div>
+  <p>Test where a new nursery, GP, pharmacy, café or library would help most. Same engine and data as the Streamlit app, run in your browser. The brief here is the plain template; the app's AI brief uses the same numbers.</p>
+</header>
+
+<div class="grid">
+  <aside class="rail" aria-label="Inputs">
+    <div class="field">
+      <span class="lbl">Mode</span>
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="m-test" aria-pressed="true">Test a site</button>
+        <button id="m-best" aria-pressed="false">Find best sites</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="dataset">Existing sites from</label>
+      <select id="dataset">
+        <option value="places">Places database</option>
+        <option value="baseline">17 Oct baseline</option>
+        <option value="upload" hidden>Your places.csv</option>
+      </select>
+      <label class="hint" for="f-places" style="cursor:pointer;text-decoration:underline">Load a newer places.csv<input type="file" id="f-places" accept=".csv" hidden></label>
+      <p class="hint" id="ds-msg"></p>
+    </div>
+    <div class="field">
+      <label for="cat">Use</label>
+      <select id="cat"></select>
+    </div>
+    <div class="field">
+      <label for="radius">Walking radius (straight line)</label>
+      <select id="radius">
+        <option value="600">600 m · about 8 min</option>
+        <option value="700">700 m · about 9 min</option>
+        <option value="800" selected>800 m · about 10 min</option>
+        <option value="900">900 m · about 11 min</option>
+        <option value="1000">1000 m · about 12 min</option>
+      </select>
+    </div>
+
+    <div id="test-opts" class="field" style="gap:12px">
+      <div class="field">
+        <span class="lbl">Site</span>
+        <p class="hint">Click the map, pick a ward centre, or type coordinates.</p>
+        <select id="ward" aria-label="Ward centre"></select>
+        <div class="row">
+          <input id="latlon" type="text" placeholder="50.9046, -1.4045" aria-label="Latitude, longitude" style="flex:1;min-width:0">
+          <button id="go-ll">Go</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl">Compare at the same site</span>
+        <div id="alts" class="chips"></div>
+        <p class="hint">Up to 2 other uses. "Do nothing" is always shown.</p>
+      </div>
+      <div class="field">
+        <span class="lbl">Rehearsed demo scenarios</span>
+        <div class="chips">
+          <button data-demo="centre">Café, city centre</button>
+          <button data-demo="bitterne">Library vs café, Bitterne Park</button>
+          <button data-demo="thin">Thin data</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="best-opts" class="field" hidden>
+      <label for="k">New facilities</label>
+      <select id="k"><option>1</option><option>2</option><option selected>3</option></select>
+      <p class="hint">Greedy search over all 792 Output Area centres, skipping Flood Zone 3.</p>
+    </div>
+
+    <details class="field">
+      <summary>Housing growth scenario</summary>
+      <div class="field" style="margin-top:8px">
+        <label for="g-ward">Ward</label>
+        <select id="g-ward"></select>
+        <label for="g-homes">New homes</label>
+        <input id="g-homes" type="number" min="0" max="5000" step="250" value="0">
+        <p class="hint">Adds homes × 2.3 residents (assumption), spread by current population.</p>
+      </div>
+    </details>
+  </aside>
+
+  <section class="mapwrap" aria-label="Map of Southampton">
+    <canvas id="map" aria-label="Map: click to place a site"></canvas>
+    <div class="mapbtns">
+      <button id="zin" aria-label="Zoom in">+</button>
+      <button id="zout" aria-label="Zoom out">−</button>
+      <button id="zfit" aria-label="Fit city" style="font-size:.7rem">FIT</button>
+    </div>
+    <div id="coords" class="coords" hidden></div>
+    <div id="tip" class="tip" hidden></div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--covered)"></i>Covered now</span>
+      <span><i class="sw" style="background:var(--gap)"></i>Not covered</span>
+      <span><i class="sw" style="background:var(--accent)"></i>Newly covered</span>
+      <span><i class="sw sq" style="background:var(--fac)"></i>Existing site (hover for name)</span>
+      <span><i class="sw sq" style="border:1.5px solid var(--fac)"></i>Low-confidence site</span>
+      <span><i class="sw sq" style="background:var(--water-soft);border:1px solid var(--water)"></i>Flood Zone 3</span>
+      <span>Dot size = demand</span>
+    </div>
+  </section>
+
+  <section class="results" id="results" aria-live="polite"></section>
+</div>
+
+<footer id="footer"></footer>
+
+<script id="simdata" type="application/json">__DATA__</script>
+<script id="basefac" type="application/json">__BASEFAC__</script>
+<script id="places" type="application/json">__PLACES__</script>
+<script id="psources" type="application/json">__PSOURCES__</script>
+<script>__ENGINE__</script>
+<script>
+(function () {
+  "use strict";
+  const DATA = JSON.parse(document.getElementById("simdata").textContent);
+  const FAC = { places: DATA.fac, baseline: JSON.parse(document.getElementById("basefac").textContent) };
+  let PL = JSON.parse(document.getElementById("places").textContent);   // every place in the database (slim)
+  const PSRC = JSON.parse(document.getElementById("psources").textContent);
+  function plXY() { PL.x = []; PL.y = []; for (let i = 0; i < PL.lat.length; i++) { const [x, y] = SimEngine.toBNG(PL.lat[i], PL.lon[i]); PL.x.push(x); PL.y.push(y); } }
+  plXY();
+  let E = SimEngine.create(DATA);
+  const C = SimEngine.CATEGORIES;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = (n) => (n == null ? "–" : Number(n).toLocaleString("en-GB"));
+  const pct = (v) => (Number.isInteger(v) ? v.toFixed(1) : String(v)) + "%";
+
+  const S = { mode: "test", cat: "nursery", radius: 800, site: null, alts: [], k: 3, gWard: "", gHomes: 0, tab: "compare",
+    out: null, error: null, editedBrief: null };
+  function load() { try { const v = JSON.parse(localStorage.getItem("sim-ui") || "{}"); if (v.cat && C[v.cat]) S.cat = v.cat; if (v.radius) S.radius = v.radius; } catch (e) {} }
+  function save() { try { localStorage.setItem("sim-ui", JSON.stringify({ cat: S.cat, radius: S.radius })); } catch (e) {} }
+  load();
+
+  // ---------------- controls
+  const cat = $("cat");
+  function fillCats() { const v0 = cat.value; cat.innerHTML = ""; for (const [k, v] of Object.entries(C)) cat.add(new Option(`${v.label} (${E.facilities(k).length} existing)`, k)); if (v0) cat.value = v0; }
+  fillCats();
+  function useFacilities(key, fac, msg) {
+    E = SimEngine.create({ ...DATA, fac }); fillCats(); cat.value = S.cat;
+    $("dataset").value = key; $("ds-msg").textContent = msg; S.editedBrief = null; run();
+  }
+  $("dataset").onchange = (e) => { const k = e.target.value; if (FAC[k]) useFacilities(k, FAC[k], k === "places" ? "Merged OSM + NHS register + Companies House database. GPs and pharmacies must be on the NHS register." : "The 17 Oct file the published numbers were computed on."); };
+  // places.csv -> existing sites, same rule as build_places.export_facilities
+  function parseCSV(text) {
+    const rows = []; let row = [], f = "", q = false;
+    for (let i = 0; i < text.length; i++) { const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true; else if (c === ",") { row.push(f); f = ""; }
+      else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(f); rows.push(row); row = []; f = ""; } else f += c; }
+    if (f || row.length) { row.push(f); rows.push(row); }
+    const head = rows.shift() || []; return rows.filter((r) => r.length > 1).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ""])));
+  }
+  function placesToFacilities(rows) {
+    const USES = ["nursery", "gp", "pharmacy", "cafe", "library"], hasNHS = rows.some((p) => (p.sources || "").includes("NHS ODS"));
+    const pad = 0.02, bb = [Infinity, Infinity, -Infinity, -Infinity];  // city LSOA extent + ~2 km, as build_places
+    for (const l of DATA.lsoa) for (const r of l.rings) for (const [x, y] of r) { bb[0] = Math.min(bb[0], y); bb[1] = Math.min(bb[1], x); bb[2] = Math.max(bb[2], y); bb[3] = Math.max(bb[3], x); }
+    bb[0] -= pad; bb[1] -= pad; bb[2] += pad; bb[3] += pad;
+    return rows.map((p) => {
+      let use = USES.includes(p.sim_category) ? p.sim_category : (p.category === "coworking" ? "coworking" : "");
+      const lat = +p.lat, lon = +p.lon, fl = p.flags || "";
+      if (!use || p.lat === "" || /REGISTERED_OFFICE_ONLY|NOT_IN_SOUTHAMPTON/.test(fl)) return null;
+      if (hasNHS && (use === "gp" || use === "pharmacy") && !(p.sources || "").includes("NHS ODS")) return null;
+      if (lat < bb[0] || lat > bb[2] || lon < bb[1] || lon > bb[3]) return null;
+      return { c: use, n: p.name, lat, lon, s: "places:" + p.sources, id: p.place_id, conf: +p.confidence, fl: p.flags || "" };
+    }).filter(Boolean);
+  }
+  $("f-places").onchange = () => {
+    const f = $("f-places").files[0]; if (!f) return; const r = new FileReader();
+    r.onload = () => {
+      try {
+        const rows = parseCSV(r.result);
+        if (!rows.length || !("sim_category" in rows[0])) { $("ds-msg").textContent = f.name + " isn't a places.csv from the pipeline (no sim_category column)."; return; }
+        const fac = placesToFacilities(rows); FAC.upload = fac;
+        const ok = rows.filter((p) => p.lat !== "");
+        PL = { lat: ok.map((p) => +p.lat), lon: ok.map((p) => +p.lon), name: ok.map((p) => p.name), cat: ok.map((p) => p.category),
+          grp: ok.map((p) => p.industry_group || "Other"), ro: ok.map((p) => /REGISTERED_OFFICE_ONLY/.test(p.flags || "") ? 1 : 0),
+          cf: ok.map((p) => (String(p.customer_facing).toLowerCase() === "true" ? 1 : 0)), src: ok.map((p) => p.sources), conf: ok.map((p) => +p.confidence),
+          id: ok.map((p) => p.place_id), co: ok.map((p) => p.company_number || "") }; plXY(); $("dataset").querySelector('[value="upload"]').hidden = false;
+        const n = {}; for (const x of fac) n[x.c] = (n[x.c] || 0) + 1;
+        useFacilities("upload", fac, `Loaded ${f.name}: ${Object.entries(n).map(([k, v]) => v + " " + k).join(", ")}.`);
+      } catch (e) { $("ds-msg").textContent = "Couldn't read " + f.name + ": " + e.message; }
+    };
+    r.readAsText(f);
+  };
+  cat.value = S.cat; $("radius").value = String(S.radius);
+  const ward = $("ward"); ward.add(new Option("Ward centre…", ""));
+  for (const w of E.wards) ward.add(new Option(w, w));
+  const gw = $("g-ward"); gw.add(new Option("None", "")); for (const w of E.wards) gw.add(new Option(w, w));
+
+  function renderAlts() {
+    const box = $("alts"); box.innerHTML = "";
+    for (const [k, v] of Object.entries(C)) {
+      if (k === S.cat) continue;
+      const id = "alt-" + k, on = S.alts.includes(k);
+      const l = document.createElement("label"); l.className = "check";
+      l.innerHTML = `<input type="checkbox" id="${id}" ${on ? "checked" : ""} ${!on && S.alts.length >= 2 ? "disabled" : ""}> ${esc(v.label)}`;
+      l.querySelector("input").addEventListener("change", (e) => {
+        S.alts = e.target.checked ? [...S.alts, k].slice(0, 2) : S.alts.filter((x) => x !== k);
+        renderAlts(); run();
+      });
+      box.appendChild(l);
+    }
+  }
+  function setMode(m) {
+    S.mode = m; $("m-test").setAttribute("aria-pressed", m === "test"); $("m-best").setAttribute("aria-pressed", m === "best");
+    $("test-opts").hidden = m !== "test"; $("best-opts").hidden = m !== "best"; S.tab = "compare"; S.editedBrief = null; run();
+  }
+  $("m-test").onclick = () => setMode("test"); $("m-best").onclick = () => setMode("best");
+  cat.onchange = () => { S.cat = cat.value; S.alts = S.alts.filter((x) => x !== S.cat); save(); renderAlts(); S.editedBrief = null; run(); };
+  $("radius").onchange = (e) => { S.radius = +e.target.value; save(); S.editedBrief = null; run(); };
+  $("k").onchange = (e) => { S.k = +e.target.value; run(); };
+  ward.onchange = () => { if (!ward.value) return; const [la, lo] = E.wardCentroid(ward.value); setSite(la, lo); };
+  $("go-ll").onclick = () => {
+    const m = $("latlon").value.match(/(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)/);
+    if (!m) { S.error = "Type coordinates as latitude, longitude, for example 50.9046, -1.4045."; S.out = null; renderResults(); return; }
+    setSite(+m[1], +m[2]);
+  };
+  $("latlon").addEventListener("keydown", (e) => { if (e.key === "Enter") $("go-ll").click(); });
+  gw.onchange = () => { S.gWard = gw.value; run(); };
+  $("g-homes").onchange = (e) => { S.gHomes = Math.max(0, Math.min(5000, +e.target.value || 0)); run(); };
+  document.querySelectorAll("[data-demo]").forEach((b) => (b.onclick = () => {
+    const d = b.dataset.demo; setMode("test");
+    if (d === "centre") { S.cat = "cafe"; S.alts = []; setSite(50.9046, -1.4045, true); }
+    if (d === "bitterne") { S.cat = "library"; S.alts = ["cafe"]; setSite(50.9330, -1.3700, true); }
+    if (d === "thin") { S.cat = "library"; S.alts = []; thinDemo = true; setSite(50.9097, -1.4044, true); }
+    cat.value = S.cat; renderAlts(); save(); run();
+  }));
+  let thinDemo = false;
+
+  function setSite(la, lo, quiet) { S.site = [la, lo]; S.editedBrief = null; $("latlon").value = `${la.toFixed(5)}, ${lo.toFixed(5)}`; if (!quiet) { thinDemo = false; run(); } }
+
+  // ---------------- run engine
+  function extra() { return S.gWard && S.gHomes > 0 ? { [S.gWard]: S.gHomes * E.CFG.RESIDENTS_PER_HOME } : null; }
+  function run() {
+    S.error = null; S.out = null;
+    const t0 = performance.now();
+    try {
+      if (S.mode === "test") {
+        if (!S.site) { S.error = null; renderResults(); draw(); return; }
+        const cats = [S.cat, ...S.alts];
+        let results = cats.map((c) => E.evaluateSite(c, S.site[0], S.site[1], S.radius, extra()));
+        if (thinDemo) results = results.map((r) => thin(r));
+        const sens = E.sensitivity(cats.map((c) => ({ category: c, lat: S.site[0], lon: S.site[1] })), extra());
+        const nothing = E.doNothing(S.cat, S.radius, extra());
+        const payload = E.buildPayload(results, sens);
+        S.out = { kind: "test", results, sens, nothing, payload, brief: E.brief(payload) };
+      } else {
+        const picks = E.optimise(S.cat, S.k, S.radius, extra());
+        const results = picks.map((p) => E.evaluateSite(S.cat, p.lat_exact, p.lon_exact, S.radius, extra()));
+        const payload = picks.length ? E.buildPayload(results, null, { optimiser: { method: "greedy maximum coverage", candidate_sites: E.N,
+          coverage_before_pct: picks[0].coverage_before_pct, coverage_after_all_pct: picks[0].coverage_after_all_pct } }) : null;
+        S.out = { kind: "best", picks, results, payload, brief: payload ? E.brief(payload) : null };
+      }
+      S.out.ms = Math.round(performance.now() - t0);
+    } catch (e) {
+      if (e instanceof SimEngine.EngineError) S.error = e.message; else { S.error = "Something went wrong: " + e.message; console.error(e); }
+    }
+    renderResults(); draw();
+  }
+  // Simulates a category with too few sites in the data, so the refusal can be seen (library has 17 real sites).
+  function thin(r) {
+    return { ...r, existing_facilities: 3, confidence: "Low", insufficient_evidence: true,
+      confidence_reasons: ["only 3 existing library sites in the data (simulated thin data for this demo)"] };
+  }
+
+  // ---------------- results
+  function metric(k, v, d) { return `<div class="metric"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d || ""}</div></div>`; }
+  function confPill(r) { return `<span class="pill ${r.confidence}">${r.confidence} confidence</span>`; }
+
+  function renderResults() {
+    const R = $("results");
+    if (S.error) { R.innerHTML = `<div class="card err" role="alert"><h2>Can't run that</h2><p style="margin:0">${esc(S.error)}</p></div>`; return; }
+    if (!S.out) {
+      R.innerHTML = `<div class="card"><h2>Pick a site</h2><p style="margin:0">Click anywhere inside the city on the map, choose a ward centre, or try a rehearsed scenario on the left. Orange dots are areas without a ${esc(C[S.cat].label.toLowerCase())} within ${S.radius} m today.</p>
+      <div class="metrics">${metric("Covered now", pct(E.doNothing(S.cat, S.radius, extra()).coverage_before_pct), esc(C[S.cat].demandLabel))}${metric("Existing sites", E.facilities(S.cat).length, "in the data")}${metric("Radius", S.radius + " m", "straight line")}</div></div>`;
+      return;
+    }
+    R.innerHTML = S.out.kind === "test" ? testHTML() : bestHTML();
+    R.querySelectorAll(".tabs button").forEach((b) => (b.onclick = () => { S.tab = b.dataset.tab; renderResults(); }));
+    wireBrief();
+  }
+
+  function headline(r) {
+    if (r.insufficient_evidence) return `<p class="headline" style="margin:0">Not enough data to judge a ${esc(r.category_label.toLowerCase())} here.</p>`;
+    if (!r.newly_covered) return `<p class="headline" style="margin:0"><b>0</b> more ${esc(r.demand_label)} within a ${r.walk_minutes} minute walk. This area is already served${r.competitors_within_400m ? `: ${r.competitors_within_400m} existing sites within 400 m` : ""}.</p>`;
+    return `<p class="headline" style="margin:0"><b>${fmt(r.newly_covered)}</b> more ${esc(r.demand_label)} within a ${r.walk_minutes} minute walk, <b>${r.equity_most_deprived_40pct_share}%</b> of them in the most deprived 40% of areas nationally.</p>`;
+  }
+
+  function testHTML() {
+    const { results, sens, nothing } = S.out, r = results[0];
+    const flags = [];
+    if (r.flood_zone3) flags.push(`<span class="pill bad">Flood Zone 3</span>`);
+    if (r.cannibalisation_flag) flags.push(`<span class="pill warn">${r.competitors_within_400m} competitors within 400 m</span>`);
+    return `
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>${esc(r.category_label)} · ${esc(r.site.ward)}</h2>${confPill(r)}</div>
+      ${headline(r)}
+      <div class="metrics">
+        ${metric("Coverage", pct(r.coverage_after_pct), `from ${pct(r.coverage_before_pct)} (${r.coverage_change_pct_points >= 0 ? "+" : ""}${r.coverage_change_pct_points} pts)`)}
+        ${metric("Mean distance", fmt(r.mean_distance_after_m) + " m", `from ${fmt(r.mean_distance_before_m)} m`)}
+        ${(() => { const n = nearestSite(r.category, S.site[0], S.site[1]); return metric("Nearest existing", r.nearest_existing_m == null ? "–" : fmt(r.nearest_existing_m) + " m", n ? esc(n.n || "Unnamed") + ` · ${r.competitors_within_400m} within 400 m` : `${r.competitors_within_400m} within 400 m`); })()}
+        ${metric("Community need", r.need_score + "/100", "percentile vs all sites")}
+        ${metric("Viability", r.viability_score + "/100", "kept separate from need")}
+        ${metric("Jobs", r.jobs_estimate, `range ${r.jobs_range[0]}–${r.jobs_range[1]} (assumption)`)}
+      </div>
+      ${flags.length ? `<div class="row">${flags.join("")}</div>` : ""}
+      ${r.confidence_reasons.length ? `<p class="hint">${r.confidence_reasons.map(esc).join(" · ")}</p>` : ""}
+      <p class="hint">Computed in ${S.out.ms} ms${extra() ? ` · includes ${fmt(S.gHomes)} new homes in ${esc(S.gWard)}` : ""}</p>
+    </div>
+    <div class="card">
+      <div class="tabs" role="tablist">
+        ${[["compare", "Compare"], ["nearby", "What's nearby"], ["benefit", "Who benefits"], ["uncert", "Uncertainty"], ["inputs", "Score inputs"]]
+          .map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${S.tab === k}">${l}</button>`).join("")}
+      </div>
+      ${S.tab === "compare" ? compareTable(results, nothing) : ""}
+      ${S.tab === "nearby" ? nearbyHTML(r) : ""}
+      ${S.tab === "benefit" ? benefit(r) : ""}
+      ${S.tab === "uncert" ? uncert(results, sens) : ""}
+      ${S.tab === "inputs" ? inputs(r) : ""}
+    </div>
+    ${briefHTML()}`;
+  }
+
+  // ---------- what the database says is around a site
+  function sitesNear(cat, lat, lon, r) {
+    const [sx, sy] = SimEngine.toBNG(lat, lon);
+    return E.fac.filter((f) => f.c === cat).map((f) => ({ ...f, d: Math.hypot(f.x - sx, f.y - sy) })).filter((f) => f.d <= r).sort((a, b) => a.d - b.d);
+  }
+  function nearestSite(cat, lat, lon) {
+    const [sx, sy] = SimEngine.toBNG(lat, lon); let best = null;
+    for (const f of E.fac) if (f.c === cat) { const d = Math.hypot(f.x - sx, f.y - sy); if (!best || d < best.d) best = { ...f, d }; }
+    return best;
+  }
+  function placesNear(lat, lon, r) {
+    const [sx, sy] = SimEngine.toBNG(lat, lon), out = [];
+    for (let i = 0; i < PL.lat.length; i++) { const d = Math.hypot(PL.x[i] - sx, PL.y[i] - sy); if (d <= r) out.push({ i, d }); }
+    return out.sort((a, b) => a.d - b.d);
+  }
+  const srcShort = (s) => String(s || "").replace(/^places:/, "").replace(/\|/g, " + ") || "–";
+  function siteRow(f) {
+    const fl = (f.fl || "").split(";").filter((x) => x && !["SINGLE_SOURCE", "OUTSIDE_CITY"].includes(x));
+    return `<div class="nrow"><span><b>${esc(f.n || "Unnamed")}</b></span><span class="m">${fmt(Math.round(f.d))} m</span>
+      <span class="sub">${esc(srcShort(f.s))}${f.conf != null ? ` · confidence ${f.conf}` : ""}${fl.length ? " · " + fl.map((x) => esc(x.replace(/_/g, " ").toLowerCase())).join(", ") : ""}</span></div>`;
+  }
+  function nearbyHTML(r) {
+    const lat = S.site[0], lon = S.site[1];
+    const same = sitesNear(r.category, lat, lon, Math.max(S.radius, 400)), near = nearestSite(r.category, lat, lon);
+    const pl = placesNear(lat, lon, S.radius), trading = pl.filter((p) => !PL.ro[p.i]), offices = pl.filter((p) => PL.ro[p.i]);
+    const groups = {}; for (const p of trading) groups[PL.grp[p.i]] = (groups[PL.grp[p.i]] || 0) + 1;
+    const gmax = Math.max(1, ...Object.values(groups));
+    const named = trading.filter((p) => PL.cf[p.i] && !String(PL.name[p.i]).startsWith("Unnamed")).slice(0, 10);
+    return `<h3>Existing ${esc(r.category_label.toLowerCase())} sites within ${Math.max(S.radius, 400)} m (${same.length})</h3>
+      <div class="near">${same.slice(0, 12).map(siteRow).join("") || `<p class="hint">None. Nearest: ${near ? `${esc(near.n || "Unnamed")}, ${fmt(Math.round(near.d))} m away` : "none in the data"}.</p>`}</div>
+      ${same.length > 12 ? `<p class="hint">and ${same.length - 12} more</p>` : ""}
+      <h3>Everything else in the ${S.radius} m catchment</h3>
+      <p class="hint">${fmt(trading.length)} trading places from the map and registers, plus ${fmt(offices.length)} companies registered at offices here.</p>
+      <div class="bars">${Object.entries(groups).sort((a, b) => b[1] - a[1]).map(([g, n]) => `<div class="bar"><span>${esc(g)}</span><span class="track"><span class="fill light" style="display:block;width:${(100 * n) / gmax}%"></span></span><span>${fmt(n)}</span></div>`).join("") || `<p class="hint">No other places in the database here.</p>`}</div>
+      ${named.length ? `<h3>Nearest shops and services</h3><div class="near">${named.map((p) => `<div class="nrow"><span><b>${esc(PL.name[p.i])}</b></span><span class="m">${fmt(Math.round(p.d))} m</span><span class="sub">${esc(PL.grp[p.i])} · ${esc(String(PL.cat[p.i]).replace(/_/g, " "))} · ${esc(srcShort(PL.src[p.i]))}${PL.co[p.i] ? ` · company ${esc(PL.co[p.i])}` : ""}</span></div>`).join("")}</div>` : ""}
+      <p class="hint">From the places database (OSM, NHS register, Companies House). Registered offices are where a company is legally based, not always where it trades.</p>`;
+  }
+
+  function compareTable(results, nothing) {
+    const cols = [...results.map((r, i) => ({ h: `${String.fromCharCode(65 + i)}: ${r.category_label}`, r })), { h: "Do nothing", r: nothing }];
+    const rows = [
+      ["Coverage after", (r) => pct(r.coverage_after_pct)], ["Change (pts)", (r) => r.coverage_change_pct_points],
+      ["Newly covered", (r) => fmt(r.newly_covered)], ["of which most deprived 40%", (r) => fmt(r.equity_most_deprived_40pct)],
+      ["Competitors ≤400 m", (r) => r.competitors_within_400m ?? "–"], ["Community need", (r) => r.need_score],
+      ["Viability", (r) => r.viability_score], ["Jobs (assumption)", (r) => r.jobs_estimate],
+      ["Flood Zone 3", (r) => (r.flood_zone3 == null ? "–" : r.flood_zone3 ? "Yes" : "No")], ["Confidence", (r) => r.confidence ?? "–"],
+    ];
+    return `<div class="tablewrap"><table><thead><tr><th></th>${cols.map((c) => `<th>${esc(c.h)}</th>`).join("")}</tr></thead><tbody>
+      ${rows.map(([l, f]) => `<tr><td>${l}</td>${cols.map((c) => `<td>${f(c.r)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <p class="hint">Coverage is measured against each use's own demand: children 0-4 for nurseries, all residents otherwise.</p>`;
+  }
+
+  function benefit(r) {
+    const q = r.equity_newly_covered_by_quintile, max = Math.max(1, ...Object.values(q));
+    const names = { 1: "1 · most deprived", 2: "2", 3: "3", 4: "4", 5: "5 · least deprived" };
+    return `<p style="margin:0">Newly covered ${esc(r.demand_label)} by national deprivation quintile (IMD 2019).</p>
+      <div class="bars">${[1, 2, 3, 4, 5].map((k) => `<div class="bar"><span>${names[k]}</span><span class="track"><span class="fill ${k > 2 ? "light" : ""}" style="display:block;width:${(100 * q[k]) / max}%"></span></span><span>${fmt(q[k])}</span></div>`).join("")}</div>
+      <p class="hint">Magenta bars are the most deprived 40%: ${fmt(r.equity_most_deprived_40pct)} people, ${r.equity_most_deprived_40pct_share}% of the gain.</p>`;
+  }
+
+  function uncert(results, sens) {
+    const stable = sens.stable_need_ranking && sens.stable_coverage_ranking;
+    return `<p style="margin:0"><span class="pill ${stable ? "ok" : "warn"}">${stable ? "Ranking stable" : "Ranking changes"}</span> across 600 / 800 / 1000 m and with each need weight ±20%.</p>
+      <div class="tablewrap"><table><thead><tr><th>Use</th>${Object.keys(sens.newly_covered_by_radius).map((r) => `<th>Newly covered at ${r} m</th>`).join("")}<th>Need score range</th></tr></thead><tbody>
+      ${results.map((r, i) => `<tr><td>${esc(r.category_label)}</td>${Object.values(sens.newly_covered_by_radius).map((v) => `<td>${fmt(v[i])}</td>`).join("")}<td>${sens.need_score_range[i][0]}–${sens.need_score_range[i][1]}</td></tr>`).join("")}
+      </tbody></table></div>`;
+  }
+
+  function inputs(r) {
+    const nl = { uncovered_share: "Uncovered share of catchment", distance_to_nearest: "Distance to nearest existing", deprivation: "Deprivation of catchment" };
+    const vl = { catchment_demand: "Catchment demand", low_competition: "Low competition" };
+    return `<p style="margin:0">Each input is a percentile against all 792 possible sites. Weights are design choices, not validated.</p>
+      <div class="tablewrap"><table><thead><tr><th>Input</th><th>Percentile</th><th>Weight</th></tr></thead><tbody>
+      <tr><td colspan="3"><b>Community need = ${r.need_score}</b></td></tr>
+      ${Object.entries(r.need_inputs_pct).map(([k, v]) => `<tr><td>${nl[k]}</td><td>${v}</td><td>${E.CFG.NEED_WEIGHTS[k]}</td></tr>`).join("")}
+      <tr><td colspan="3"><b>Commercial viability = ${r.viability_score}</b>${r.flood_zone3 ? " (−15 flood penalty)" : ""}</td></tr>
+      ${Object.entries(r.viability_inputs_pct).map(([k, v]) => `<tr><td>${vl[k]}</td><td>${v}</td><td>${E.CFG.VIABILITY_WEIGHTS[k]}</td></tr>`).join("")}
+      </tbody></table></div>`;
+  }
+
+  function bestHTML() {
+    const { picks, results } = S.out;
+    if (!picks.length) return `<div class="card"><h2>No gain available</h2><p style="margin:0">No site would newly cover anyone at ${S.radius} m: coverage is already complete.</p></div>`;
+    const p0 = picks[0];
+    return `
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>Best ${picks.length} for ${esc(C[S.cat].label.toLowerCase())}</h2>${confPill(results[0])}</div>
+      <p class="headline" style="margin:0">Coverage of ${esc(C[S.cat].demandLabel)} within ${Math.round(S.radius / 80)} min: <b>${pct(p0.coverage_before_pct)}</b> → <b>${pct(p0.coverage_after_all_pct)}</b></p>
+      <div class="tablewrap"><table><thead><tr><th>#</th><th>Ward</th><th>Adds</th><th>Deprived 40%</th><th>Need</th><th>Viab.</th><th>Nearest existing</th></tr></thead><tbody>
+      ${picks.map((p, i) => `<tr><td><b>${p.rank}</b></td><td style="text-align:left">${esc(p.ward)}</td><td>${fmt(p.marginal_newly_covered)}</td><td>${results[i].equity_most_deprived_40pct_share}%</td><td>${results[i].need_score}</td><td>${results[i].viability_score}</td><td style="text-align:left;white-space:normal">${(() => { const n = nearestSite(S.cat, p.lat_exact, p.lon_exact); return n ? `${esc(n.n || "Unnamed")} <span class="hint">${fmt(Math.round(n.d))} m</span>` : "–"; })()}</td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="hint">"Adds" counts people not already covered by existing sites or by earlier picks. It proposes locations, never vacant premises. Computed in ${S.out.ms} ms.</p>
+    </div>
+    <div class="card"><h3>Who benefits from #1</h3>${benefit(results[0])}</div>
+    ${briefHTML()}`;
+  }
+
+  function briefHTML() {
+    const b = S.out.brief; if (!b) return "";
+    const text = S.editedBrief ?? b.text;
+    const a = E.audit(text, S.out.payload);
+    const ok = b.mode === "refusal" && S.editedBrief == null ? true : a.ok;
+    let badge;
+    if (b.mode === "refusal" && S.editedBrief == null) badge = `<span class="pill bad">Insufficient evidence: no recommendation</span>`;
+    else if (ok) badge = `<span class="pill ok">All ${a.checked} numbers verified against source data</span>`;
+    else badge = `<span class="pill bad">${a.failed.length} of ${a.checked} numbers not in the data</span> <span>Unverified: ${a.failed.map((x) => `<span class="mark">${esc(x)}</span>`).join(" ")}</span>`;
+    return `<div class="card">
+      <div class="row" style="justify-content:space-between"><h2>Planning brief</h2><span class="hint">${b.mode === "refusal" ? "Rule-based refusal" : "Plain template"}</span></div>
+      <div class="audit">${badge}</div>
+      <label class="lbl" for="brief-edit">Edit the text to test the numbers audit</label>
+      <textarea id="brief-edit">${esc(text)}</textarea>
+      <div class="row">
+        <button class="primary" id="b-check">Re-check numbers</button>
+        <button id="b-reset">Reset</button>
+        <button id="b-copy">Copy as Markdown</button>
+        <span id="b-msg" class="hint"></span>
+      </div>
+      <p class="hint">In the app, Claude writes this brief from the JSON below. Every number it writes is checked the same way; a failure triggers one retry, then this template.</p>
+      <details><summary>What the AI is given (the only numbers it may use)</summary><pre class="json">${esc(JSON.stringify(S.out.payload, null, 1))}</pre></details>
+    </div>`;
+  }
+
+  function wireBrief() {
+    const t = $("brief-edit"); if (!t) return;
+    $("b-check").onclick = () => { S.editedBrief = t.value; renderResults(); };
+    $("b-reset").onclick = () => { S.editedBrief = null; renderResults(); };
+    $("b-copy").onclick = async () => {
+      const r = S.out.results[0];
+      const md = `# Planning brief: ${r.category_label}, ${r.site.ward}\n\n${t.value}\n\n---\nRadius ${S.radius} m (straight line). Sources: ONS Census 2021 (OGL), IMD 2019 (OGL), OpenStreetMap (ODbL), NHS ODS (OGL), Environment Agency (OGL). Decision support only.\n`;
+      try { await navigator.clipboard.writeText(md); $("b-msg").textContent = "Copied"; }
+      catch (e) { t.select(); $("b-msg").textContent = "Select-all done: press Ctrl+C to copy"; }
+    };
+  }
+
+  // ---------------- map
+  const cv = $("map"), ctx = cv.getContext("2d");
+  const LAT0 = 50.92, KX = Math.cos((LAT0 * Math.PI) / 180), M_PER_DEG = 111250;
+  let bbox = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const l of DATA.lsoa) for (const r of l.rings) for (const [x, y] of r) { bbox[0] = Math.min(bbox[0], x); bbox[1] = Math.min(bbox[1], y); bbox[2] = Math.max(bbox[2], x); bbox[3] = Math.max(bbox[3], y); }
+  const V = { cx: 0, cy: 0, s: 1 }; // centre lon/lat, pixels per degree latitude
+  function fit() {
+    const w = cv.clientWidth, h = cv.clientHeight;
+    V.cx = (bbox[0] + bbox[2]) / 2; V.cy = (bbox[1] + bbox[3]) / 2;
+    V.s = 0.94 * Math.min(w / ((bbox[2] - bbox[0]) * KX), h / (bbox[3] - bbox[1]));
+  }
+  const px = (lon, lat) => [cv.clientWidth / 2 + (lon - V.cx) * KX * V.s, cv.clientHeight / 2 - (lat - V.cy) * V.s];
+  const ll = (x, y) => [V.cy - (y - cv.clientHeight / 2) / V.s, V.cx + (x - cv.clientWidth / 2) / (KX * V.s)];
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  function ringPath(r) { r.forEach(([x, y], i) => { const [a, b] = px(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.closePath(); }
+
+  function oaStatus() {
+    const O = E.oa, n = E.N, d0 = E.existingDist(S.cat), r = S.radius, st = new Uint8Array(n);
+    for (let i = 0; i < n; i++) st[i] = d0[i] <= r ? 1 : 0;
+    const sites = [];
+    if (S.out && S.out.kind === "test" && S.site) sites.push(S.site);
+    if (S.out && S.out.kind === "best") for (const p of S.out.picks) sites.push([p.lat_exact, p.lon_exact]);
+    for (const [la, lo] of sites) {
+      const [sx, sy] = E.toBNG(la, lo);
+      for (let i = 0; i < n; i++) if (!st[i] && Math.hypot(E.ox[i] - sx, E.oy[i] - sy) <= r) st[i] = 2;
+    }
+    return st;
+  }
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = css("--panel"); ctx.fillRect(0, 0, w, h);
+    // city LSOAs
+    ctx.lineWidth = 0.6; ctx.strokeStyle = css("--line"); ctx.fillStyle = css("--paper");
+    for (const l of DATA.lsoa) { ctx.beginPath(); l.rings.forEach(ringPath); ctx.fill("evenodd"); ctx.stroke(); }
+    // flood
+    ctx.fillStyle = css("--water-soft"); ctx.strokeStyle = css("--water"); ctx.lineWidth = 0.5;
+    for (const p of DATA.flood) { ctx.beginPath(); p.forEach(ringPath); ctx.fill("evenodd"); ctx.stroke(); }
+    // city edge
+    ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.2; ctx.beginPath();
+    for (const [a, b, c, d] of DATA.edges) { const [x1, y1] = px(a, b), [x2, y2] = px(c, d); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); }
+    ctx.stroke();
+    // demand dots
+    const O = E.oa, st = oaStatus(), col = C[S.cat].demand, cols = [css("--gap"), css("--covered"), css("--accent")];
+    const zoomF = Math.max(0.7, Math.min(2.4, V.s / 9000));
+    for (let i = 0; i < E.N; i++) {
+      const [x, y] = px(O.lon[i], O.lat[i]); if (x < -5 || y < -5 || x > w + 5 || y > h + 5) continue;
+      const v = O[col][i], rr = Math.max(1.2, Math.sqrt(v) * (col === "pop04" ? 0.42 : 0.12)) * zoomF;
+      ctx.fillStyle = cols[st[i]]; ctx.globalAlpha = st[i] === 1 ? 0.75 : 0.95;
+      ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // existing facilities
+    ctx.fillStyle = css("--fac"); ctx.strokeStyle = css("--panel"); ctx.lineWidth = 1;
+    for (const f of E.facilities(S.cat)) {
+      const [x, y] = px(f.lon, f.lat); ctx.beginPath(); ctx.rect(x - 3.5, y - 3.5, 7, 7);
+      if (f.conf != null && f.conf < 50) { ctx.save(); ctx.strokeStyle = css("--fac"); ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); } else { ctx.fill(); ctx.stroke(); }
+    }
+    // sites + catchment
+    const sites = [];
+    if (S.mode === "test" && S.site) sites.push({ ll: S.site, label: "" });
+    if (S.out && S.out.kind === "best") S.out.picks.forEach((p) => sites.push({ ll: [p.lat_exact, p.lon_exact], label: String(p.rank) }));
+    for (const s of sites) {
+      const [x, y] = px(s.ll[1], s.ll[0]), rp = (S.radius / M_PER_DEG) * V.s;
+      ctx.strokeStyle = css("--accent"); ctx.lineWidth = 1.6; ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.arc(x, y, rp, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = css("--accent"); ctx.beginPath(); ctx.arc(x, y, s.label ? 10 : 7, 0, 7); ctx.fill();
+      ctx.strokeStyle = css("--panel"); ctx.lineWidth = 2; ctx.stroke();
+      if (s.label) { ctx.fillStyle = "#fff"; ctx.font = "700 12px " + css("--body"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(s.label, x, y + 0.5); }
+    }
+    // scale bar
+    const m = 1000, len = (m / M_PER_DEG) * V.s;
+    ctx.fillStyle = css("--ink"); ctx.fillRect(12, h - 18, len, 3);
+    ctx.font = "600 11px " + css("--body"); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("1 km", 12, h - 21);
+  }
+
+  // pan / zoom / click
+  let drag = null;
+  cv.addEventListener("pointerdown", (e) => { cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, cx: V.cx, cy: V.cy, moved: false }; });
+  cv.addEventListener("pointermove", (e) => {
+    const r = cv.getBoundingClientRect(), [la, lo] = ll(e.clientX - r.left, e.clientY - r.top);
+    $("coords").hidden = false; $("coords").textContent = `${la.toFixed(5)}, ${lo.toFixed(5)}`;
+    if (!drag) {
+      const mx = e.clientX - r.left, my = e.clientY - r.top; let best = null, bd = 9;
+      for (const f of E.facilities(S.cat)) { const [x, y] = px(f.lon, f.lat), d = Math.hypot(x - mx, y - my); if (d < bd) { bd = d; best = f; } }
+      const tip = $("tip");
+      if (best) {
+        tip.hidden = false; tip.style.left = Math.max(4, Math.min(mx + 12, cv.clientWidth - 270)) + "px"; tip.style.top = (my + 12) + "px";
+        tip.innerHTML = `<b>${esc(best.n || "Unnamed")}</b>${esc(C[S.cat].label)} · ${esc(srcShort(best.s))}${best.conf != null ? ` · confidence ${best.conf}` : ""}`;
+      } else tip.hidden = true;
+    }
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (drag.moved) { V.cx = drag.cx - dx / (KX * V.s); V.cy = drag.cy + dy / V.s; draw(); }
+  });
+  cv.addEventListener("pointerup", (e) => {
+    if (drag && !drag.moved && S.mode === "test") {
+      const r = cv.getBoundingClientRect(), [la, lo] = ll(e.clientX - r.left, e.clientY - r.top);
+      ward.value = ""; setSite(+la.toFixed(5), +lo.toFixed(5));
+    }
+    drag = null;
+  });
+  cv.addEventListener("pointerleave", () => { $("coords").hidden = true; $("tip").hidden = true; });
+  function zoom(f, x, y) {
+    const [la, lo] = ll(x, y); V.s *= f; const [la2, lo2] = ll(x, y); V.cx += lo - lo2; V.cy += la - la2; draw();
+  }
+  cv.addEventListener("wheel", (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  $("zin").onclick = () => zoom(1.4, cv.clientWidth / 2, cv.clientHeight / 2);
+  $("zout").onclick = () => zoom(1 / 1.4, cv.clientWidth / 2, cv.clientHeight / 2);
+  $("zfit").onclick = () => { fit(); draw(); };
+  new ResizeObserver(() => draw()).observe(cv);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // ---------------- footer: data and licences
+  const src = { ...DATA.sources, ...PSRC };
+  $("footer").innerHTML = `<h3>Data and licences</h3><ul>${Object.values(src).map((s) => `<li>${esc(s.title || "")} · ${esc(s.licence || "")}${s.downloaded ? " · downloaded " + esc(String(s.downloaded).slice(0, 10)) : ""}</li>`).join("")}</ul>
+    <p style="margin:0">Straight-line distances from Census 2021 Output Area centroids ignore rivers and railways. Residents outside the city aren't counted. Weights and jobs are unvalidated assumptions. Decision support only. Flood check for clicked sites uses simplified shapes; Output Area centres use the full Environment Agency layer.</p>`;
+
+  // ---------------- start in a working state: the nursery optimiser demo
+  $("ds-msg").textContent = "Merged OSM + NHS register + Companies House database. GPs and pharmacies must be on the NHS register.";
+  renderAlts();
+  requestAnimationFrame(() => { fit(); S.cat = cat.value; setMode(S.cat === "nursery" ? "best" : "test"); if (S.mode === "test") { const [la, lo] = E.wardCentroid("Sholing"); setSite(la, lo); } });
+})();
+</script>
