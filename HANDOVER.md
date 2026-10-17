@@ -35,6 +35,22 @@ Rules for every commit on this repo:
 - If GitHub doesn't show TYK3's avatar on commits, the email isn't verified on the TYK3 account. Fix that in
   GitHub → Settings → Emails, or use TYK3's `ID+TYK3@users.noreply.github.com` address instead.
 
+### Push access: pushes must go through TYK3's GitHub account
+The AI cannot log in as TYK3. In the cloud workspace, a push uses whichever GitHub account is connected to
+Claude. So:
+1. **Setup (user, once):** in claude.ai → Settings → Connectors → GitHub, connect the **TYK3** account (sign
+   out of any other GitHub account first). TYK3 must be a collaborator with write access on
+   `edwardyun12/sotonship2026` (repo owner adds it under Settings → Collaborators), and the Claude GitHub App
+   must be allowed on that repo.
+2. **Each session (AI):** attach the repo with push access (`add_repo` owner `edwardyun12`, repo
+   `sotonship2026`, access `push`), set the git identity above, then `git push origin feature/simulator`.
+   If the push is refused, stop and tell the user. Don't try other accounts, tokens or remotes.
+3. **Fallback:** if push access isn't available, the AI commits locally, runs
+   `git format-patch origin/feature/simulator -o patches/` and sends the patch files. The user applies and
+   pushes from their own PC: `git checkout feature/simulator && git pull && git am patches/*.patch && git push`.
+- **Never** put a GitHub token in chat, in this file or anywhere in the repo (the repo is public).
+- GitHub shows the commit **author** (TYK3) on commits; the pusher only appears in the repo's Activity log.
+
 ## Status (Sat 17 Oct, ~18:50): core works end to end, Gate 2 passed early
 
 Run: `pip install -r requirements.txt && streamlit run src/app.py`. Tests: `pytest -q` → **20/20 pass**.
