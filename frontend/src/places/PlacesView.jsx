@@ -2,7 +2,7 @@
 // (built by pipeline/places). Search, industry -> detailed type filter, and four map views: Popular, Heatmap
 // (where places cluster), People (where residents live, by age group, from city.json) and Places.
 import { useEffect, useMemo, useState } from 'react'
-import { CircleMarker, MapContainer, Marker, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { Flame, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
 import HeatLayer, { HEAT_GRADIENT, PEOPLE_GRADIENT, PEOPLE_RAMP } from '../lib/HeatLayer.jsx'
@@ -61,7 +61,7 @@ function FitTo({ target }) {
 
 // what each view is for: [eyebrow, title, intro]
 const VIEW_TEXT = {
-  popular: ['Popular', 'What each area is known for', 'All sectors: each area takes its leading sector’s colour and the ring shows its full mix. Pick a sector to see its leading type of business.'],
+  popular: ['Popular', 'What each area is known for', 'All sectors: each area takes its leading sector’s colour. Pick a sector (here or on the map key) to see where it’s most popular.'],
   heat: ['Heatmap', 'Where businesses cluster', 'Darker = more places within about 250 m. Pick a sector to compare, say, food with health.'],
   people: ['People', 'Where people live', 'Darker = more people within about 300 m. Pick an age group; hover an area for its age mix.'],
   points: ['Places', 'Find any business in the city', 'Search by name or street, then narrow by industry and detailed type.'],
@@ -75,7 +75,7 @@ export default function PlacesView() {
   const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
   const [place, setPlace] = useState(null)
   // Popular and Heatmap: one sector (industry group) or all
-  const [sector, setSector] = useState('')
+  const [sector, setSector] = useState(() => new URLSearchParams(window.location.search).get('sector') || '')  // e.g. ?sector=Health#places
   const [lq, setLq] = useState(false)
   // People: age group
   const [age, setAge] = useState('all')
@@ -99,6 +99,8 @@ export default function PlacesView() {
   const shown = useMemo(() => (ward ? active.filter(p => p.ward === ward) : active), [active, ward])
   const bySector = view === 'popular' && !sector
   const pop = useMemo(() => (bySector ? popular(active, lq, p => p.grp, sectorColor) : popular(active, lq)), [active, lq, bySector])
+  // Popular with one sector: how popular it is in each area (share of the area's places, and vs the city share)
+  const focus = useMemo(() => (view === 'popular' && sector ? sectorShares(all, sector, lq) : null), [all, view, sector, lq])
 
   const groups = useMemo(() => { const o = {}; for (const p of all) if (!hideRO || !p.ro) o[p.grp] = (o[p.grp] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]) }, [all, hideRO])
   const sectors = useMemo(() => { const o = {}; for (const p of all) if (!p.ro) o[p.grp] = (o[p.grp] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]) }, [all])
@@ -132,13 +134,15 @@ export default function PlacesView() {
       <FitCity city={city} />
       <FitTo target={target} />
       {outlines.map(({ w, pos }) => {
-        const b = pop.win[w], on = ward === w, dim = ward && !on
-        const fill = view === 'popular' && b ? pop.color[b.k] : '#0b332b'
-        const opacity = view === 'popular' && b ? (dim ? 0.12 : 0.25 + 0.5 * (lq ? Math.min(1, (b.ratio - 1) / 2) : b.share)) : dim ? 0.35 : 0.02
+        const b = pop.win[w], on = ward === w, dim = ward && !on, f = focus?.by[w]
+        const fill = focus ? sectorColor(sector) : view === 'popular' && b ? pop.color[b.k] : '#0b332b'
+        const opacity = focus ? (dim ? 0.1 : 0.06 + 0.74 * (f ? f.level : 0))
+          : view === 'popular' && b ? (dim ? 0.12 : 0.25 + 0.5 * (lq ? Math.min(1, (b.ratio - 1) / 2) : b.share)) : dim ? 0.35 : 0.02
         return <Polygon key={w} positions={pos} pathOptions={{ color: on ? '#062b25' : '#0b332b', weight: on ? 4 : 1.2, opacity: on ? 1 : 0.55,
           fillColor: view === 'popular' ? fill : dim ? '#f5f7f2' : '#0b332b', fillOpacity: opacity, fillRule: 'evenodd' }}
           eventHandlers={{ click: () => pickWard(w) }}>
           <Tooltip sticky className="ward-tip">{view === 'people' ? <PeopleTip w={w} people={people} selected={on} />
+            : focus ? <SectorTip w={w} f={focus.by[w]} focus={focus} sector={sector} selected={on} />
             : <WardTip w={w} stats={pop.by[w]} pop={pop} wardPop={wardPop[w]} selected={on} />}</Tooltip>
         </Polygon>
       })}
@@ -147,12 +151,12 @@ export default function PlacesView() {
       {view === 'points' && shown.slice(0, 20000).map(p => <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={place?.id === p.id ? 8 : 4}
         pathOptions={{ color: '#fff', weight: 1, fillColor: sectorColor(p.grp), fillOpacity: p.ro ? 0.45 : 0.9 }}
         eventHandlers={{ click: () => setPlace(p) }} />)}
-      {bySector && Object.entries(pop.by).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <Marker key={'d' + w} position={oa} interactive={false}
-        icon={sectorRing(b.top, ward && ward !== w)} opacity={ward && ward !== w ? 0.4 : 1}>
-        <Tooltip permanent direction="bottom" offset={[0, 16]} className="ward-label"><b>{w}</b></Tooltip></Marker> })}
-      {view === 'popular' && !bySector && Object.entries(pop.win).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'m' + w} center={oa} radius={7} interactive={false}
+      {view === 'popular' && !focus && Object.entries(pop.win).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'m' + w} center={oa} radius={7} interactive={false}
         pathOptions={{ color: '#fff', weight: 2.5, fillColor: pop.color[b.k], fillOpacity: ward && ward !== w ? 0.35 : 1 }}>
         <Tooltip permanent direction="bottom" offset={[0, 4]} className="ward-label"><b>{w}</b></Tooltip></CircleMarker> })}
+      {focus && Object.entries(focus.by).map(([w, f]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'f' + w} center={oa} radius={5} interactive={false}
+        pathOptions={{ color: '#fff', weight: 2, fillColor: sectorColor(sector), fillOpacity: ward && ward !== w ? 0.35 : 1 }}>
+        <Tooltip permanent direction="bottom" offset={[0, 3]} className="ward-label"><b>{w}</b><span>{lq ? `${f.ratio.toFixed(1)}× city` : `${Math.round(100 * f.share)}%`}</span></Tooltip></CircleMarker> })}
     </MapContainer>
 
     <aside className="tool-panel">
@@ -197,23 +201,30 @@ export default function PlacesView() {
         {ward ? <> in <b>{ward}</b> <button className="link-button" onClick={() => setWard(null)}>whole city</button></> : ' · click an area to explore it'}</p>
     </aside>
 
-    <div className="map-legend"><Legend view={view} pop={pop} people={people} /></div>
+    <div className="map-legend"><Legend view={view} pop={pop} people={people} focus={focus} sector={sector} lq={lq} onSector={setSector} /></div>
     {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
     {ward && !place && city && <WardProfile ward={ward} typed={active} pop={pop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={searchType} onWard={pickWard} />}
   </div>
 }
 
-// A ring for each ward split by its mix of sectors (share of places), in the fixed sector colours
-const rings = new Map()
-function sectorRing(top) {
-  const parts = Object.entries(top).sort((a, b) => b[1] - a[1]), n = parts.reduce((s, [, c]) => s + c, 0)
-  const key = parts.map(([k, c]) => k + c).join('|')
-  if (!rings.has(key)) {
-    let at = 0
-    const stops = parts.map(([k, c]) => { const a = at; at += (360 * c) / n; return `${sectorColor(k)} ${a}deg ${at}deg` }).join(', ')
-    rings.set(key, L.divIcon({ className: 'sector-ring', iconSize: [34, 34], iconAnchor: [17, 17], html: `<i style="background: conic-gradient(${stops})"></i>` }))
-  }
-  return rings.get(key)
+// How popular one sector is in each area: its share of the area's trading places, the ratio to its city-wide share,
+// and a 0-1 level for shading (share relative to the top area, or ratio from 0.5x to 2x the city)
+function sectorShares(all, sector, lq) {
+  const by = {}; let n = 0, N = 0
+  for (const p of all) { if (p.ro || !p.ward) continue; const b = (by[p.ward] ||= { n: 0, total: 0 }); b.total++; N++; if (p.grp === sector) { b.n++; n++ } }
+  const cityShare = n / Math.max(1, N)
+  for (const b of Object.values(by)) { b.share = b.n / Math.max(1, b.total); b.ratio = cityShare ? b.share / cityShare : 0 }
+  const top = Math.max(...Object.values(by).map(b => b.share), 0.0001)
+  for (const b of Object.values(by)) b.level = lq ? Math.max(0, Math.min(1, (b.ratio - 0.5) / 1.5)) : b.share / top
+  return { by, cityShare, n }
+}
+
+function SectorTip({ w, f, focus, sector, selected }) {
+  return <div className="tip">
+    <b>{w}</b><small>{selected ? 'Click to go back to the whole city' : 'Click to explore this area'}</small>
+    {f ? <><small>{fmt(f.n)} of {fmt(f.total)} places are {sector} ({Math.round(100 * f.share)}%)</small>
+      <small>City average {Math.round(100 * focus.cityShare)}% · {f.ratio.toFixed(1)}× the city</small></> : <small>No places here</small>}
+  </div>
 }
 
 // Sectors (industry groups) as one-tap rows; colours match the map when it is coloured by sector
@@ -307,12 +318,21 @@ function Seg({ value, onChange, options }) {
     <button key={String(v)} className={value === v ? 'active' : ''} aria-pressed={value === v} onClick={() => onChange(v)}>{label}</button>)}</div>
 }
 
-function Legend({ view, pop, people }) {
+function Legend({ view, pop, people, focus, sector, lq, onSector }) {
+  if (focus) return <div className="map-key">
+    <span className="key"><i style={{ background: sectorColor(sector) }} /><b>{sector}</b></span>
+    <span>{lq ? 'Less than city' : 'Smaller share'}</span><i className="ramp" style={{ background: `linear-gradient(90deg, ${sectorColor(sector)}14, ${sectorColor(sector)})` }} />
+    <span>{lq ? 'Most above city' : 'Bigger share of the area’s places'}</span>
+    <button className="link-button" onClick={() => onSector('')}>All sectors</button></div>
+  if (view === 'popular' && pop.fixed) {
+    const keys = Object.keys(pop.city).sort((a, b) => pop.city[b] - pop.city[a])
+    return <div className="map-key">{keys.map(k => <button key={k} className="key key-button" onClick={() => onSector(k)} title={`Show where ${k} is popular`}>
+      <i style={{ background: sectorColor(k) }} />{k}</button>)}<span className="hint">Click a sector to see where it’s popular</span></div>
+  }
   if (view === 'people') return <div className="map-key"><span>Fewer</span><i className="ramp" style={{ background: PEOPLE_GRADIENT }} /><span>More {people.noun}</span></div>
   if (view === 'heat') return <div className="map-key"><span>Fewer</span><i className="ramp" style={{ background: HEAT_GRADIENT }} /><span>More places</span></div>
   if (view === 'points') return null
-  // by sector: every sector in the rings, biggest first; by type: the 6 leading types
-  const shown = pop.fixed ? Object.keys(pop.city).sort((a, b) => pop.city[b] - pop.city[a]) : pop.order.slice(0, 6)
+  const shown = pop.order.slice(0, 6)
   if (!shown.length) return <div className="map-key"><span>No type leads any area with these filters</span></div>
   return <div className="map-key">{shown.map(k => <span key={k} className="key"><i style={{ background: pop.color[k] }} />{k}</span>)}{!pop.fixed && pop.order.length > 6 && <span className="key"><i style={{ background: OTHER }} />Other</span>}</div>
 }
