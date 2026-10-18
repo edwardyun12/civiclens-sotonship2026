@@ -14,7 +14,7 @@ import re
 from rag.config import CHAT_MODEL, LLM_PROVIDER
 from rag.llm import complete
 
-CLASSIFY_TOKENS = 2500 if LLM_PROVIDER == "gemini" else 550  # Gemini counts thinking tokens in the limit
+CLASSIFY_TOKENS = {"gemini": 2500, "groq": 800}.get(LLM_PROVIDER, 550)  # Gemini counts thinking tokens in the limit
 
 AGE_KEYS = ["0_4", "5_15", "16_24", "25_44", "45_64", "65"]
 PASSING = {"high", "medium", "low"}

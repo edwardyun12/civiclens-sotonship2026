@@ -6,11 +6,11 @@
 
 <p align="center">
   <img alt="SotonShip 2026" src="https://img.shields.io/badge/SotonShip%202026-Southampton%20City%20track-0b332b">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-54-2f7a4f">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-58-2f7a4f">
   <img alt="Classifier benchmark" src="https://img.shields.io/badge/AI%20classifier-21%2F22%20vs%20baseline%2010%2F22-7a5cc4">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776ab">
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb">
-  <img alt="LLM" src="https://img.shields.io/badge/LLM-Gemini%203.8%20Flash%20(hosted)%20%7C%20Qwen3%208B%20(local)-d7ff3f">
+  <img alt="LLM" src="https://img.shields.io/badge/LLM-Groq%20free%20API%20(website)%20%7C%20Qwen3%208B%20(local)-d7ff3f">
   <img alt="Data" src="https://img.shields.io/badge/data-real%20%26%20dated%2C%20open%20licences-e0782f">
 </p>
 
@@ -24,7 +24,7 @@
 
 # 🔍 CivicLens: _see what Southampton needs, and where_
 
-> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model (Gemini 3.8 Flash on the hosted site, or Qwen3 8B running locally) classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and an AI brief whose every number is automatically checked.
+> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model (on the website, Qwen3.8 27B through Groq's free API; or Qwen3 8B running locally) classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and an AI brief whose every number is automatically checked.
 
 <details open>
 <summary><b>📑 Contents</b> (click to collapse)</summary>
@@ -107,7 +107,7 @@ The Assessment flags multiple-registration effects on some of these figures; the
 | 3 | Click pin **1**, hover any dot | Feasibility score, four factor bars, market trends, who benefits by age group, strengths, risks, suggested changes, limitations; hover card with name, type and walking distance |
 | 4 | Open **Ask the assistant** → pick a common question, or ask *"I want to open a Japanese store in Weston"* | Common questions answer instantly from the figures on screen. Free questions get an answer about **Weston** (not the site on screen), citing `[App analysis]` and the Economic Assessment; click a citation to open the source document at that page |
 | 5 | Go to **Places** → **Popular** → click **Food and drink**, then **People** | Every sector has its colour; areas shade by how popular a sector is; residents by age group on a heat map |
-| 6 | Failure cases: type **`kids coding club`**; switch the AI off (no Gemini key and no Ollama) and type an idea | "Possible gap in the market" instead of invented competitors; with the AI off, the page falls back to keyword matching and keeps working |
+| 6 | Failure cases: type **`kids coding club`**; switch the AI off (no API key and no Ollama) and type an idea | "Possible gap in the market" instead of invented competitors; with the AI off, the page falls back to keyword matching and keeps working |
 
 ---
 
@@ -184,9 +184,10 @@ The chat ([rag/](rag/)) is a retrieval-augmented assistant: hybrid BM25 and vect
 
 | Job | Model | Why |
 |---|---|---|
-| Classify ideas, answer questions (hosted, default when `GEMINI_API_KEY` is set) | **Gemini 3.8 Flash** (thinking level *low*) | Fast and cheap for a public website; JSON mode for structured output |
-| Embeddings (hosted) | **gemini-embedding-001** (768 dimensions) | Same provider, one API key |
-| Classify and answer (local alternative) | **Qwen3 8B** via Ollama | Free, runs on a laptop, no data leaves the machine; used when no Gemini key is set |
+| Classify ideas, answer questions (website, default when `GROQ_API_KEY` is set) | **Qwen3.8 27B** on the **Groq free API** (reasoning off, `qwen/qwen3.8-27b`) | Free to run, very fast, same model family as our local benchmark; JSON mode for structured output |
+| Embeddings (website) | **gemini-embedding-001** (768 dimensions), Google | Groq has no embeddings API; Gemini's embedding model is used only to search the documents |
+| Classify and answer (local alternative) | **Qwen3 8B** via Ollama | Free, runs on a laptop, no data leaves the machine; used when no API key is set |
+| Alternative hosted option | **Gemini 3.8 Flash** (`LLM_PROVIDER=gemini`) | Kept as a switch if Groq's free limits are reached |
 | Embeddings (local) | **nomic-embed-text** | Small, good retrieval quality, runs in Ollama |
 | Planning brief (Module C, optional) | **Claude Haiku 5.5** | Writes a 150–250 word brief from engine JSON; every number audited |
 | Site scoring, coverage, optimiser | **No AI** | Numbers must be reproducible and testable |
@@ -222,7 +223,8 @@ flowchart TB
     ST["serves built React app"]
   end
   subgraph LLM["🧠 rag/llm.py"]
-    GE["Gemini 3.8 Flash,<br/>gemini-embedding-001 (hosted)"]
+    GQ["Groq free API: Qwen3.8 27B<br/>(website chat + classify)"]
+    GE["Gemini: gemini-embedding-001<br/>(website document search)"]
     OL["Ollama: Qwen3 8B,<br/>nomic-embed-text (local)"]
   end
   subgraph Data["🗂️ Built offline (pipeline/)"]
@@ -255,15 +257,15 @@ flowchart TB
 |---|---|
 | `run.py` | One entry point: `python run.py` lists every command |
 | `frontend/` | React 19 + Vite + react-leaflet app: Places, Business simulator, assistant |
-| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator, deterministic answer templates), Gemini and Ollama clients |
+| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator, deterministic answer templates), Groq, Gemini and Ollama clients |
 | `simulator/` | Planning engine (no AI), audited brief, Streamlit app, config, paths |
 | `pipeline/` | Data builders: `city_data.py`, `population.py`, `neighbourhoods.py`, `places/` |
 | `viewer/` | Self-contained HTML pages (simulator, places register) and the data packer for the React app |
 | `data/` | `raw/` (sources + `SOURCES.json` + RAG documents), `processed/`, `db/` (places database) |
-| `tests/` | pytest: engine, places merge, classifier, assistant templates and follow-ups, Gemini client |
+| `tests/` | pytest: engine, places merge, classifier, assistant templates and follow-ups, Groq and Gemini clients |
 | `evaluation/` | Baseline comparison, classifier benchmark, live-brief runner, `results/` |
 | `docs/` | [CODEBASE.md](docs/CODEBASE.md) (every file, "where to change what"), [SIMULATOR.md](docs/SIMULATOR.md), [DATA_PLAN.md](docs/DATA_PLAN.md) |
-| `render.yaml` | One-service Render deployment (API + built frontend, on Gemini) |
+| `render.yaml` | One-service Render deployment (API + built frontend, on the Groq free API) |
 
 </details>
 
@@ -294,7 +296,7 @@ LLM (Qwen3 8B, local)    ██████████████████�
 
 Mean **21.5 s per idea** on a laptop. Results file: `evaluation/results/classify_benchmark.json`.
 
-> ℹ️ **Which model.** The live site runs the classifier on **Gemini 3.8 Flash**. The recorded run above used the local path (Qwen3 8B) because it was free to repeat while we fixed bugs. The prompt, validation rules and 22 labelled ideas are identical on both; to reproduce on Gemini, start the API with `GEMINI_API_KEY` set (it then uses Gemini by default) and run `node evaluation/classify_benchmark.mjs`.
+> ℹ️ **Which model.** The website runs the classifier on **Qwen3.8 27B through Groq's free API**. The recorded run above used the local path (Qwen3 8B, a smaller model of the same family) because it was free to repeat while we fixed bugs. The prompt, validation rules and 22 labelled ideas are identical on both; to reproduce on Groq, start the API with `GROQ_API_KEY` set (it then uses Groq by default) and run `node evaluation/classify_benchmark.mjs`. Allow for the free plan's limit of 30 requests a minute.
 
 > ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run, temperature 0. The benchmark also found and fixed two real bugs before this run: the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
 
@@ -321,7 +323,7 @@ The optimiser runs in under 0.01 s per use and equals exhaustive search over all
 
 ### ✅ Tests
 
-`python run.py test` → **54 tests**. They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON), the assistant's deterministic answers and follow-up handling, and the Gemini client (mocked, so no API key is needed to run them).
+`python run.py test` → **58 tests**. They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON), the assistant's deterministic answers and follow-up handling, and the Groq and Gemini clients (mocked, so no API key is needed to run them).
 
 <details>
 <summary><b>🔎 End-to-end checks run in a real browser</b></summary>
@@ -337,7 +339,7 @@ Headless Chrome driving the live app (scripts not shipped):
 ### ⏳ Not yet measured
 
 - **Live audit of the AI planning brief** (Module C, Claude Haiku). `logs/briefs.jsonl` contains only test-run records. Run `python run.py live-briefs` with `ANTHROPIC_API_KEY` set.
-- **Gemini cost and latency in production**: real token counts and response times come from the first deployed runs.
+- **Groq latency and free-plan headroom in production**: real response times, and how often the free limits are hit, come from the first deployed runs.
 
 ---
 
@@ -381,7 +383,7 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 
 **Cost per user.**
 - **Local (Ollama):** no per-request fee; the model runs on the machine.
-- **Hosted (Gemini 3.8 Flash):** one classification is about **1,700 input tokens** plus a short JSON reply; one chat answer about 3,000 input tokens. Cost per user is these token counts × Google's current Gemini Flash price; we will measure it on the first deployed runs rather than quote an estimate.
+- **Website (Groq free API):** **£0 for the demo.** One classification is about **1,700 input tokens** plus a short JSON reply; one chat answer about 3,000 input tokens. Groq's free plan allows 30 requests and 8,000 tokens a minute and 1,000 requests a day (sample limits, checked 18 Oct 2026), so roughly two or three chat answers a minute across all users. Beyond that we would move to Groq's paid Developer plan or switch to Gemini with one setting (`LLM_PROVIDER=gemini`); the built-in common questions use no tokens at all. Document-search embeddings (Gemini) cost a fraction of a penny per question.
 - **Planning brief (Claude Haiku 5.5):** about **0.02p per brief** (≈1,500 in / 350 out tokens at $0.10 / $0.50 per million; estimate).
 - **Hosting:** one small web service (Render free tier for the demo; about £20–£40 a month in production) plus a few analyst hours per city per year to refresh data. **Data upkeep, not inference, is the real cost.**
 
@@ -399,7 +401,7 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 | **AI invents sources** | The assistant may cite only the retrieved documents and `[App analysis]`; anything else must go in a sentence labelled *"General guidance (not from Southampton evidence)"*. Each citation links to the source page so a user can check it, and the built-in questions skip the LLM entirely. |
 | **Missing or stale data** | Every source is dated; places flagged *"may have closed"* are left out of competition; a niche with no businesses is shown as a *possible gap, check on the ground*, never as invented competitors. |
 | **Personal data** | None collected. Places are organisations; population data is aggregated ONS counts. No accounts, no tracking. Companies House personal data is never stored. |
-| **Council information** | Only public data. No non-public council information is sent to any AI service. Locally, everything runs on the user's machine (Ollama). On the hosted site, questions are sent to Google's Gemini API, so users are told not to enter personal details. |
+| **Council information** | Only public data. No non-public council information is sent to any AI service. Locally, everything runs on the user's machine (Ollama). On the website, questions are sent to Groq's API (and a short search query to Google's Gemini embedding API), so users are told not to enter personal details. |
 | **Harm when wrong** | Scores are labelled as comparisons between sites, **not a sales or profit forecast**. Setup tips are labelled as AI suggestions to check with the council and official guidance. Licensing and safety questions should link to official guidance. |
 | **Less digital or older users** | Plain-English results, one text box, preset common questions in the assistant, no account needed. A council adviser can run it with the person. |
 | **Legal blockers** | All sources are OGL or ODbL with attribution; restricted sources (VOA, Google) are deliberately excluded. |
@@ -412,7 +414,7 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 |---|---|---|
 | 👤 **C1 Problem and user** (20%) | A named user (a person opening a small business; the council team advising them) facing a costly, frequent decision with no affordable tool | 35.2% 3-year survival vs 52.8% in England; business births down 29.5% ([Economic Assessment 2025](https://data.southampton.gov.uk/media/iqgh14rf/economic-assessment-august-2025.pdf)); [what people do today](#what-people-do-today) |
 | 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 10/22** against the keyword baseline; validation rules; grounded RAG with allowed, linked citations |
-| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 54 tests; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
+| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 58 tests; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
 | 💼 **C4 Business and scale** (20%) | Council licence, paid site reports; near-zero inference cost; any English council with a data rebuild | [Business and scale](#-business-and-scale) |
 | 🛡️ **C5 Responsibility and trust** (15%) | No personal data, only public data, dated sources, refusal and gap behaviour, labelled AI suggestions | [Responsibility and trust](#️-responsibility-and-trust), [Known limits](#-known-limits) |
 
@@ -444,7 +446,7 @@ Starting a business in Southampton is risky: only 35% of new businesses survive 
 
 **What existed before the event.** Nothing from earlier projects. The repository was created at 19:26 on Friday 16 Oct with a one-line README; all code was written after hacking opened at 20:00. Open-source libraries and pre-trained models are listed below.
 
-**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. **Runtime AI** (what the product itself uses): Gemini 3.8 Flash and gemini-embedding-001 (Google) on the hosted site; Qwen3 8B and nomic-embed-text (Ollama) for local use; Claude Haiku 5.5 for the optional planning brief.
+**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. **Runtime AI** (what the product itself uses): Qwen3.8 27B on the Groq free API and gemini-embedding-001 (Google) on the website; Qwen3 8B and nomic-embed-text (Ollama) for local use; Gemini 3.8 Flash as an optional hosted alternative; Claude Haiku 5.5 for the optional planning brief.
 
 **Who helped.** SotonShip mentors and organisers; no outside code contributions.
 
@@ -457,16 +459,17 @@ Starting a business in Southampton is risky: only 35% of new businesses survive 
 ## 🛠️ Run it yourself
 
 <details open>
-<summary><b>⚡ Quick start (Gemini, as on the live site)</b></summary>
+<summary><b>⚡ Quick start (Groq free API, as on the website)</b></summary>
 
-Needs Python 3.12, Node.js 20+ and a free [Gemini API key](https://aistudio.google.com/apikey).
+Needs Python 3.12, Node.js 20+, a free [Groq API key](https://console.groq.com/keys) (chat and classifier) and a [Gemini API key](https://aistudio.google.com/apikey) (document search embeddings).
 
 ```bash
 git clone https://github.com/edwardyun12/civiclens-sotonship2026 && cd civiclens-sotonship2026
 python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt && pip install -e .
 
-export GEMINI_API_KEY=your-key                            # Windows: set GEMINI_API_KEY=your-key
+export GROQ_API_KEY=your-groq-key                         # Windows: set GROQ_API_KEY=your-groq-key
+export GEMINI_API_KEY=your-gemini-key                     # Windows: set GEMINI_API_KEY=your-gemini-key
 python run.py rag index                                   # index the Southampton documents
 
 python run.py api                                         # terminal 1: API on http://127.0.0.1:8000
@@ -477,15 +480,15 @@ All processed data is committed, so the app runs from a clean clone with no down
 
 </details>
 
-**Local and free (no API key).** Install [Ollama](https://ollama.com), run `ollama pull qwen3:8b && ollama pull nomic-embed-text` once, leave `GEMINI_API_KEY` unset (or set `LLM_PROVIDER=ollama`), then the same `rag index`, `api` and `npm run dev` steps. Re-run `python run.py rag index` when you switch provider, because the two use different embeddings.
+**Local and free (no API key).** Install [Ollama](https://ollama.com), run `ollama pull qwen3:8b && ollama pull nomic-embed-text` once, leave both keys unset (or set `LLM_PROVIDER=ollama`), then the same `rag index`, `api` and `npm run dev` steps. Re-run `python run.py rag index` when you switch between local and hosted, because they use different embeddings. To use Gemini for chat as well, set `LLM_PROVIDER=gemini`.
 
-**Deploy on Render.** New → Blueprint → this repo (branch `feature/simulator`); it reads [render.yaml](render.yaml), asks for `GEMINI_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GEMINI_CHAT_MODEL`, `GEMINI_EMBED_MODEL`, `GEMINI_THINKING_LEVEL`, `CORS_ORIGINS`.
+**Deploy on Render.** New → Blueprint → this repo (branch `feature/simulator`); it reads [render.yaml](render.yaml), asks for `GROQ_API_KEY` and `GEMINI_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GROQ_CHAT_MODEL` (e.g. `openai/gpt-oss-120b`), `GROQ_REASONING_EFFORT`, `GEMINI_EMBED_MODEL`, `CORS_ORIGINS`.
 
 **Every command** (`python run.py` lists them):
 
 | Command | What it does |
 |---|---|
-| `python run.py test` | Run the 54 tests |
+| `python run.py test` | Run the 58 tests |
 | `python run.py eval` | Planning engine vs baseline → `evaluation/results/` |
 | `node evaluation/classify_benchmark.mjs` | AI classifier vs keyword baseline (needs the API running) |
 | `python run.py app` | Streamlit planning engine (Module C) |
@@ -535,7 +538,7 @@ Because it would invent numbers. Every score, count and percentage comes from de
 <details>
 <summary><b>Which AI model does it use?</b></summary>
 
-The live site uses **Google Gemini 3.8 Flash** to classify ideas and answer questions, and **gemini-embedding-001** to search the documents. Run locally without a key, it uses **Qwen3 8B** through Ollama instead. The optional planning brief for public services uses Claude Haiku 5.5. Site scoring uses no AI at all.
+The website uses **Qwen3.8 27B through Groq's free API** to classify ideas and answer questions, and Google's **gemini-embedding-001** to search the documents (Groq doesn't offer embeddings). Run locally without a key, it uses **Qwen3 8B** through Ollama instead. Gemini 3.8 Flash is a one-setting fallback if the Groq free limits are reached. The optional planning brief for public services uses Claude Haiku 5.5. Site scoring uses no AI at all.
 
 </details>
 
@@ -556,7 +559,7 @@ It says so: *possible gap in the market*, judged against similar businesses near
 <details>
 <summary><b>What if the AI is down or there is no API key?</b></summary>
 
-The simulator falls back to keyword matching and still ranks sites; the rest of the app keeps working and the chat shows an error message instead of an answer. Without a Gemini key, it can run fully offline on Ollama at no cost.
+The simulator falls back to keyword matching and still ranks sites; the rest of the app keeps working and the chat shows an error message instead of an answer. If the Groq free limit is hit, the chat asks the user to try again in a minute. Without any API key, it can run fully offline on Ollama at no cost.
 
 </details>
 
@@ -570,14 +573,14 @@ No, and the app doesn't pretend it is. It uses dated snapshots (FSA extract of 1
 <details>
 <summary><b>Does it collect personal data?</b></summary>
 
-No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the hosted site, questions are sent to Google's Gemini API, so users are asked not to type personal details.
+No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the website, questions are sent to Groq's API (and a search query to Google's embedding API), so users are asked not to type personal details.
 
 </details>
 
 <details>
 <summary><b>How much does it cost to run?</b></summary>
 
-Very little per user: one classification is about 1,700 input tokens and one chat answer about 3,000, on a Flash-class model; locally it costs nothing. Keeping the data fresh, not inference, is the main cost. See [Business and scale](#-business-and-scale).
+Nothing for the demo: the website runs on Groq's free API, and locally it costs nothing. One classification is about 1,700 input tokens and one chat answer about 3,000, so at scale it moves to a paid plan at a small cost per user. Keeping the data fresh, not inference, is the main cost. See [Business and scale](#-business-and-scale).
 
 </details>
 

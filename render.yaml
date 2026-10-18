@@ -1,5 +1,6 @@
 # Render blueprint: one web service runs the FastAPI server (rag/api.py), which also serves the built React app.
-# Render dashboard -> New -> Blueprint -> pick this repo. It asks for GEMINI_API_KEY (https://aistudio.google.com/apikey).
+# Render dashboard -> New -> Blueprint -> pick this repo. It asks for GROQ_API_KEY (free, https://console.groq.com/keys),
+# which runs the chat and the business classifier, and GEMINI_API_KEY (https://aistudio.google.com/apikey) for document search embeddings.
 services:
   - type: web
     name: civiclens
@@ -13,10 +14,12 @@ services:
     startCommand: python -c "from rag.api import main; main()"
     healthCheckPath: /api/health
     envVars:
+      - key: GROQ_API_KEY
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
       - key: LLM_PROVIDER
-        value: gemini
+        value: groq
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: NODE_VERSION

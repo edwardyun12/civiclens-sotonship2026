@@ -13,9 +13,16 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 INDEX_FILE = PROCESSED_DATA_DIR / "index.json"
 FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 
-# "gemini" (hosted, needs GEMINI_API_KEY; used on Render) or "ollama" (local). Default: gemini when a key is set.
+# "groq" (hosted website: Groq free API for chat + Gemini embeddings), "gemini" (Gemini for both) or "ollama" (local).
+# Default: groq when GROQ_API_KEY is set, else gemini when GEMINI_API_KEY is set, else ollama.
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini" if GEMINI_API_KEY else "ollama").lower()
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq" if GROQ_API_KEY else "gemini" if GEMINI_API_KEY else "ollama").lower()
+
+GROQ_URL = os.getenv("GROQ_URL", "https://api.groq.com/openai/v1")
+GROQ_CHAT_MODEL = os.getenv("GROQ_CHAT_MODEL", "qwen/qwen3.8-27b")
+# Qwen: none / low / medium / high ("none" = answer directly); GPT-OSS: low / medium / high. Empty = model default here.
+GROQ_REASONING_EFFORT = os.getenv("GROQ_REASONING_EFFORT", "")
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
@@ -28,11 +35,13 @@ GEMINI_EMBED_DIM = int(os.getenv("GEMINI_EMBED_DIM", "768"))
 # Gemini 3 models take "low" / "medium" / "high"; set to "" for models without thinking levels (e.g. 2.5)
 GEMINI_THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "low")
 
-CHAT_MODEL = GEMINI_CHAT_MODEL if LLM_PROVIDER == "gemini" else OLLAMA_CHAT_MODEL
-EMBED_MODEL = GEMINI_EMBED_MODEL if LLM_PROVIDER == "gemini" else OLLAMA_EMBED_MODEL
-# Gemini counts thinking tokens in the output limit, so it gets more room; the prompt keeps answers short
+CHAT_MODEL = {"groq": GROQ_CHAT_MODEL, "gemini": GEMINI_CHAT_MODEL}.get(LLM_PROVIDER, OLLAMA_CHAT_MODEL)
+# Groq has no embeddings API, so the groq provider searches documents with Gemini embeddings
+EMBED_MODEL = GEMINI_EMBED_MODEL if LLM_PROVIDER in ("gemini", "groq") else OLLAMA_EMBED_MODEL
+# Gemini counts thinking tokens in the output limit, so it gets more room. Groq's free plan counts the requested
+# limit against 8,000 tokens a minute, so it gets a tight one; the prompt keeps answers short anyway.
 MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", os.getenv("OLLAMA_MAX_OUTPUT_TOKENS",
-                                                                "1500" if LLM_PROVIDER == "gemini" else "220")))
+                                                                {"gemini": "1500", "groq": "500"}.get(LLM_PROVIDER, "220"))))
 
 # extra browser origins allowed to call the API (comma-separated); the deployed site is same-origin and needs none
 CORS_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"] + [
