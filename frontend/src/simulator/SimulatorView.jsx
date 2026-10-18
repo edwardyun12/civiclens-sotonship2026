@@ -106,7 +106,7 @@ export default function SimulatorView() {
   }, [ctx, site, brief, picks, engine, scope, area])
 
   if (error) return <div className="tool-error">{error.message}</div>
-  if (!city || !ctx) return <div className="tool-error">Loading the city…</div>
+  if (!city || !cols) return <div className="tool-error">Loading the city…</div>
   const showSite = site && [site.lat, site.lon]
 
   return <div className="map-stage">
@@ -119,9 +119,9 @@ export default function SimulatorView() {
         pathOptions={{ stroke: false, fillColor: '#3d78b8', fillOpacity: 0.35, fillRule: 'evenodd' }} />)}
       {scope === 'area' && area && outlines[area] && <Polygon positions={outlines[area].map(r => r.map(([x, y]) => [y, x]))} interactive={false}
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
-      {ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
+      {ctx && ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
         pathOptions={{ color: '#fff', weight: 0.8, fillColor: '#7d8b85', fillOpacity: 0.8 }} />)}
-      {ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
+      {ctx && ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
         pathOptions={{ color: '#fff', weight: 1.2, fillColor: '#c0392b', fillOpacity: 0.9 }}><Tooltip>{p.name || 'Unnamed'} · {p.spec}</Tooltip></CircleMarker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
       {scope !== 'map' && picks.map((p, i) => { const on = site === p
@@ -157,7 +157,7 @@ export default function SimulatorView() {
         <option value="" disabled>Choose an area…</option>{wards.map(w => <option key={w} value={w}>{w}</option>)}
       </select>}
       {scope === 'map' && <p className="muted">Click anywhere on the map to test that spot.</p>}
-      {scope !== 'map' && (scope === 'city' || area) && <ol className="pick-list">{picks.map((p, i) => { const [tone, label] = verdict(p.score)
+      {target && scope !== 'map' && (scope === 'city' || area) && <ol className="pick-list">{picks.map((p, i) => { const [tone, label] = verdict(p.score)
         return <li key={i}><button className={site === p ? 'on' : ''} onClick={() => choosePick(i)}>
           <span className="rank" style={{ background: TONE[tone] }}>{i + 1}</span><span><b>{p.ward}</b><small>{label}</small></span><span className={`pill ${tone}`}>{p.score}</span></button></li> })}
         {!picks.length && <li className="muted">No suitable site outside the flood zone here.</li>}</ol>}
@@ -167,7 +167,8 @@ export default function SimulatorView() {
       <label className="check"><input type="checkbox" checked={flood} onChange={e => setFlood(e.target.checked)} /> Show flood zone 3</label>
     </aside>
 
-    {site ? <SiteResult ctx={ctx} site={site} brief={brief} engine={engine} target={target} radius={radius}
+    {!target ? <aside className="result-card"><h2>What do you want to open?</h2><p className="muted">Type a business on the left and press Enter to see the best sites across Southampton.</p></aside>
+      : site ? <SiteResult ctx={ctx} site={site} brief={brief} engine={engine} target={target} radius={radius}
       nav={scope !== 'map' && picks.length > 1 ? { i: picks.indexOf(site), n: picks.length, go: d => setPick((picks.indexOf(site) + d + picks.length) % picks.length) } : null}
       onSite={s => { setPoint([s.lat, s.lon]); setScope('map') }} />
       : <aside className="result-card"><h2>{scope === 'area' ? 'Choose an area' : 'Pick a spot'}</h2><p className="muted">{scope === 'area' ? 'Pick an area on the left to see the best sites in it.' : 'Click the map to test any spot in Southampton.'}</p></aside>}
@@ -245,7 +246,8 @@ function AiCard({ ai, target, aiReady }) {
   if (ai.status === 'idle') return <p className="muted small">Type any business and press Enter: the AI works out its sector, niche, competitors and customers.</p>
   if (ai.status === 'loading') return <div className="ai-card loading"><Loader2 size={15} className="spin" /><span>Thinking about “{ai.text}”: sector, niche, competitors and customers…</span></div>
   if (ai.status === 'error') return <div className="ai-card error"><AlertTriangle size={15} /><span>The AI isn’t available ({ai.error}). Using quick matching instead; start Ollama and the assistant API to use it.</span></div>
-  if (!aiReady || target?.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target?.text}”.</p>
+  if (!target) return null
+  if (!aiReady || target.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target.text}”.</p>
   const direct = [...target.directSpecs], related = [...target.relatedSpecs]
   return <div className="ai-card">
     <div className="ai-head"><Sparkles size={14} /> <b>AI understanding</b><small>{target.model}</small></div>
