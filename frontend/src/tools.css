@@ -165,9 +165,6 @@
 
 /* simulator */
 .idea-form { display: flex; flex-direction: column; gap: 6px }
-.idea-form textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 64px; border: 1px solid var(--line, #cfd8d4); border-radius: 8px;
-  padding: 9px 10px; font: inherit; font-size: 13.5px; line-height: 1.4; background: #fff; color: inherit }
-.idea-form textarea:focus { outline: 2px solid #7a5cc4; outline-offset: 1px }
 .ai-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 8px; background: var(--deep); color: #fff;
   padding: 9px 12px; font-size: 13px; font-weight: 700 }
 .ai-button svg { color: var(--lime) }

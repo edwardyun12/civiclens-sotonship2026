@@ -13,6 +13,8 @@ import { setAssistantContext } from '../lib/assistantContext.js'
 import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, targetFromAI, verdict } from './opportunity.js'
 
 const SimEngine = window.SimEngine
+// quick picks: these when the data has them, topped up with the most common types
+const QUICK = ['Café', 'Coffee shop', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
 const TONE = { good: '#2f7a4f', ok: '#7bbf1f', warn: '#d38b1c', bad: '#c0392b' }
 
@@ -26,10 +28,11 @@ export default function SimulatorView() {
   const [cols] = useData('places')
   const places = useMemo(() => (cols ? placeRows(cols).filter(p => p.inside) : []), [cols])
   const types = useMemo(() => businessTypes(places), [places])
+  const quick = useMemo(() => { const have = new Set(types.map(t => t.label)); const q = QUICK.filter(x => have.has(x)); for (const t of types) if (q.length < 6 && !q.includes(t.label)) q.push(t.label); return q.slice(0, 6) }, [types])
   const E = useMemo(() => (city ? SimEngine.create(city) : null), [city])
 
-  const [text, setText] = useState('')                 // what the user is typing
-  const [query, setQuery] = useState('')               // the idea being analysed (set when they press Enter)
+  const [text, setText] = useState('Café')
+  const [query, setQuery] = useState('Café')            // what is analysed (typing settles first)
   const [ages, setAges] = useState(null)               // null = the business's default customers
   const [radius, setRadius] = useState(800)
   const [scope, setScope] = useState('city')
@@ -38,6 +41,7 @@ export default function SimulatorView() {
   const [point, setPoint] = useState(null)             // a site clicked on the map
   const [flood, setFlood] = useState(false)
   const [ai, setAi] = useState({ status: 'idle' })     // the local LLM's reading of the idea: idle | loading | done | error
+  useEffect(() => { const t = setTimeout(() => setQuery(text), 350); return () => clearTimeout(t) }, [text])
 
   // ask the local LLM (same model as the assistant) to classify the idea against the data's own sectors and types
   const askAI = async idea => {
@@ -61,7 +65,7 @@ export default function SimulatorView() {
   // ?idea=thai%20restaurant#simulator analyses an idea straight from a link
   useEffect(() => { const idea = new URLSearchParams(window.location.search).get('idea'); if (idea && types.length) askAI(idea) }, [types.length > 0])
   const aiReady = ai.status === 'done' && ai.text.trim().toLowerCase() === query.trim().toLowerCase()
-  const target = useMemo(() => (!types.length || !query.trim() || ai.status === 'loading' ? null : aiReady ? targetFromAI(ai.result, query, types) : matchBusiness(query, types)), [query, types, aiReady, ai])
+  const target = useMemo(() => (!types.length ? null : aiReady ? targetFromAI(ai.result, query, types) : matchBusiness(query, types)), [query, types, aiReady, ai])
   useEffect(() => { setAges(null); setPick(0) }, [target?.label])
   const customers = ages || target?.ages || AGE_GROUPS.map(a => a[0])
   const ctx = useMemo(() => (city && places.length && target ? analyse(city, places, target, { ages: customers, radius }) : null),
@@ -102,7 +106,7 @@ export default function SimulatorView() {
   }, [ctx, site, brief, picks, engine, scope, area])
 
   if (error) return <div className="tool-error">{error.message}</div>
-  if (!city || !cols) return <div className="tool-error">Loading the city…</div>
+  if (!city || !ctx) return <div className="tool-error">Loading the city…</div>
   const showSite = site && [site.lat, site.lon]
 
   return <div className="map-stage">
@@ -115,9 +119,9 @@ export default function SimulatorView() {
         pathOptions={{ stroke: false, fillColor: '#3d78b8', fillOpacity: 0.35, fillRule: 'evenodd' }} />)}
       {scope === 'area' && area && outlines[area] && <Polygon positions={outlines[area].map(r => r.map(([x, y]) => [y, x]))} interactive={false}
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
-      {ctx && ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
+      {ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
         pathOptions={{ color: '#fff', weight: 0.8, fillColor: '#7d8b85', fillOpacity: 0.8 }} />)}
-      {ctx && ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
+      {ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
         pathOptions={{ color: '#fff', weight: 1.2, fillColor: '#c0392b', fillOpacity: 0.9 }}><Tooltip>{p.name || 'Unnamed'} · {p.spec}</Tooltip></CircleMarker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
       {scope !== 'map' && picks.map((p, i) => { const on = site === p
@@ -133,18 +137,16 @@ export default function SimulatorView() {
       <h2>Where should my business go?</h2>
       <label className="field-label" htmlFor="biz">What do you want to open?</label>
       <form className="idea-form" onSubmit={e => { e.preventDefault(); askAI(text) }}>
-        <textarea id="biz" rows={3} value={text} onChange={e => setText(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAI(text) } }}
-          placeholder="Describe your business in your own words, e.g. a small Thai restaurant for students and families" />
-        <button type="submit" className="ai-button" disabled={ai.status === 'loading' || text.trim().length < 2}>{ai.status === 'loading' ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />} Analyse</button>
+        <label className="search"><Store size={15} /><input id="biz" list="biz-types" value={text} onChange={e => setText(e.target.value)} placeholder="Thai restaurant, dog grooming, kids coding club…" /></label>
       </form>
+      <datalist id="biz-types">{types.slice(0, 200).map(t => <option key={t.label} value={t.label} />)}</datalist>
+      <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => askAI(q)}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
       <AiCard ai={ai} target={target} aiReady={aiReady} />
       {target && target.level !== 'ai' && <p className={`match ${target.matched ? '' : 'warn'}`}>{target.matched
         ? target.level === 'category' ? <>No exact match, so compared with all <b>{fmt(target.n)} {catText(target.cat)}</b> in the data.</>
           : <>Compared with <b>{fmt(target.n)} {target.label.toLowerCase()}</b> in the data; related: other {catText(target.cat)}.</>
         : <>No places like “{target.text}” in the current data, so competitors can’t be counted.</>}</p>}
 
-      {target && <>
       <label className="field-label">Your customers</label>
       <div className="chips small age-chips">{AGE_GROUPS.map(([k, l]) => <button key={k} className={customers.includes(k) ? 'on' : ''}
         onClick={() => setAges(customers.includes(k) ? (customers.length > 1 ? customers.filter(x => x !== k) : customers) : [...customers, k])}>{l}</button>)}</div>
@@ -163,13 +165,9 @@ export default function SimulatorView() {
       <label className="field-label" htmlFor="rad">Walking distance: {radius} m · about {Math.round(radius / 80)} minutes</label>
       <input id="rad" type="range" min="400" max="1200" step="100" value={radius} onChange={e => setRadius(+e.target.value)} />
       <label className="check"><input type="checkbox" checked={flood} onChange={e => setFlood(e.target.checked)} /> Show flood zone 3</label>
-      </>}
     </aside>
 
-    {!target ? <aside className="result-card"><h2>Tell us your idea</h2><p className="muted">{ai.status === 'loading'
-      ? 'The AI is reading your idea. Ranked sites across Southampton appear here in a moment.'
-      : 'Type what you want to open on the left and press Enter. The AI works out the sector, niche, competitors and customers, then the model ranks sites across Southampton.'}</p></aside>
-      : site ? <SiteResult ctx={ctx} site={site} brief={brief} engine={engine} target={target} radius={radius}
+    {site ? <SiteResult ctx={ctx} site={site} brief={brief} engine={engine} target={target} radius={radius}
       nav={scope !== 'map' && picks.length > 1 ? { i: picks.indexOf(site), n: picks.length, go: d => setPick((picks.indexOf(site) + d + picks.length) % picks.length) } : null}
       onSite={s => { setPoint([s.lat, s.lon]); setScope('map') }} />
       : <aside className="result-card"><h2>{scope === 'area' ? 'Choose an area' : 'Pick a spot'}</h2><p className="muted">{scope === 'area' ? 'Pick an area on the left to see the best sites in it.' : 'Click the map to test any spot in Southampton.'}</p></aside>}
@@ -244,10 +242,10 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
 }
 
 function AiCard({ ai, target, aiReady }) {
-  if (ai.status === 'idle') return <p className="muted small">Any business works: the AI classifies it against the businesses in the data. Shift+Enter for a new line.</p>
+  if (ai.status === 'idle') return <p className="muted small">Type any business and press Enter: the AI works out its sector, niche, competitors and customers.</p>
   if (ai.status === 'loading') return <div className="ai-card loading"><Loader2 size={15} className="spin" /><span>Thinking about “{ai.text}”: sector, niche, competitors and customers…</span></div>
   if (ai.status === 'error') return <div className="ai-card error"><AlertTriangle size={15} /><span>The AI isn’t available ({ai.error}). Using quick matching instead; start Ollama and the assistant API to use it.</span></div>
-  if (!aiReady || target?.level !== 'ai') return null
+  if (!aiReady || target?.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target?.text}”.</p>
   const direct = [...target.directSpecs], related = [...target.relatedSpecs]
   return <div className="ai-card">
     <div className="ai-head"><Sparkles size={14} /> <b>AI understanding</b><small>{target.model}</small></div>
