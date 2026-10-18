@@ -18,6 +18,7 @@ def capture(monkeypatch, body: bytes, model: str = "qwen/qwen3.8-27b"):
 
     def urlopen(req, timeout):
         sent["url"], sent["payload"], sent["auth"] = req.full_url, json.loads(req.data), req.get_header("Authorization")
+        sent["user_agent"] = req.get_header("User-agent")
         return FakeResponse(body)
 
     monkeypatch.setattr(Q, "GROQ_API_KEY", "test-key")
@@ -67,3 +68,9 @@ def test_groq_provider_never_calls_an_embeddings_service(monkeypatch):
         assert "keyword-only" in str(exc)
         return
     raise AssertionError("expected RuntimeError")
+
+
+def test_requests_identify_the_app_to_avoid_edge_firewall_rejection(monkeypatch):
+    sent = capture(monkeypatch, json.dumps({"choices": [{"message": {"content": "ok"}}]}).encode())
+    Q.complete("hello", 20)
+    assert sent["user_agent"].startswith("CivicLens/")

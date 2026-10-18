@@ -21,7 +21,12 @@ def _open(payload: dict):
     req = urllib.request.Request(
         f"{GROQ_URL}/chat/completions",
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {GROQ_API_KEY}"},
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            # Cloudflare may reject urllib's default fingerprint with Error 1010.
+            "User-Agent": "CivicLens/1.0 (+https://github.com/edwardyun12/civiclens-sotonship2026)",
+        },
     )
     try:
         return urllib.request.urlopen(req, timeout=120)
@@ -29,7 +34,7 @@ def _open(payload: dict):
         detail = exc.read().decode(errors="replace")[:300]
         if exc.code == 429:
             raise RuntimeError("The free Groq API limit was reached; please try again in a minute.") from exc
-        raise RuntimeError(f"Groq API error {exc.code}: {detail}") from exc
+        raise RuntimeError(f"The Groq service rejected the request (HTTP {exc.code}).") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError("Could not reach the Groq API.") from exc
 

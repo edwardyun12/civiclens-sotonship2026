@@ -80,3 +80,15 @@ def test_builtin_competitor_question_uses_both_distances():
     assert "7 direct competitors within 800 m" in answer
     assert "2 within 400 m" in answer
     assert not sources
+
+
+def test_comparison_uses_latest_vacancy_year_and_stable_count_metric():
+    context = (
+        "Mapped trading places by ward: Portswood 255, Shirley 198.\n"
+        "Popular-map metric: most overrepresented sector relative to its city-wide share.\n"
+        "Largest sector by mapped-place count per area: Portswood: Food and drink; Shirley: Retail."
+    )
+    answer, sources = answer_template("Compare Shirley and Portswood.", context)
+    assert "10.57%" in answer and "4.84%" in answer and "2024" in answer
+    assert "Food and drink" in answer and "Retail" in answer
+    assert sources[0]["url"].endswith("#page=6")

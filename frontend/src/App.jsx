@@ -13,6 +13,21 @@ const TABS = [
 // Old #heatmap links (the removed Signals page) open Places.
 const tabFromHash = () => window.location.hash === '#heatmap' ? 'places' : (TABS.find(t => t.hash === window.location.hash) || {}).id || 'welcome'
 
+function useEvidenceStatus() {
+  const [health, setHealth] = useState({ status: 'checking', message: 'Checking evidence service…' })
+  useEffect(() => {
+    let live = true
+    const check = () => fetch('/api/health').then(r => r.ok ? r.json() : Promise.reject()).then(d => live && setHealth(d))
+      .catch(() => live && setHealth({ status: 'degraded', message: 'Evidence service unavailable.' }))
+    const changed = event => setHealth(event.detail)
+    check(); window.addEventListener('evidence-status', changed)
+    return () => { live = false; window.removeEventListener('evidence-status', changed) }
+  }, [])
+  return health
+}
+
+const reportEvidenceStatus = (status, message) => window.dispatchEvent(new CustomEvent('evidence-status', { detail: { status, message } }))
+
 // common questions offered when the assistant opens, per page (they use what is on screen)
 const COMMON_QUESTIONS = {
   simulator: ['Why is the top site the best place for my business?', 'How was my business idea matched to the data?', 'What are the main risks at this site?',
@@ -42,6 +57,7 @@ function AnswerText({ content, sources = [] }) {
 }
 
 function Chatbot({ startOpen = true, page }) {
+  const health = useEvidenceStatus()
   const [open, setOpen] = useState(startOpen)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,12 +76,13 @@ function Chatbot({ startOpen = true, page }) {
       while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const lines=buffer.split('\n');buffer=lines.pop()??''
         for(const line of lines){if(!line)continue;const data=JSON.parse(line);if(data.type==='error')throw new Error(data.message)
           setMessages(current=>{const next=[...current];const last={...next.at(-1)};if(data.type==='token')last.content+=data.content;if(data.type==='sources')last.sources=data.sources;next[next.length-1]=last;return next})}}
-    }catch(error){setMessages(current=>{const next=[...current];next[next.length-1]={role:'assistant',content:error.message,sources:[]};return next})}finally{setLoading(false)}
+      reportEvidenceStatus('ready', 'Evidence and answer service ready.')
+    }catch(error){reportEvidenceStatus('degraded', error.message);setMessages(current=>{const next=[...current];next[next.length-1]={role:'assistant',content:error.message,sources:[]};return next})}finally{setLoading(false)}
   }
   return <>
     {!open&&<button className="chat-launcher" onClick={()=>setOpen(true)}><MessageCircle size={21}/><span>Ask the assistant</span></button>}
     {open&&<section className="chat-panel">
-      <header><span className="bot-icon"><Bot size={19}/></span><div><strong>Opportunity assistant</strong><small><i/> Evidence connected</small></div><button onClick={()=>setOpen(false)} aria-label="Close assistant"><X size={18}/></button></header>
+      <header><span className="bot-icon"><Bot size={19}/></span><div><strong>Opportunity assistant</strong><small className={health.status}><i/> {health.status === 'ready' ? 'Evidence connected' : health.status === 'checking' ? 'Checking evidence…' : 'Evidence unavailable'}</small></div><button onClick={()=>setOpen(false)} aria-label="Close assistant"><X size={18}/></button></header>
       <div className="chat-intro"><Sparkles size={15}/><span>Grounded answers from Southampton evidence</span></div>
       <div className="chat-messages">{messages.map((message,index)=><div key={index} className={`message ${message.role}`}><div>{message.content?<AnswerText content={message.content} sources={message.sources}/>:<span className="typing">Searching the evidence<span>…</span></span>}</div>{message.sources?.length>0&&<details><summary>View {message.sources.length} source documents</summary>{message.sources.map((source,i)=><a key={i} href={source.url} target="_blank" rel="noreferrer"><span><b>{source.citation}</b><small>{source.preview}</small></span><ExternalLink size={12}/></a>)}</details>}</div>)}{messages.length===1&&<div className="common-questions"><span>Common questions</span>{questions.map(q=><button key={q} disabled={loading} onClick={()=>send(null,q)}>{q}</button>)}</div>}<div ref={endRef}/></div>
       {messages.length>1&&<div className="chat-suggestions">{questions.slice(0,4).map(q=><button key={q} disabled={loading} onClick={()=>send(null,q)}>{q}</button>)}</div>}
@@ -75,10 +92,11 @@ function Chatbot({ startOpen = true, page }) {
 }
 
 function Workspace({ tab, onBack }) {
+  const health = useEvidenceStatus()
   return <main className="map-page">
     <header className="map-header"><Brand/><button className="back-button" onClick={onBack}><ArrowLeft size={16}/> Welcome</button>
       <nav className="tabs" aria-label="Tools">{TABS.map(({ id, hash, label, icon: Icon }) => <a key={id} href={hash} className={tab === id ? 'active' : ''} aria-current={tab === id ? 'page' : undefined}><Icon size={15}/> {label}</a>)}</nav>
-      <div className="status"><i/> Evidence service online</div></header>
+      <div className={`status ${health.status}`} title={health.message}><i/> {health.status === 'ready' ? 'Evidence service online' : health.status === 'checking' ? 'Checking evidence service' : 'Evidence service unavailable'}</div></header>
     <Suspense fallback={<div className="map-stage"><div className="tool-error">Loading…</div></div>}>
       {tab === 'places' && <PlacesView/>}
       {tab === 'simulator' && <SimulatorView/>}

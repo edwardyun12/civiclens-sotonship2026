@@ -56,7 +56,7 @@ All commands go through `run.py` (`python run.py` lists them). All folders are d
 | Change the browser pages | `viewer/src/*.template.html` (never the built `viewer/*.html`) | `python run.py viewers` |
 | Change the React app | `frontend/src/` (Places map: `places/PlacesView.jsx`, heat maps: `lib/HeatLayer.jsx`) | `python run.py frontend` |
 | Change the RAG assistant | `rag/` (provider, models and paths in `rag/config.py`) | `python run.py rag index`, `python run.py api` |
-| Change the deployment | `render.yaml` (env vars in the Render dashboard) | push to `feature/simulator` |
+| Change the deployment | `render.yaml` (env vars in the Render dashboard) | push to `main` |
 | Move a data folder | `simulator/paths.py` only | `python run.py test` |
 
 **Golden rule:** `engine.py` has no AI and no UI. Every number shown anywhere comes from it (or its verified JS
@@ -348,4 +348,4 @@ cover a question, and lists the only citation labels it may use.
   if relevant, call `note()` with URL and licence, add a test.
 - Never store personal data (company officers, childminders' addresses). Don't use the VOA rating list (licence)
   or store Google content in the repo.
-- Git: no force-push; Render deploys from `feature/simulator` (see `render.yaml`).
+- Git: no force-push; Render deploys from `main` (see `render.yaml`).

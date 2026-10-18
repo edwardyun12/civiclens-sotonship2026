@@ -11,6 +11,8 @@
 @media(max-width:1100px){.welcome-hero{grid-template-columns:1fr}.city-orbit{display:none}.welcome-copy{margin:auto;text-align:center}.welcome-copy .eyebrow{justify-content:center}.place-card{right:26px;top:auto;bottom:175px}.map-source{display:none}.map-title{width:430px}.chat-panel{width:360px}.legend{display:none}}
 @media(max-width:760px){.welcome-page{padding:22px 20px 18px}.welcome-header>span{display:none}.welcome-hero{padding:11vh 0}.welcome-copy{text-align:left}.welcome-copy .eyebrow{justify-content:flex-start}.welcome-copy h1{font-size:clamp(48px,15vw,68px)}.welcome-copy p{font-size:16px}.explore-button{width:100%;justify-content:space-between}.welcome-footer{display:block}.welcome-footer span:last-child{display:none}.map-header{height:62px;padding:0 14px}.back-button{margin-left:auto}.status{display:none}.map-stage{height:calc(100vh - 62px)}.map-title{top:14px;left:14px;width:calc(100vw - 28px);padding:17px 18px}.map-title h1{font-size:35px}.layer-panel{left:14px;right:14px;bottom:16px;width:auto}.layer-panel>div{overflow-x:auto}.place-card{top:178px;left:14px;right:14px;bottom:auto;width:auto}.chat-panel{inset:78px 12px 12px;width:auto}.chat-launcher{right:15px;bottom:15px}.chat-launcher span{display:none}}
 
+.status.degraded i,.chat-panel header small.degraded i{background:#d45b4b;box-shadow:0 0 0 4px #d45b4b20}.status.checking i,.chat-panel header small.checking i{background:#d6a21d;box-shadow:0 0 0 4px #d6a21d20}
+
 /* CivicLens brand lockup */
 .brand{height:40px;display:flex;align-items:center;gap:8px;color:var(--deep)}
 .logo-mark{width:30px;height:30px;flex:0 0 auto;overflow:visible}

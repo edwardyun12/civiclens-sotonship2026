@@ -7,7 +7,7 @@ import L from 'leaflet'
 import { Circle, CircleMarker, MapContainer, Marker, Polygon, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Crosshair, Droplets, Footprints, Info, Lightbulb,
   Loader2, Map as MapIcon, MapPin, Search, ShieldAlert, Sparkles, Store, Target, TrendingUp, Users } from 'lucide-react'
-import '@engine'
+import SimEngine from '@engine'
 import { fmt, metres, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, KeepInView } from '../lib/MapFit.jsx'
 import { businessWords, findPlace, setAssistantContext } from '../lib/assistantContext.js'
@@ -110,7 +110,7 @@ export default function SimulatorView() {
   const ctx = useMemo(() => (city && places.length && target ? analyse(city, places, target, { ages: customers, radius }) : null),
     [city, places, target, customers.join(), radius])
   const picks = useMemo(() => (ctx ? suggest(ctx, scope === 'area' && area ? { k: 3, ward: area } : { k: 5 }) : []), [ctx, scope, area])
-  const site = useMemo(() => (!ctx ? null : scope === 'map' ? (point ? siteAt(ctx, point[0], point[1]) : null) : picks[Math.min(pick, picks.length - 1)] || null),
+  const site = useMemo(() => (!ctx || !ctx.supported ? null : scope === 'map' ? (point ? siteAt(ctx, point[0], point[1]) : null) : picks[Math.min(pick, picks.length - 1)] || null),
     [ctx, scope, point, picks, pick])
   const brief = useMemo(() => (ctx && site ? feasibilityBrief(ctx, site, places.length) : null), [ctx, site, places.length])
   // planning engine view for the five public-service uses
@@ -213,10 +213,13 @@ export default function SimulatorView() {
       </form>
       <datalist id="biz-types">{types.slice(0, 200).map(t => <option key={t.label} value={t.label} />)}</datalist>
       <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => askAI(q)}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
-      {target && target.level !== 'ai' && ai.status !== 'loading' && <p className={`match ${target.matched ? '' : 'gap'}`}>{target.matched
+      {target && target.level !== 'ai' && ai.status !== 'loading' && <p className={`match ${target.supported ? '' : 'gap'}`}>{target.supported
         ? target.level === 'category' ? <>No exact match, so compared with all <b>{fmt(target.n)} {catText(target.cat)}</b> in the data.</>
           : <>Compared with <b>{fmt(target.n)} {target.label.toLowerCase()}</b> in the data; related: other {catText(target.cat)}.</>
-        : <>No “{target.text}” in the data yet: a possible gap in the market. Check the area on the ground for competitors.</>}</p>}
+        : <>“{target.text}” could not be matched reliably. Add a recognisable business type before scoring.</>}</p>}
+      {target?.level === 'ai' && <p className={`match ${target.supported ? '' : 'gap'}`}>{target.supported
+        ? <>Interpreted as <b>{target.label}</b>{target.niche ? ` (${target.niche})` : ''}; compared with {target.n || 'related'} mapped businesses.</>
+        : <>Insufficient evidence: “{target.text}” was not matched to a supported business category, so no opportunity score is shown.</>}</p>}
 
       <label className="field-label">Your customers</label>
       <div className="chips small age-chips">{AGE_GROUPS.map(([k, l]) => <button key={k} className={customers.includes(k) ? 'on' : ''}
@@ -239,6 +242,7 @@ export default function SimulatorView() {
     </aside>
 
     {!target ? <aside className="result-card"><h2>What do you want to open?</h2><p className="muted">Type a business on the left and press Enter to see the best sites across Southampton.</p></aside>
+      : !target.supported ? <aside className="result-card"><span className="place-kicker"><ShieldAlert size={13}/> Score withheld</span><h2>Insufficient evidence</h2><p className="muted">We could not interpret “{target.text}” as a supported business type. Try a specific description such as “Korean restaurant”, “dog grooming” or “coding club”. CivicLens will not invent a high score when the category is unknown.</p></aside>
       : site ? <SiteResult ctx={ctx} site={site} brief={brief} engine={engine} target={target} radius={radius}
       nav={scope !== 'map' && picks.length > 1 ? { i: picks.indexOf(site), n: picks.length, go: d => setPick((picks.indexOf(site) + d + picks.length) % picks.length) } : null}
       onSite={s => { setPoint([s.lat, s.lon]); setScope('map') }} />
@@ -301,7 +305,7 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
     <div className="benefit-head"><div><b>{fmt(Math.round(s.residents))}</b><span>residents in total</span></div><div><b>{fmt(Math.round(s.customers))}</b><span>your target customers</span></div><div><b>{Math.round(100 * s.dep / Math.max(1, s.customers))}%</b><span>of them in the most deprived 40% of areas</span></div></div>
     <div className="age-mix">{AGE_GROUPS.map(([k, l]) => { const n = s.ageMix[k] || 0, on = ctx.ages.includes(k)
       return <div key={k} className={`age-row ${on ? 'target' : ''}`}><span>{l}</span><span className="track"><i style={{ width: `${Math.min(100, 250 * n / ageTotal)}%` }} /></span><span className="n">{Math.round(100 * n / ageTotal)}%</span><span className="c">{fmt(Math.round(n))}</span></div> })}</div>
-    {engine?.r && engine.r.newly_covered === 0 && <p className="muted small">As a public service: everyone within {radius} m can already walk to a {engine.r.category_label.toLowerCase()} (coverage {engine.r.coverage_before_pct}%), so this site adds choice rather than new access.</p>}
+    {engine?.r && engine.r.newly_covered === 0 && <p className="muted small">Planning dataset: everyone within {radius} m can already walk to a registered {engine.r.category_label.toLowerCase()} (coverage {engine.r.coverage_before_pct}%), so this site adds choice rather than new access. This register is narrower than the mapped-business competitor layer above.</p>}
     {engine?.r && engine.r.newly_covered > 0 && <p className="muted small">As a public service: {fmt(engine.r.newly_covered)} {engine.r.demand_label} would be newly within walking distance of a {engine.r.category_label.toLowerCase()} (coverage {engine.r.coverage_before_pct}% → {engine.r.coverage_after_pct}%), {engine.r.equity_most_deprived_40pct_share}% of them in the most deprived 40% of areas.</p>}
 
     <h3><Lightbulb size={14} /> Feasibility brief</h3>
@@ -320,9 +324,10 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
 }
 
 function EngineBrief({ b }) {
+  const displayText = b.audit.ok ? b.text : b.text.replace(/Confidence:\s*(?:High|Medium|Low)\.?/g, 'Confidence: Needs review.')
   return <details className="brief">
-    <summary>Planning brief for the council (numbers checked)</summary>
-    {b.mode === 'refusal' ? <p className="refusal"><ShieldAlert size={14} /> {b.text}</p> : b.text.split('\n\n').map((t, i) => <p key={i}>{t.replace(/\s*\[[^\]]*\]/g, '')}</p>)}
-    <span className={`audit ${b.audit.ok ? 'ok' : 'bad'}`}><BadgeCheck size={14} /> {b.audit.ok ? `All ${b.audit.checked} numbers checked against the data` : `${b.audit.failed.length} numbers not in the data`}</span>
+    <summary>Planning brief for the council ({b.audit.ok ? 'numbers checked' : 'needs review'})</summary>
+    {b.mode === 'refusal' ? <p className="refusal"><ShieldAlert size={14} /> {displayText}</p> : displayText.split('\n\n').map((t, i) => <p key={i}>{t.replace(/\s*\[[^\]]*\]/g, '')}</p>)}
+    <span className={`audit ${b.audit.ok ? 'ok' : 'bad'}`}>{b.audit.ok ? <BadgeCheck size={14} /> : <ShieldAlert size={14} />} {b.audit.ok ? `All ${b.audit.checked} numbers checked against the data` : `Needs review: unverified value${b.audit.failed.length === 1 ? '' : 's'} ${b.audit.failed.join(', ')}`}</span>
   </details>
 }

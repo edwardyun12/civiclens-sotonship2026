@@ -17,7 +17,17 @@ from pydantic import BaseModel, Field
 
 from rag.classify import classify_business
 from rag.citations import extract_pdf_pages
-from rag.config import CHAT_MODEL, CORS_ORIGINS, FRONTEND_DIST, LLM_PROVIDER, PROJECT_ROOT, RAW_DATA_DIR
+from rag.config import (
+    CHAT_MODEL,
+    CORS_ORIGINS,
+    EMBED_MODEL,
+    FRONTEND_DIST,
+    GROQ_API_KEY,
+    INDEX_FILE,
+    LLM_PROVIDER,
+    PROJECT_ROOT,
+    RAW_DATA_DIR,
+)
 from rag.generator import prepare_answer, stream_generated_answer
 from rag.routing import direct_response
 from rag.templates import answer_template
@@ -87,8 +97,32 @@ def evidence(source: str) -> FileResponse:
 
 
 @app.get("/api/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "provider": LLM_PROVIDER, "model": CHAT_MODEL}
+def health() -> dict:
+    """Report actual readiness, rather than merely whether the HTTP process is alive."""
+    records = 0
+    index_error = None
+    try:
+        index = json.loads(INDEX_FILE.read_text(encoding="utf-8"))
+        records = len(index.get("records", []))
+        if index.get("embedding_model") != EMBED_MODEL:
+            index_error = "The evidence index needs rebuilding."
+    except (OSError, ValueError):
+        index_error = "The evidence index is missing."
+    provider_configured = {
+        "groq": bool(GROQ_API_KEY),
+        "ollama": True,
+    }.get(LLM_PROVIDER, False)
+    ready = provider_configured and records > 0 and not index_error
+    return {
+        "status": "ready" if ready else "degraded",
+        "evidenceReady": records > 0 and not index_error,
+        "providerReady": provider_configured,
+        "provider": LLM_PROVIDER,
+        "model": CHAT_MODEL,
+        "retrieval": EMBED_MODEL,
+        "records": records,
+        "message": "Evidence and answer service ready." if ready else index_error or "The answer provider is not configured.",
+    }
 
 
 @app.post("/api/classify")
@@ -97,7 +131,7 @@ def classify(payload: ClassifyRequest) -> dict:
     try:
         return {"ok": True, **classify_business(payload.text, [t.model_dump() for t in payload.types], payload.sectors)}
     except Exception as exc:  # the page falls back to its own matching
-        return {"ok": False, "error": str(exc)}
+        return {"ok": False, "error": "The AI classifier is temporarily unavailable; using local matching."}
 
 
 @app.post("/api/chat")
@@ -144,8 +178,8 @@ def chat(payload: ChatRequest) -> StreamingResponse:
             for token in stream_generated_answer(prompt):
                 yield json.dumps({"type": "token", "content": token}) + "\n"
             yield json.dumps({"type": "done"}) + "\n"
-        except Exception as exc:
-            yield json.dumps({"type": "error", "message": str(exc)}) + "\n"
+        except Exception:
+            yield json.dumps({"type": "error", "message": "The evidence assistant is temporarily unavailable. Please try again shortly."}) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson")
 

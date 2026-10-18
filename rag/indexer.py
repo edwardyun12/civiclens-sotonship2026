@@ -40,4 +40,5 @@ def build_index() -> None:
         json.dumps({"embedding_model": EMBED_MODEL, "records": records}),
         encoding="utf-8",
     )
-    print(f"Indexed {len(records)} chunks from {len(paths)} documents -> {INDEX_FILE}")
+    mode = f"BM25 + {EMBED_MODEL}" if USE_EMBEDDINGS else "BM25"
+    print(f"Indexed {len(records)} chunks from {len(paths)} documents ({mode}) -> {INDEX_FILE}")

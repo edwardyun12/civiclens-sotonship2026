@@ -322,7 +322,7 @@ The optimiser runs in under 0.01 s per use and equals exhaustive search over all
 
 ### ✅ Tests
 
-`python run.py test` → **59 tests**. They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON), the assistant's deterministic answers and follow-up handling, and the AI clients (mocked, so no API key is needed to run them).
+`python run.py test` → **57 tests**. They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON), the assistant's deterministic answers and follow-up handling, and the AI clients (mocked, so no API key is needed to run them).
 
 <details>
 <summary><b>🔎 End-to-end checks run in a real browser</b></summary>
@@ -476,7 +476,7 @@ git clone https://github.com/edwardyun12/civiclens-sotonship2026 && cd civiclens
 python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt && pip install -e .
 
-export GROQ_API_KEY=your-groq-key                         # Windows: set GROQ_API_KEY=your-groq-key
+cp .env.example .env                                     # then add GROQ_API_KEY
 python run.py rag index                                   # index the Southampton documents
 
 python run.py api                                         # terminal 1: API on http://127.0.0.1:8000
@@ -489,7 +489,7 @@ All processed data is committed, so the app runs from a clean clone with no down
 
 **Local and free (no API key).** Install [Ollama](https://ollama.com), run `ollama pull qwen3:8b && ollama pull nomic-embed-text` once, leave `GROQ_API_KEY` unset (or set `LLM_PROVIDER=ollama`), then the same `rag index`, `api` and `npm run dev` steps. Re-run `python run.py rag index` when you switch between local and hosted, because local search uses embeddings and the website doesn't.
 
-**Deploy on Render.** New → Blueprint → this repo (branch `feature/simulator`); it reads [render.yaml](render.yaml), asks for `GROQ_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GROQ_CHAT_MODEL` (e.g. `openai/gpt-oss-120b`), `GROQ_REASONING_EFFORT`, `CORS_ORIGINS`.
+**Deploy on Render.** New → Blueprint → this repo (`main`); it reads [render.yaml](render.yaml), asks for `GROQ_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GROQ_CHAT_MODEL` (e.g. `openai/gpt-oss-120b`), `GROQ_REASONING_EFFORT`, `CORS_ORIGINS`.
 
 **Every command** (`python run.py` lists them):
 
@@ -620,7 +620,7 @@ No, and the app doesn't pretend it is. It uses dated snapshots (FSA extract of 1
 <details>
 <summary><b>Does it collect personal data?</b></summary>
 
-No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the website, questions are sent to Groq's API (and a search query to Google's embedding API), so users are asked not to type personal details.
+No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the default website setup, questions and retrieved public evidence are sent to Groq; document search runs locally. Users are asked not to type personal details.
 
 </details>
 

@@ -68,6 +68,8 @@ def retrieve(question: str, top_k: int = 3) -> list[dict]:
         ),
         reverse=True,
     )
+    if not fused_ranking:
+        fused_ranking = list(range(min(len(records), top_k)))
 
     scored = []
     latest_page_by_source: dict[str, int] = {}

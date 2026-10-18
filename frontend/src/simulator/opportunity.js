@@ -27,6 +27,8 @@ const ENGINE_USES = [[/nurser|childcare|creche/, 'nursery'], [/\bgp\b|doctor|sur
   [/library/, 'library'], [/caf[eé]|coffee/, 'cafe']]
 
 const norm = s => String(s || '').toLowerCase().replace(/é/g, 'e').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
+const PLACEHOLDER_WORDS = new Set(['unknown', 'business', 'test', 'testing', 'qa', 'example', 'sample'])
+const plausibleIdea = text => norm(text).split(' ').some(word => word.length >= 3 && !PLACEHOLDER_WORDS.has(word) && /[aeiouy]/.test(word))
 const COS = Math.cos((50.91 * Math.PI) / 180)
 export const toXY = (lat, lon) => [lon * 111320 * COS, lat * 111320]
 
@@ -63,12 +65,12 @@ export function matchBusiness(text, types) {
   const rule = CUSTOMER_RULES.find(([re]) => re.test(q))
   const ages = g => (rule ? rule[1] : SECTOR_CUSTOMERS[g] || ALL_AGES)
   if (best && (best.s >= 60 || !bestCat || best.s >= 30 * Math.max(1, words.length - 1)))
-    return { text, label: best.label, spec: best.label, cat: best.cat, grp: best.grp, n: best.n, matched: true, level: 'type', engineUse, ages: ages(best.grp) }
+    return { text, label: best.label, spec: best.label, cat: best.cat, grp: best.grp, n: best.n, matched: true, supported: true, level: 'type', engineUse, ages: ages(best.grp) }
   if (bestCat) {
     const n = types.filter(t => t.cat === bestCat.cat).reduce((a, t) => a + t.n, 0)
-    return { text, label: text.trim().replace(/^./, c => c.toUpperCase()), spec: null, cat: bestCat.cat, grp: bestCat.grp, n, matched: true, level: 'category', engineUse, ages: ages(bestCat.grp) }
+    return { text, label: text.trim().replace(/^./, c => c.toUpperCase()), spec: null, cat: bestCat.cat, grp: bestCat.grp, n, matched: true, supported: true, level: 'category', engineUse, ages: ages(bestCat.grp) }
   }
-  return { text, label: text.trim().replace(/^./, c => c.toUpperCase()), spec: null, cat: null, grp: null, n: 0, matched: false, engineUse, ages: rule ? rule[1] : ALL_AGES }
+  return { text, label: text.trim().replace(/^./, c => c.toUpperCase()), spec: null, cat: null, grp: null, n: 0, matched: false, supported: false, engineUse, ages: rule ? rule[1] : ALL_AGES }
 }
 
 // The local LLM's classification (rag/classify.py, checked against the data's own types) -> a target for analyse().
@@ -77,10 +79,12 @@ export function matchBusiness(text, types) {
 export function targetFromAI(c, text, types) {
   const q = norm(text), byLabel = Object.fromEntries(types.map(t => [t.label, t]))
   const first = byLabel[c.direct_types[0]] || byLabel[c.related_types[0]]
+  const evidenceMatch = c.direct_types.length > 0 || (c.similar_types || []).length > 0 || c.related_types.length > 0 || (c.name_keywords || []).length > 0
+  const supported = plausibleIdea(text) && Boolean(c.sector) && evidenceMatch
   return { text, label: (c.business || text).replace(/^./, ch => ch.toUpperCase()), niche: c.niche, grp: c.sector || first?.grp || null, cat: first?.cat || null,
     directSpecs: new Set(c.direct_types), similarSpecs: new Set(c.similar_types || []), relatedSpecs: new Set(c.related_types), keywords: c.name_keywords || [],
     ages: c.customers?.length ? c.customers : ALL_AGES, passing: c.passing_trade, reasoning: c.reasoning, tips: c.setup_tips || [],
-    matched: c.direct_types.length > 0 || (c.name_keywords || []).length > 0, level: 'ai', source: 'ai', model: c.model,
+    matched: supported, supported, level: 'ai', source: 'ai', model: c.model,
     engineUse: (ENGINE_USES.find(([re]) => re.test(q) || re.test(norm(c.business))) || [])[1] || null,
     n: c.direct_types.reduce((a, k) => a + (byLabel[k]?.n || 0), 0) }
 }
@@ -94,8 +98,11 @@ export function analyse(city, places, target, { ages, radius = 800 }) {
   for (let i = 0; i < N; i++) [ox[i], oy[i]] = toXY(o.lat[i], o.lon[i])
   const groups = AGE_GROUPS.filter(([k, , c]) => ages.includes(k) && ageCol(o, c))
   const w = new Float64Array(N)
-  for (const [, , c] of groups) { const a = ageCol(o, c); for (let i = 0; i < N; i++) w[i] += a[i] }
-  if (!groups.length) for (let i = 0; i < N; i++) w[i] = o.pop[i]
+  for (let i = 0; i < N; i++) {
+    const all = AGE_GROUPS.reduce((sum, [, , c]) => sum + (ageCol(o, c)?.[i] || 0), 0)
+    const selected = groups.reduce((sum, [, , c]) => sum + (ageCol(o, c)?.[i] || 0), 0)
+    w[i] = groups.length ? (all ? selected * o.pop[i] / all : 0) : o.pop[i]
+  }
   const pop21 = o.pop21 || o.pop
   // places: direct competitors (same niche), similar (another niche of the same kind, e.g. another cuisine),
   // related (same sector), customer-facing (footfall stand-in)
@@ -118,7 +125,7 @@ export function analyse(city, places, target, { ages, radius = 800 }) {
   }
   // nothing like it in the data: a possible gap in the market, judged against similar businesses instead
   const gap = !direct.length && (target?.level === 'ai' || !target?.matched)
-  const ctx = { city, o, N, R, ox, oy, w, pop21, groups, direct, similar, related, facing, target, ages, gap }
+  const ctx = { city, o, N, R, ox, oy, w, pop21, groups, direct, similar, related, facing, target, ages, gap, supported: target?.supported !== false }
   const m = []
   for (let i = 0; i < N; i++) m.push(metricsAt(ctx, ox[i], oy[i]))
   // distributions for percentiles
@@ -153,7 +160,8 @@ function metricsAt(ctx, x, y) {
     customers += w[j]; residents += o.pop[j]; cur += o.pop[j]; base += pop21[j]
     if (o.q[j] <= 2) dep += w[j]
     if (o.pop0421) { u5 += o.pop04[j]; u521 += o.pop0421[j] }
-    for (const [k, , c] of AGE_GROUPS) { const a = ageCol(o, c); if (a) ageMix[k] = (ageMix[k] || 0) + a[j] }
+    const ageTotal = AGE_GROUPS.reduce((sum, [, , c]) => sum + (ageCol(o, c)?.[j] || 0), 0)
+    for (const [k, , c] of AGE_GROUPS) { const a = ageCol(o, c); if (a) ageMix[k] = (ageMix[k] || 0) + (ageTotal ? a[j] * o.pop[j] / ageTotal : 0) }
   }
   let comp = 0, comp400 = 0, compR = 0, nearest = null
   const near = []
@@ -204,6 +212,7 @@ export function siteAt(ctx, lat, lon) {
 
 // best sites: highest feasibility, outside flood zone 3, at least minSep metres apart, optionally in one ward
 export function suggest(ctx, { k = 5, ward = null, minSep = 1000 } = {}) {
+  if (!ctx.supported) return []
   const out = []
   for (const s of [...ctx.sites].sort((a, b) => b.score - a.score)) {
     if (s.flood || (ward && s.ward !== ward)) continue

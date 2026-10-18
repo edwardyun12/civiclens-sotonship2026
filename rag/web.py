@@ -67,7 +67,7 @@ with st.sidebar:
     st.header("System")
     st.caption({"groq": "Runs on the Groq free API (keyword document search)"}.get(LLM_PROVIDER, "Runs locally through Ollama"))
     st.text(f"Chat: {CHAT_MODEL}")
-    st.text(f"Embeddings: {EMBED_MODEL}")
+    st.text(f"Retrieval: {EMBED_MODEL}")
 
     document_count, chunk_count = index_summary()
     col_a, col_b = st.columns(2)

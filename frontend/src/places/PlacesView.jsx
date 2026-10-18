@@ -18,6 +18,8 @@ const VIEWS = [['popular', 'Popular', Sparkles], ['heat', 'Heatmap', Flame], ['p
 // Most common, or (lq) the key furthest above its city-wide share with at least 3 places.
 // hover card for a place dot (built on hover, so thousands of dots stay light)
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const searchText = value => String(value || '').toLowerCase().trim().replace(/\s+/g, ' ')
+const compactSearch = value => searchText(value).replace(/\s/g, '')
 function hoverPlace(e, p, on) {
   const m = e.target
   if (!on) { m.setRadius(m.options.baseRadius ?? 4).setStyle({ weight: 1 }); m.closeTooltip(); return }
@@ -87,9 +89,9 @@ export default function PlacesView() {
 
   // Places view: search -> industry -> detailed types
   const base = useMemo(() => {
-    const s = q.trim().toLowerCase()
+    const s = searchText(q), compact = compactSearch(q)
     return all.filter(p => (!hideRO || !p.ro) && (!grp || p.grp === grp) &&
-      (!s || `${p.name} ${p.pc} ${p.addr} ${p.spec}`.toLowerCase().includes(s)))
+      (!s || searchText(`${p.name} ${p.pc} ${p.addr} ${p.spec}`).includes(s) || compactSearch(p.pc).includes(compact)))
   }, [all, q, grp, hideRO])
   const typed = useMemo(() => (spec.size ? base.filter(p => spec.has(specOf(p))) : base), [base, spec])
   // Popular and Heatmap: trading places in the chosen sector (companies known only by their registered office left out)
@@ -98,6 +100,8 @@ export default function PlacesView() {
   const shown = useMemo(() => (ward ? active.filter(p => p.ward === ward) : active), [active, ward])
   const bySector = view === 'popular' && !sector
   const pop = useMemo(() => (bySector ? popular(active, lq, p => p.grp, sectorColor) : popular(active, lq)), [active, lq, bySector])
+  const profilePop = useMemo(() => popular(active, lq), [active, lq])
+  const countSectorPop = useMemo(() => popular(all.filter(p => !p.ro), false, p => p.grp, sectorColor), [all])
   // Popular with one sector: how popular it is in each area (share of the area's places, and vs the city share)
   const focus = useMemo(() => (view === 'popular' && sector ? sectorShares(all, sector, lq) : null), [all, view, sector, lq])
 
@@ -130,14 +134,15 @@ export default function PlacesView() {
     lines.push(`Mapped trading places by ward: ${Object.entries(placeCounts).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${n}`).join(', ')}.`)
     lines.push(`Age-group leaders by resident count: ${people.ages.slice(1).map(([k, label]) => `${label}: ${Object.entries(people.mix).map(([w, mix]) => [w, mix[k] || 0]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([w, n]) => `${w} ${Math.round(n)}`).join(', ')}`).join('; ')}.`)
     if (view === 'popular') lines.push(sector ? `Sector: ${sector}. Share of each area's places in it: ${Object.entries(focus?.by || {}).sort((a, b) => b[1].share - a[1].share).map(([w, f]) => `${w} ${Math.round(100 * f.share)}%`).join(', ')}. City average ${Math.round(100 * (focus?.cityShare || 0))}%.`
-      : `All sectors. Leading ${bySector ? 'sector' : 'type'} per area: ${Object.entries(pop.win).map(([w, b]) => `${w}: ${b.k}`).join('; ')}.`)
+      : `Popular-map metric: ${lq ? 'most overrepresented sector relative to its city-wide share (minimum 3 places)' : 'largest sector by mapped-place count'}. Current map leaders: ${Object.entries(pop.win).map(([w, b]) => `${w}: ${b.k}`).join('; ')}.`)
+    lines.push(`Largest sector by mapped-place count per area: ${Object.entries(countSectorPop.win).map(([w, b]) => `${w}: ${b.k}`).join('; ')}.`)
     if (view === 'heat') lines.push(`Heat map of ${sector || 'all sectors'}: ${shown.length} places.`)
     if (view === 'people') lines.push(`People: ${people.noun}, ${Math.round(people.total)} in the city. By area: ${Object.entries(people.byWard).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${Math.round(n)}`).join(', ')}.`)
     if (view === 'points') lines.push(`Search "${q}", industry ${grp || 'all'}, types ${[...spec].join(', ') || 'all'}: ${shown.length} places.`)
     if (ward) { const st = pop.by[ward], mix = people.mix[ward] || {}, n = Object.values(mix).reduce((a, b) => a + b, 0) || 1
       lines.push(`Selected area: ${ward}, ${Math.round(wardPop[ward] || 0)} residents, ${st ? st.n : 0} places. Age mix: ${people.ages.slice(1).map(([k, l]) => `${l} ${Math.round(100 * (mix[k] || 0) / n)}%`).join(', ')}. Top: ${st ? Object.entries(st.top).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, c]) => `${k} ${c}`).join(', ') : 'none'}.`) }
     setAssistantContext(lines.join('\n'))
-  }, [view, sector, focus, pop, bySector, shown, people, ward, wardPop, placeCounts, q, grp, spec])
+  }, [view, sector, focus, pop, lq, countSectorPop, shown, people, ward, wardPop, placeCounts, q, grp, spec])
 
   if (error) return <div className="tool-error">{error.message}</div>
   const [eyebrow, title, intro] = VIEW_TEXT[view]
@@ -207,7 +212,7 @@ export default function PlacesView() {
             <button className="type-head" onClick={() => setSpec(s => { const all = items.every(([k]) => s.has(k)), x = new Set(s); items.forEach(([k]) => (all ? x.delete(k) : x.add(k))); return x })}><span>{head}</span><span>{fmt(n)}</span></button>
             {items.map(([k, c]) => <label key={k} className={`type-row ${spec.has(k) ? 'on' : ''}`}><input type="checkbox" checked={spec.has(k)} onChange={() => toggle(k)} /><span>{k}</span><span>{fmt(c)}</span></label>)}
           </div>)}
-          {!specGroups.length && <p className="muted">No type matches “{specQ}”.</p>}
+          {!specGroups.length && <p className="muted">{q.trim() && !base.length ? `No places match “${q.trim()}”. Try a name, street or postcode.` : specQ.trim() ? `No type matches “${specQ.trim()}”.` : 'No place types match these filters.'}</p>}
         </div>
         <label className="check"><input type="checkbox" checked={hideRO} onChange={e => setHideRO(e.target.checked)} /> Hide companies known only by their registered office</label>
       </>}
@@ -218,7 +223,7 @@ export default function PlacesView() {
 
     <div className="map-legend"><Legend view={view} pop={pop} people={people} focus={focus} sector={sector} lq={lq} onSector={setSector} /></div>
     {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
-    {ward && !place && city && <WardProfile ward={ward} typed={active} pop={pop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={searchType} onWard={pickWard} />}
+    {ward && !place && city && <WardProfile ward={ward} typed={active} pop={profilePop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={searchType} onWard={pickWard} />}
   </div>
 }
 
@@ -395,7 +400,7 @@ function WardProfile({ ward, typed, pop, wardPop, city, people, onClose, onPick,
         <span>{k}</span><span className="track"><i style={{ width: `${100 * n / max}%`, background: pop.color[k] || OTHER }} /></span><span className="n">{n}</span><span className={`x ${r >= 1.5 ? 'hi' : ''}`}>{r.toFixed(1)}×</span></button> })}</div>
       : <p className="muted">No matching places in this area.</p>}
     <p className="muted">× compares the type’s share here with its share across Southampton: 2.0× = twice as common here.</p>
-    {gaps.length > 0 && <><h3>Less of than the city average</h3><div className="chips">{gaps.map(([k]) => <button key={k} onClick={() => onPick(k)}>{k} · {H[k] || 0}</button>)}</div></>}
+    {gaps.length > 0 && <><h3>Less represented than the city average</h3><div className="chips">{gaps.map(([k]) => <button key={k} onClick={() => onPick(k)}>{k} · {H[k] || 0}</button>)}</div></>}
     <h3>Other areas</h3>
     <div className="chips small">{Object.keys(wardPop).filter(w => w !== ward).sort().map(w => <button key={w} onClick={() => onWard(w)}>{w}</button>)}</div>
   </aside>

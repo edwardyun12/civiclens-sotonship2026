@@ -56,19 +56,19 @@ def answer_template(question: str, context: str | None) -> tuple[str, list[dict]
 
     if q == "compare shirley and portswood.":
         counts = dict(_pairs(_line(context, "Mapped trading places by ward: ")))
-        leaders = dict(re.findall(r"(?:^|; )([^:]+): ([^;]+)", _line(context, "All sectors. Leading sector per area: ")))
+        leaders = dict(re.findall(r"(?:^|; )([^:]+): ([^;]+)", _line(context, "Largest sector by mapped-place count per area: ")))
         source = _pdf_source(6)
         return (
             f"Portswood has {counts.get('Portswood', '255')} mapped trading places, compared with "
             f"{counts.get('Shirley', '198')} in Shirley. Portswood’s leading sector is "
             f"{leaders.get('Portswood', 'Food and drink')}, while Shirley’s is {leaders.get('Shirley', 'Retail')} "
-            "[App analysis]. Shirley has the higher vacancy rate: 10.94% versus 6.45% in Portswood "
+            "[App analysis]. In the latest survey (2024), Shirley had the higher vacancy rate: 10.57% versus 4.84% in Portswood "
             f"[{source['citation']}].",
             [source],
         )
 
     if q == "which sectors lead across southampton’s wards?":
-        leaders = re.findall(r"(?:^|; )([^:]+): ([^;]+)", _line(context, "All sectors. Leading sector per area: "))
+        leaders = re.findall(r"(?:^|; )([^:]+): ([^;]+)", _line(context, "Largest sector by mapped-place count per area: "))
         grouped: dict[str, list[str]] = {}
         for ward, sector in leaders:
             grouped.setdefault(sector.rstrip(". "), []).append(ward)
@@ -86,7 +86,7 @@ def answer_template(question: str, context: str | None) -> tuple[str, list[dict]
         source = _pdf_source(6)
         return (
             "The City Centre is Southampton’s largest listed centre, with 458 commercial units. "
-            "Its recorded vacancy rate is 12.04%, and its footfall indicator is 9.6% below the comparison period "
+            "Its latest recorded vacancy rate is 13.32% in 2024, and its footfall indicator is 9.6% below the comparison period "
             f"[App analysis] [{source['citation']}]. These are place indicators, not a forecast of business performance.",
             [source],
         )

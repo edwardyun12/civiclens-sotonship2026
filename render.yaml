@@ -5,7 +5,7 @@ services:
   - type: web
     name: civiclens
     runtime: python
-    branch: feature/simulator
+    branch: main
     plan: free
     buildCommand: >-
       pip install -r requirements-web.txt &&
