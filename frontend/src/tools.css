@@ -317,3 +317,13 @@ details.brief summary { cursor: pointer; font: 700 13px Manrope; color: #3c544c;
 .common-questions button { text-align: left; border: 1px solid #d6ded6; background: #fff; border-radius: 9px; padding: 9px 11px; font-size: 11.5px; color: #1f4a40; cursor: pointer }
 .common-questions button:hover:not(:disabled) { border-color: #80a925; background: #f6fbea }
 .chat-suggestions button:disabled, .common-questions button:disabled { opacity: .5; cursor: progress }
+
+.site-pin-wrap { background: none; border: 0 }
+.site-pin { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 4px 5px rgba(6, 43, 37, .35)); transition: transform .15s ease; cursor: pointer }
+.site-pin:hover { transform: translateY(-3px) scale(1.06) }
+.site-pin svg { display: block }
+.site-pin b { position: absolute; left: 0; right: 0; top: 0; height: 74%; display: grid; place-items: center; font: 800 13px Manrope, system-ui, sans-serif; color: #062b25 }
+.site-pin.on b { font-size: 16px }
+.site-pin .pulse { position: absolute; left: 50%; bottom: -6px; width: 26px; height: 10px; margin-left: -13px; border-radius: 50%; background: var(--pin); opacity: .5; animation: pin-pulse 1.8s ease-out infinite }
+@keyframes pin-pulse { from { transform: scale(.6); opacity: .6 } to { transform: scale(2.4); opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .site-pin .pulse { animation: none } .site-pin { transition: none } }

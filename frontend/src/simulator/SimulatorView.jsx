@@ -3,7 +3,8 @@
 // sites, and explains how feasible any site is. For the five public-service uses the planning engine
 // (viewer/src/engine.js, a verified port of simulator/engine.py) adds coverage and an audited planning brief.
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { Circle, CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
+import L from 'leaflet'
+import { Circle, CircleMarker, MapContainer, Marker, Polygon, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Crosshair, Droplets, Footprints, Info, Lightbulb,
   Loader2, Map as MapIcon, MapPin, Search, ShieldAlert, Sparkles, Store, Target, TrendingUp, Users } from 'lucide-react'
 import '@engine'
@@ -22,6 +23,20 @@ const COMPETITOR = '#e8352a', RELATED = '#2f7fd8'
 const HOVER = { mouseover: e => e.target.setStyle({ weight: 3 }).setRadius(e.target.getRadius() + 2.5), mouseout: e => e.target.setStyle({ weight: e.target.options.fillColor === COMPETITOR ? 1.8 : 1.5 }).setRadius(e.target.getRadius() - 2.5) }
 
 // key details only: name, competitor or related, what it is, how far from the selected site
+// teardrop map pin coloured by feasibility, with the rank (or an icon) inside; the open site is larger with a pulse
+const pinIcons = new Map()
+function pinIcon(label, color, on) {
+  const key = `${label}|${color}|${on}`
+  if (!pinIcons.has(key)) {
+    const w = on ? 40 : 30, h = Math.round(w * 1.3)
+    pinIcons.set(key, L.divIcon({ className: 'site-pin-wrap', iconSize: [w, h], iconAnchor: [w / 2, h], tooltipAnchor: [0, -h + 4],
+      html: `<div class="site-pin${on ? ' on' : ''}" style="--pin:${color}">${on ? '<i class="pulse"></i>' : ''}<svg viewBox="0 0 30 39" width="${w}" height="${h}" aria-hidden="true">
+        <path d="M15 38c-1-3.6-3.4-7-6.5-10.5C5 23.6 1.5 20 1.5 14.5a13.5 13.5 0 0 1 27 0c0 5.5-3.5 9.1-7 13C18.4 31 16 34.4 15 38z" fill="var(--pin)" stroke="#fff" stroke-width="2"/>
+        <circle cx="15" cy="14.5" r="8.6" fill="#fff"/></svg><b>${label}</b></div>` }))
+  }
+  return pinIcons.get(key)
+}
+
 function PlaceTip({ p, kind, site }) {
   const d = site ? Math.round(metres(site.lat, site.lon, p.lat, p.lon)) : null
   return <div>
@@ -139,11 +154,11 @@ export default function SimulatorView() {
         pathOptions={{ color: '#fff', weight: 1.8, fillColor: COMPETITOR, fillOpacity: 1 }}><Tooltip direction="top" offset={[0, -7]} className="place-tip"><PlaceTip p={p} kind="Competitor" site={site} /></Tooltip></CircleMarker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
       {scope !== 'map' && picks.map((p, i) => { const on = site === p
-        return <CircleMarker key={'p' + i} center={[p.lat, p.lon]} radius={on ? 15 : 12} eventHandlers={{ click: e => { e.originalEvent?.stopPropagation(); choosePick(i) } }}
-          pathOptions={{ color: '#062b25', weight: on ? 3.5 : 2.5, fillColor: TONE[verdict(p.score)[0]], fillOpacity: 1 }}>
-          <Tooltip permanent direction="center" className="rank-label light">{i + 1}</Tooltip></CircleMarker> })}
-      {scope === 'map' && site && <CircleMarker center={showSite} radius={11} pathOptions={{ color: '#062b25', weight: 3, fillColor: TONE[verdict(site.score)[0]], fillOpacity: 1 }}>
-        <Tooltip permanent direction="top" offset={[0, -10]} className="site-label">Your site</Tooltip></CircleMarker>}
+        return <Marker key={'p' + i + on} position={[p.lat, p.lon]} icon={pinIcon(i + 1, TONE[verdict(p.score)[0]], on)} zIndexOffset={on ? 1000 : 500 - i}
+          eventHandlers={{ click: () => choosePick(i) }}>
+          <Tooltip direction="top" className="place-tip"><div><b>{i + 1}. {p.ward}</b><span>{verdict(p.score)[1]} · {p.score}/100</span></div></Tooltip></Marker> })}
+      {scope === 'map' && site && <Marker position={showSite} icon={pinIcon('★', TONE[verdict(site.score)[0]], true)} zIndexOffset={1000}>
+        <Tooltip permanent direction="top" className="site-label">Your site</Tooltip></Marker>}
     </MapContainer>
 
     <aside className="tool-panel">
@@ -188,7 +203,7 @@ export default function SimulatorView() {
       : <aside className="result-card"><h2>{scope === 'area' ? 'Choose an area' : 'Pick a spot'}</h2><p className="muted">{scope === 'area' ? 'Pick an area on the left to see the best sites in it.' : 'Click the map to test any spot in Southampton.'}</p></aside>}
 
     <div className="legend tool-legend">
-      <span className="key"><i style={{ background: TONE.good, border: '2px solid #062b25', borderRadius: '50%' }} />Suggested site (colour = feasibility)</span>
+      <span className="key"><i style={{ background: TONE.good, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)' }} />Suggested site (colour = feasibility)</span>
       <span className="key"><i style={{ background: COMPETITOR, borderRadius: '50%' }} />Competitor</span>
       <span className="key"><i style={{ background: RELATED, borderRadius: '50%' }} />Related business</span>
       {flood && <span className="key"><i style={{ background: '#3d78b8' }} />Flood zone 3</span>}
