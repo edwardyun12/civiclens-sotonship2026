@@ -13,15 +13,24 @@ const TABS = [
 // Old #heatmap links (the removed Signals page) open Places.
 const tabFromHash = () => window.location.hash === '#heatmap' ? 'places' : (TABS.find(t => t.hash === window.location.hash) || {}).id || 'welcome'
 
-function Chatbot({ startOpen = true }) {
+// common questions offered when the assistant opens, per page (they use what is on screen)
+const COMMON_QUESTIONS = {
+  simulator: ['Why is the top site the best place for my business?', 'How did the AI classify my business idea?', 'What are the main risks at this site?',
+    'How many competitors are near this site?', 'Who would my customers be here?', 'What should I change to make this site work?'],
+  places: ['Which areas have the most businesses?', 'Where is commercial vacancy highest?', 'Compare Shirley and Portswood.',
+    'Which sector is most popular in the selected area?', 'Which areas have the most young people?', 'What is the evidence on Southampton city centre?'],
+}
+
+function Chatbot({ startOpen = true, page }) {
   const [open, setOpen] = useState(startOpen)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState([{ role:'assistant', content:'Ask about Southampton’s business landscape, planning evidence, or what you’re looking at in the app, such as “Why is this site a good fit?”', sources:[] }])
   const endRef = useRef(null)
   useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }) }, [messages, loading])
-  const send = async event => {
-    event?.preventDefault(); const question=input.trim(); if(!question||loading)return
+  const questions = COMMON_QUESTIONS[page] || COMMON_QUESTIONS.places
+  const send = async (event, asked) => {
+    event?.preventDefault(); const question=(asked??input).trim(); if(!question||loading)return
     const history=messages.map(({role,content})=>({role,content})).slice(-4)
     setMessages(current=>[...current,{role:'user',content:question},{role:'assistant',content:'',sources:[]}]);setInput('');setLoading(true)
     try{
@@ -38,8 +47,8 @@ function Chatbot({ startOpen = true }) {
     {open&&<section className="chat-panel">
       <header><span className="bot-icon"><Bot size={19}/></span><div><strong>Opportunity assistant</strong><small><i/> Evidence connected</small></div><button onClick={()=>setOpen(false)} aria-label="Close assistant"><X size={18}/></button></header>
       <div className="chat-intro"><Sparkles size={15}/><span>Grounded answers from Southampton evidence</span></div>
-      <div className="chat-messages">{messages.map((message,index)=><div key={index} className={`message ${message.role}`}><div>{message.content||<span className="typing">Searching the evidence<span>…</span></span>}</div>{message.sources?.length>0&&<details><summary>{message.sources.length} sources</summary>{message.sources.map((source,i)=><span key={i}>{source.citation}</span>)}</details>}</div>)}<div ref={endRef}/></div>
-      <div className="chat-suggestions"><button onClick={()=>setInput('Where is commercial vacancy highest?')}>Highest vacancy</button><button onClick={()=>setInput('Compare Shirley and Portswood.')}>Compare centres</button></div>
+      <div className="chat-messages">{messages.map((message,index)=><div key={index} className={`message ${message.role}`}><div>{message.content||<span className="typing">Searching the evidence<span>…</span></span>}</div>{message.sources?.length>0&&<details><summary>{message.sources.length} sources</summary>{message.sources.map((source,i)=><span key={i}>{source.citation}</span>)}</details>}</div>)}{messages.length===1&&<div className="common-questions"><span>Common questions</span>{questions.map(q=><button key={q} disabled={loading} onClick={()=>send(null,q)}>{q}</button>)}</div>}<div ref={endRef}/></div>
+      {messages.length>1&&<div className="chat-suggestions">{questions.slice(0,4).map(q=><button key={q} disabled={loading} onClick={()=>send(null,q)}>{q}</button>)}</div>}
       <form onSubmit={send}><input value={input} onChange={event=>setInput(event.target.value)} placeholder="Ask about Southampton…"/><button disabled={!input.trim()||loading} aria-label="Send question"><Send size={17}/></button></form>
     </section>}
   </>
@@ -54,7 +63,7 @@ function Workspace({ tab, onBack }) {
       {tab === 'places' && <PlacesView/>}
       {tab === 'simulator' && <SimulatorView/>}
     </Suspense>
-    <Chatbot key={tab} startOpen={false}/>
+    <Chatbot key={tab} page={tab} startOpen={false}/>
   </main>
 }
 

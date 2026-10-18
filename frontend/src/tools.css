@@ -306,3 +306,14 @@ details.brief summary { cursor: pointer; font: 700 13px Manrope; color: #3c544c;
   .leaflet-tooltip.ward-label { display: none }
   .ward-card, .result-card, .place-card.tool-card { left: 0; right: 0; width: auto; top: auto; bottom: 0; max-height: 60vh; z-index: 700; border-radius: 14px 14px 0 0 }
 }
+
+.place-tip { padding: 7px 9px; border-radius: 8px; box-shadow: 0 6px 18px rgba(6, 43, 37, .18) }
+.place-tip div { display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.35; color: #34504a; max-width: 240px; white-space: normal }
+.place-tip b { font-size: 13px; color: #062b25 }
+.place-tip .tip-kind { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase }
+
+.common-questions { display: flex; flex-direction: column; gap: 6px }
+.common-questions span { font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #6c8079; margin: 2px 2px 0 }
+.common-questions button { text-align: left; border: 1px solid #d6ded6; background: #fff; border-radius: 9px; padding: 9px 11px; font-size: 11.5px; color: #1f4a40; cursor: pointer }
+.common-questions button:hover:not(:disabled) { border-color: #80a925; background: #f6fbea }
+.chat-suggestions button:disabled, .common-questions button:disabled { opacity: .5; cursor: progress }

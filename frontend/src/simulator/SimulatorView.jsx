@@ -7,7 +7,7 @@ import { Circle, CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap
 import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Crosshair, Droplets, Footprints, Info, Lightbulb,
   Loader2, Map as MapIcon, MapPin, Search, ShieldAlert, Sparkles, Store, Target, TrendingUp, Users } from 'lucide-react'
 import '@engine'
-import { fmt, placeRows, useData } from '../lib/cityData.js'
+import { fmt, metres, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, KeepInView } from '../lib/MapFit.jsx'
 import { setAssistantContext } from '../lib/assistantContext.js'
 import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, targetFromAI, verdict } from './opportunity.js'
@@ -17,6 +17,19 @@ const SimEngine = window.SimEngine
 const QUICK = ['Café', 'Coffee shop', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
 const TONE = { good: '#2f7a4f', ok: '#7bbf1f', warn: '#d38b1c', bad: '#c0392b' }
+const COMPETITOR = '#e8352a', RELATED = '#2f7fd8'
+// dots grow on hover so they are easy to find and point at
+const HOVER = { mouseover: e => e.target.setStyle({ weight: 3 }).setRadius(e.target.getRadius() + 2.5), mouseout: e => e.target.setStyle({ weight: e.target.options.fillColor === COMPETITOR ? 1.8 : 1.5 }).setRadius(e.target.getRadius() - 2.5) }
+
+// key details only: name, competitor or related, what it is, how far from the selected site
+function PlaceTip({ p, kind, site }) {
+  const d = site ? Math.round(metres(site.lat, site.lon, p.lat, p.lon)) : null
+  return <div>
+    <span className="tip-kind" style={{ color: kind === 'Competitor' ? COMPETITOR : RELATED }}>{kind}</span>
+    <b>{p.name || 'Unnamed business'}</b>
+    <span>{p.spec || 'Type not known'}{d != null ? ` · ${d < 1000 ? `${d} m` : `${(d / 1000).toFixed(1)} km`} away` : ''}</span>
+  </div>
+}
 
 // AI classifications already made this session (the local model takes a few seconds per idea)
 const classified = new Map()
@@ -120,10 +133,10 @@ export default function SimulatorView() {
         pathOptions={{ stroke: false, fillColor: '#3d78b8', fillOpacity: 0.35, fillRule: 'evenodd' }} />)}
       {scope === 'area' && area && outlines[area] && <Polygon positions={outlines[area].map(r => r.map(([x, y]) => [y, x]))} interactive={false}
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
-      {ctx && ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
-        pathOptions={{ color: '#fff', weight: 0.8, fillColor: '#7d8b85', fillOpacity: 0.8 }} />)}
-      {ctx && ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
-        pathOptions={{ color: '#fff', weight: 1.2, fillColor: '#c0392b', fillOpacity: 0.9 }}><Tooltip>{p.name || 'Unnamed'} · {p.spec}</Tooltip></CircleMarker>)}
+      {ctx && ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={5.5} eventHandlers={HOVER}
+        pathOptions={{ color: '#fff', weight: 1.5, fillColor: RELATED, fillOpacity: 0.95 }}><Tooltip direction="top" offset={[0, -6]} className="place-tip"><PlaceTip p={p} kind="Related business" site={site} /></Tooltip></CircleMarker>)}
+      {ctx && ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={6.5} eventHandlers={HOVER}
+        pathOptions={{ color: '#fff', weight: 1.8, fillColor: COMPETITOR, fillOpacity: 1 }}><Tooltip direction="top" offset={[0, -7]} className="place-tip"><PlaceTip p={p} kind="Competitor" site={site} /></Tooltip></CircleMarker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
       {scope !== 'map' && picks.map((p, i) => { const on = site === p
         return <CircleMarker key={'p' + i} center={[p.lat, p.lon]} radius={on ? 15 : 12} eventHandlers={{ click: e => { e.originalEvent?.stopPropagation(); choosePick(i) } }}
@@ -176,8 +189,8 @@ export default function SimulatorView() {
 
     <div className="legend tool-legend">
       <span className="key"><i style={{ background: TONE.good, border: '2px solid #062b25', borderRadius: '50%' }} />Suggested site (colour = feasibility)</span>
-      <span className="key"><i style={{ background: '#c0392b', borderRadius: '50%' }} />Competitor</span>
-      <span className="key"><i style={{ background: '#8f9c96', borderRadius: '50%' }} />Related business</span>
+      <span className="key"><i style={{ background: COMPETITOR, borderRadius: '50%' }} />Competitor</span>
+      <span className="key"><i style={{ background: RELATED, borderRadius: '50%' }} />Related business</span>
       {flood && <span className="key"><i style={{ background: '#3d78b8' }} />Flood zone 3</span>}
     </div>
   </div>
@@ -249,16 +262,8 @@ function AiCard({ ai, target, aiReady }) {
   if (ai.status === 'error') return <div className="ai-card error"><AlertTriangle size={15} /><span>The AI isn’t available ({ai.error}). Using quick matching instead; start Ollama and the assistant API to use it.</span></div>
   if (!target) return null
   if (!aiReady || target.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target.text}”.</p>
-  const direct = [...target.directSpecs], related = [...target.relatedSpecs]
-  return <div className="ai-card">
-    <div className="ai-head"><Sparkles size={14} /> <b>AI understanding</b><small>{target.model}</small></div>
-    <div className="ai-path"><span>{target.grp || 'Sector unknown'}</span><span>›</span><b>{target.label}</b></div>
-    {target.niche && <p><b>Niche:</b> {target.niche}</p>}
-    <p><b>Like-for-like competitors:</b> {direct.length ? direct.join(', ') : 'none listed in the data'}{target.keywords.length ? <>, plus places named with <i>{target.keywords.join(', ')}</i></> : ''}</p>
-    {related.length > 0 && <p><b>Related:</b> {related.join(', ')}</p>}
-    <p><b>Passing trade:</b> {target.passing}</p>
-    {target.reasoning && <p className="why">{target.reasoning}</p>}
-  </div>
+  // the full classification (sector, niche, competitors, reasoning) goes to the assistant chat, not this panel
+  return <p className="muted small"><Sparkles size={12} /> Read by the AI as <b>{target.label}</b>{target.grp ? <> in {target.grp}</> : ''}. Ask the assistant why.</p>
 }
 
 function EngineBrief({ b }) {
