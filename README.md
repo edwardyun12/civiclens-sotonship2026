@@ -495,7 +495,11 @@ A council already pays for this kind of analysis: one outsourced Pharmaceutical 
 
 ## 📝 Project summary
 
-Starting a business in Southampton is risky: only 35% of new businesses survive three years, against 53% across England (Southampton Economic Assessment 2025). Choosing where to open is a big part of that risk, and a site report from a consultant costs more than most sole traders can spend. CivicLens lets anyone type a business idea in plain words. A language model maps it onto the real business types in the city's data, and a tested model scores all 792 neighbourhoods on target customers by age, competitors and similar businesses, passing trade and population growth, using ONS, Food Standards Agency, NHS and OpenStreetMap data. It ranks sites, explains each one, and an assistant answers follow-up questions with cited local evidence. The AI never produces a number. Built entirely on national open data, it can run in any English council for a yearly licence.
+CivicLens turns fragmented local data into decisions people can act on. Entrepreneurs, planners and investors currently have to reconcile population, business, vacancy, accessibility and policy data across disconnected spreadsheets and reports, making location decisions slow, expensive and biased towards intuition.
+
+Our Southampton prototype combines 3,718 mapped places, neighbourhood demographics and official planning evidence in one interactive map. Users can discover underserved areas, compare neighbourhoods and test potential locations for businesses or public services. A transparent scoring engine measures demand, competition, passing trade and growth, while an evidence-grounded AI assistant explains results and links claims directly to the original document and page. It separates calculated analysis from source evidence and communicates limitations instead of hiding uncertainty.
+
+CivicLens can scale city by city through reusable public-data pipelines and configurable local evidence, giving councils, founders and communities a faster, auditable way to invest where opportunity and public impact are greatest.
 
 ---
 
