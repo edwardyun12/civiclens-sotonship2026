@@ -13,7 +13,8 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 INDEX_FILE = PROCESSED_DATA_DIR / "index.json"
 FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 
-# "groq" (hosted website: Groq free API for chat + Gemini embeddings), "gemini" (Gemini for both) or "ollama" (local).
+# "groq" (hosted website: Groq free API for chat; keyword-only document search, since Groq has no embeddings),
+# "gemini" (optional, Gemini for both) or "ollama" (local, hybrid keyword + vector search).
 # Default: groq when GROQ_API_KEY is set, else gemini when GEMINI_API_KEY is set, else ollama.
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -36,8 +37,9 @@ GEMINI_EMBED_DIM = int(os.getenv("GEMINI_EMBED_DIM", "768"))
 GEMINI_THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "low")
 
 CHAT_MODEL = {"groq": GROQ_CHAT_MODEL, "gemini": GEMINI_CHAT_MODEL}.get(LLM_PROVIDER, OLLAMA_CHAT_MODEL)
-# Groq has no embeddings API, so the groq provider searches documents with Gemini embeddings
-EMBED_MODEL = GEMINI_EMBED_MODEL if LLM_PROVIDER in ("gemini", "groq") else OLLAMA_EMBED_MODEL
+# Groq has no embeddings API, so with the groq provider document search is keyword-only (BM25): no second AI service
+EMBED_MODEL = {"groq": "bm25-only", "gemini": GEMINI_EMBED_MODEL}.get(LLM_PROVIDER, OLLAMA_EMBED_MODEL)
+USE_EMBEDDINGS = EMBED_MODEL != "bm25-only"
 # Gemini counts thinking tokens in the output limit, so it gets more room. Groq's free plan counts the requested
 # limit against 8,000 tokens a minute, so it gets a tight one; the prompt keeps answers short anyway.
 MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", os.getenv("OLLAMA_MAX_OUTPUT_TOKENS",

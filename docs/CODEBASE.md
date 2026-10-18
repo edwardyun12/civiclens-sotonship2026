@@ -70,8 +70,8 @@ audit rejects any number not in the data.
 | `run.py` | One entry point for every command | Yes |
 | `simulator/` | The model: `config.py`, `engine.py`, `brief.py`, `app.py`, `paths.py` | Yes |
 | `pipeline/` | Builds `data/`: `city_data.py`, `population.py`, `places/` | Yes |
-| `rag/` | RAG assistant (Groq via `groq.py` with Gemini embeddings, Gemini via `gemini.py`, or local Ollama; `llm.py` picks by `LLM_PROVIDER`): indexing, retrieval, answers, API (also serves `frontend/dist`), Streamlit chat | Yes |
-| `render.yaml`, `requirements-web.txt` | Render deployment of the website (API + built React app, Groq free API + Gemini embeddings) | Yes |
+| `rag/` | RAG assistant (Groq via `groq.py` with keyword-only search on the website, or local Ollama with hybrid search; `gemini.py` is an unused option; `llm.py` picks by `LLM_PROVIDER`): indexing, retrieval, answers, API (also serves `frontend/dist`), Streamlit chat | Yes |
+| `render.yaml`, `requirements-web.txt` | Render deployment of the website (API + built React app, Groq free API, keyword search) | Yes |
 | `frontend/` | React app (Vite): welcome, places map, simulator, RAG chat | `src/` yes, `public/data/` no (written by `run.py viewers`) |
 | `tests/` | pytest tests only | Yes |
 | `evaluation/` | Evidence scripts + `results/` (baseline comparison, live briefs) | Scripts yes, results no (regenerate) |
@@ -306,7 +306,7 @@ coverage and the audited planning brief. Place-type helpers shared with the Plac
 
 **AI classification:** pressing Enter in the idea box or clicking a quick pick (or `?idea=thai%20restaurant#simulator`) sends the idea
 plus the data's own sectors and detailed types to `POST /api/classify` (`rag/classify.py`). The LLM (same
-model as the assistant: Groq `GROQ_CHAT_MODEL` on Render, or `GEMINI_CHAT_MODEL` / `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, similar
+model as the assistant: Groq `GROQ_CHAT_MODEL` on Render, else `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, similar
 types (another niche of the same kind, e.g. other cuisines), related types, name keywords, customers, passing trade,
 reasoning and setup tips. The server keeps only types and sectors that exist (vague "cuisine not known" types can
 only be related; similar and related must share the sector; generic name words are dropped). `targetFromAI` turns it

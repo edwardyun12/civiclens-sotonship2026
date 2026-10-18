@@ -65,7 +65,7 @@ def render_sources(sources: list[dict], anchor_prefix: str) -> None:
 
 with st.sidebar:
     st.header("System")
-    st.caption({"groq": "Runs on Groq (chat) and Gemini (embeddings)", "gemini": "Runs on Gemini"}.get(LLM_PROVIDER, "Runs locally through Ollama"))
+    st.caption({"groq": "Runs on the Groq free API (keyword document search)", "gemini": "Runs on Gemini"}.get(LLM_PROVIDER, "Runs locally through Ollama"))
     st.text(f"Chat: {CHAT_MODEL}")
     st.text(f"Embeddings: {EMBED_MODEL}")
 

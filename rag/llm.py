@@ -1,5 +1,5 @@
-"""One interface over the model backends, chosen by LLM_PROVIDER: Groq (hosted website; Gemini embeddings),
-Gemini (hosted) or Ollama (local)."""
+"""One interface over the model backends, chosen by LLM_PROVIDER: Groq (hosted website; no embeddings, so search is
+keyword-only), Gemini (optional) or Ollama (local)."""
 
 from __future__ import annotations
 
@@ -43,6 +43,8 @@ def stream(prompt: str, max_tokens: int, temperature: float = 0.1):
 
 
 def embed(texts: list[str], query: bool = False) -> list[list[float]]:
-    if LLM_PROVIDER in ("gemini", "groq"):  # Groq has no embeddings API
+    if LLM_PROVIDER == "groq":
+        raise RuntimeError("Groq has no embeddings API; document search is keyword-only with this provider.")
+    if LLM_PROVIDER == "gemini":
         return gemini.embed(texts, "RETRIEVAL_QUERY" if query else "RETRIEVAL_DOCUMENT")
     return ollama.request("/api/embed", {"model": OLLAMA_EMBED_MODEL, "input": texts})["embeddings"]

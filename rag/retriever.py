@@ -7,7 +7,7 @@ import json
 from rank_bm25 import BM25Okapi
 
 from rag.citations import extract_pdf_pages, format_citation
-from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT
+from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT, USE_EMBEDDINGS
 from rag.embeddings import cosine_similarity, embed
 from rag.hybrid import reciprocal_rank_fusion, tokenize
 
@@ -32,11 +32,14 @@ def retrieve(question: str, top_k: int = 3) -> list[dict]:
             "The index contains no records backed by current source files. "
             "Ask the data team to rebuild the document index."
         )
-    query_vector = embed([question], query=True)[0]
-    vector_scores = [
-        cosine_similarity(query_vector, record["embedding"])
-        for record in records
-    ]
+    if USE_EMBEDDINGS:
+        query_vector = embed([question], query=True)[0]
+        vector_scores = [
+            cosine_similarity(query_vector, record["embedding"])
+            for record in records
+        ]
+    else:  # keyword-only search: BM25 alone decides the ranking
+        vector_scores = [0.0] * len(records)
 
     tokenized_corpus = [tokenize(record["text"]) for record in records]
     bm25 = BM25Okapi(tokenized_corpus)
@@ -47,7 +50,7 @@ def retrieve(question: str, top_k: int = 3) -> list[dict]:
         range(len(records)),
         key=lambda record_index: vector_scores[record_index],
         reverse=True,
-    )[:candidate_pool]
+    )[:candidate_pool] if USE_EMBEDDINGS else []
     keyword_ranking = []
     if bm25_scores and max(bm25_scores) > 0:
         keyword_ranking = sorted(

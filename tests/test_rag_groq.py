@@ -56,3 +56,14 @@ def test_missing_key_is_a_clear_error(monkeypatch):
         assert "GROQ_API_KEY" in str(exc)
         return
     raise AssertionError("expected RuntimeError")
+
+
+def test_groq_provider_never_calls_an_embeddings_service(monkeypatch):
+    from rag import llm
+    monkeypatch.setattr(llm, "LLM_PROVIDER", "groq")
+    try:
+        llm.embed(["text"])
+    except RuntimeError as exc:
+        assert "keyword-only" in str(exc)
+        return
+    raise AssertionError("expected RuntimeError")

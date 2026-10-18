@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT, RAW_DATA_DIR
+from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT, RAW_DATA_DIR, USE_EMBEDDINGS
 from rag.documents import SUPPORTED_SUFFIXES, chunk_text, read_document
 from rag.embeddings import embed
 
@@ -30,9 +30,10 @@ def build_index() -> None:
                 }
             )
 
-    vectors = embed([record["text"] for record in records])
-    for record, vector in zip(records, vectors, strict=True):
-        record["embedding"] = vector
+    if USE_EMBEDDINGS:  # keyword-only search (Groq) needs no vectors
+        vectors = embed([record["text"] for record in records])
+        for record, vector in zip(records, vectors, strict=True):
+            record["embedding"] = vector
 
     INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
     INDEX_FILE.write_text(
