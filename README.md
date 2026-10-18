@@ -10,12 +10,12 @@
   <img alt="Classifier benchmark" src="https://img.shields.io/badge/AI%20classifier%20(Groq)-21%2F22%20vs%20baseline%209%2F22-7a5cc4">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776ab">
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb">
-  <img alt="LLM" src="https://img.shields.io/badge/LLM-Groq%20free%20API%20(website)%20%7C%20Qwen3%208B%20(local)-d7ff3f">
+  <img alt="LLM" src="https://img.shields.io/badge/AI-Qwen3.8%2027B%20on%20Groq-d7ff3f">
   <img alt="Data" src="https://img.shields.io/badge/data-real%20%26%20dated%2C%20open%20licences-e0782f">
 </p>
 
 <p align="center">
-  🎬 <b>Demo video:</b> <i>TODO: add the YouTube link</i> · 🌐 <b>Live site:</b> <i>TODO: add the Render URL once deployed</i> (run it locally in 3 commands: <a href="#️-run-it-yourself">Run it yourself</a>)
+  🌐 <b>Live site:</b> <a href="https://civiclens-sotonship2026.onrender.com">civiclens-sotonship2026.onrender.com</a> · 🎬 <b>Demo video:</b> on our team page · 🛠️ <a href="#️-run-it-yourself">Run it yourself</a>
 </p>
 
 | 🧠 Understands any idea | 🗺️ Scores every street | 💬 Explains with evidence |
@@ -24,7 +24,7 @@
 
 # 🔍 CivicLens: _see what Southampton needs, and where_
 
-> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model (on the website, Qwen3.8 27B through Groq's free API; or Qwen3 8B running locally) classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and an AI brief whose every number is automatically checked.
+> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model (Qwen3.8 27B through Groq's API) classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and a planning brief whose every number is automatically checked.
 
 <details open>
 <summary><b>📑 Contents</b> (click to collapse)</summary>
@@ -40,7 +40,7 @@
 - [💼 Business and scale](#-business-and-scale)
 - [🛡️ Responsibility and trust](#️-responsibility-and-trust)
 - [🎯 How CivicLens meets each judging criterion](#-how-civiclens-meets-each-judging-criterion)
-- [✅ Submission checklist](#-submission-checklist)
+- [📝 Project summary](#-project-summary)
 - [🙏 Credits and AI use](#-credits-and-ai-use)
 - [🛠️ Run it yourself](#️-run-it-yourself)
 - [🚧 Known limits](#-known-limits)
@@ -61,7 +61,7 @@ Usually one person, with a spreadsheet, a few walks round the area and a gut fee
 
 CivicLens does not ask an AI where to open a shop. That would produce confident guesses. It uses AI for the part that genuinely needs language understanding, **turning "a little sushi bar for students" into the data's own categories**, and it leaves every number to a deterministic, tested model built on official data.
 
-> 🎬 **Picture this.** Mina wants to open a Korean BBQ. She types it in and presses Enter. In about 20 seconds CivicLens shows five sites across the city, best first. It has found all 5 Korean restaurants in Southampton and the Chinese, Thai and Japanese places that compete for the same diners. It explains that Freemantle has 11,168 people aged 16–64 within a 10-minute walk and no Korean place within 800 m, and that the population there grew 7.3% since 2021. She asks the assistant *"what about Portswood?"* and gets Portswood's own figures, with sources. _(Illustrative user; the numbers are real outputs from the current data.)_
+> 🎬 **Picture this.** Mina wants to open a Korean BBQ. She types it in and presses Enter. In a few seconds CivicLens shows five sites across the city, best first. It has found all 5 Korean restaurants in Southampton and the Chinese, Thai and Japanese places that compete for the same diners. It explains that Freemantle has 11,168 people aged 16–64 within a 10-minute walk and no Korean place within 800 m, and that the population there grew 7.3% since 2021. She asks the assistant *"what about Portswood?"* and gets Portswood's own figures, with sources. _(Illustrative user; the numbers are real outputs from the current data.)_
 
 ---
 
@@ -104,11 +104,11 @@ The Assessment flags multiple-registration effects on some of these figures; the
 | # | Do this | What you'll see |
 |---|---|---|
 | 1 | Open the site → **Business simulator** | Café is analysed at first load: five ranked pins coloured by feasibility, competitors as coral dots |
-| 2 | Type **`korean bbq`** in "What do you want to open?" and press **Enter** | After a few seconds (about 20 s on the local model): sites re-ranked for Korean BBQ, the 5 real Korean restaurants as competitors, similar cuisines on the map |
+| 2 | Type **`korean bbq`** in "What do you want to open?" and press **Enter** | In about a second: sites re-ranked for Korean BBQ, the 5 real Korean restaurants as competitors, similar cuisines on the map |
 | 3 | Click pin **1**, hover any dot | Feasibility score, four factor bars, market trends, who benefits by age group, strengths, risks, suggested changes, limitations; hover card with name, type and walking distance |
 | 4 | Open **Ask the assistant** → pick a common question, or ask *"I want to open a Japanese store in Weston"* | Common questions answer instantly from the figures on screen. Free questions get an answer about **Weston** (not the site on screen), citing `[App analysis]` and the Economic Assessment; click a citation to open the source document at that page |
 | 5 | Go to **Places** → **Popular** → click **Food and drink**, then **People** | Every sector has its colour; areas shade by how popular a sector is; residents by age group on a heat map |
-| 6 | Failure cases: type **`kids coding club`**; switch the AI off (no API key and no Ollama) and type an idea | "Possible gap in the market" instead of invented competitors; with the AI off, the page falls back to keyword matching and keeps working |
+| 6 | Read the **right-hand panel** for the open site | The AI's reading of your idea applied to the data: the niche it found, which businesses compete like-for-like and which are similar, the customer age groups it chose (the age mix shows what share of nearby residents they are), how much the idea relies on passing trade (this sets the factor weights), its reasoning and setup tips. Try **`dog grooming`**: nothing like it exists in the data, so it shows a *possible gap in the market* instead of inventing competitors |
 
 ---
 
@@ -129,7 +129,7 @@ The Assessment flags multiple-registration effects on some of these figures; the
 
 ## ⚙️ How it works: AI at the core
 
-> **The AI reads and explains; the model counts.** Every score, count and percentage is computed by deterministic code from dated open data. The LLM never produces a number.
+> **The AI decides what to compare; the model counts.** The LLM reads the idea and decides which businesses compete, who the customers are and how much passing trade matters. Deterministic code then turns those decisions into every score, count and percentage from dated open data, so each number can be traced and re-computed.
 
 ```mermaid
 flowchart LR
@@ -156,7 +156,7 @@ flowchart LR
 - when the model's sector label disagrees with the types it chose, the types win;
 - generic name words (*food, club, shop*) are dropped.
 
-**What if you removed the AI?** The page's fallback, a keyword matcher, maps *sushi bar* to a hairdresser, *curry house* to a hotel and *vietnamese pho place* to a mobile phone shop. On 22 labelled ideas it gets **10** right; the LLM gets **21** ([results](#-measured-results)).
+**What if you removed the AI?** The page's fallback, a keyword matcher, maps *sushi bar* to a hairdresser, *curry house* to a hotel and *vietnamese pho place* to a mobile phone shop. On 22 labelled ideas it gets **9** right; the LLM gets **21** ([results](#-measured-results)).
 
 ### 2. A deterministic model scores every site
 
@@ -165,15 +165,36 @@ flowchart LR
 | Factor | Measure | Data |
 |---|---|---|
 | **Customers nearby** | Target-age residents within walking distance (default 800 m), nearer people counting more | ONS mid-2024 small area estimates by age |
-| **Room in the market** | Customers ÷ (1 + 2 × like-for-like + 0.6 × similar + 0.3 × related) | 3,718 places (FSA, OSM, NHS) |
+| **Room in the market** | Customers ÷ (1 + 2 × like-for-like + 0.6 × similar + 0.3 × related), see below | 3,718 places (FSA, OSM, NHS) |
 | **Passing trade** | Customer-facing places within 400 m | Same |
 | **Growth** | Population change since Census 2021 | Census 2021 vs ONS mid-2024 |
+
+<details>
+<summary><b>📐 Room in the market: the calculation and where it comes from</b></summary>
+
+For a candidate site *s* with walking radius *R* (800 m by default), every resident area *j* and every business *k* within *R* is weighted by distance *d*:
+
+```text
+distance weight   g(d) = 1 − 0.5 × d / R           (1 at the door, 0.5 at the edge, 0 beyond R)
+customers  D(s)  = Σ_j  target-age residents_j × g(d_sj)
+competition C(s) = 2 × Σ_like-for-like g(d) + 0.6 × Σ_similar g(d) + 0.3 × Σ_related g(d)
+room in the market  Room(s) = D(s) / (1 + C(s))
+```
+
+- **Why a ratio of customers to competitors.** It is the supply-to-demand ratio used in the two-step floating catchment area method for measuring access to services within a catchment (Luo and Wang, 2003 [M1]): demand inside a catchment divided by the supply competing for it. The `1 +` keeps the score finite where there are no competitors.
+- **Why nearer customers and competitors count more.** Spatial-interaction models of retail trade areas weight shoppers by distance, because the chance of using a store falls as distance grows (Huff, 1964 [M2]). We use a simple linear decay inside a walking catchment rather than a fitted model.
+- **Why different weights for competitors.** A like-for-like business (another Korean restaurant) competes fully, a similar one (another cuisine) partly, a related one (any restaurant) a little. The weights 2 / 0.6 / 0.3, the 50% decay and the 800 m default are **our design choices**, set in [opportunity.js](frontend/src/simulator/opportunity.js); they are not fitted to outcomes yet ([known limits](#-known-limits)).
+- **From raw value to score.** Room, like the other factors, becomes a percentile against all 792 sites, so 70 means better than 70% of Southampton.
+
+**References.** [M1] Luo, W. and Wang, F. (2003). Measures of spatial accessibility to health care in a GIS environment: synthesis and a case study in the Chicago region. *Environment and Planning B: Planning and Design*, 30(6), 865–884. · [M2] Huff, D. L. (1964). Defining and estimating a trading area. *Journal of Marketing*, 28(3), 34–38.
+
+</details>
 
 Each factor becomes a percentile against every site in the city, weighted by how much the business relies on passing trade (from the classifier), minus 15 points in Flood Zone 3. If no like-for-like business exists anywhere, the business is treated as a **possible gap in the market**: the factor becomes "Stands out", and nearby similar businesses count as proven demand (1–4) or crowding (5+).
 
 ### 3. The assistant explains what is on screen, for the place you ask about
 
-The chat ([rag/](rag/)) is a retrieval-augmented assistant: BM25 keyword search over Southampton documents (on the website; run locally, it adds vector search through Ollama embeddings), then grounded generation. With every question the page sends a summary of what is on screen. If the question names one of 16 wards or 75 neighbourhoods (from OpenStreetMap), the page first runs the model for **that** place and business.
+The chat ([rag/](rag/)) is a retrieval-augmented assistant: **keyword search** (BM25) finds the most relevant passages in Southampton's documents, then **the AI** (Qwen3.8 27B on Groq) reads them and writes a grounded, cited answer. With every question the page sends a summary of what is on screen. If the question names one of 16 wards or 75 neighbourhoods (from OpenStreetMap), the page first runs the model for **that** place and business.
 
 - **Built-in common questions are answered deterministically** ([rag/templates.py](rag/templates.py)): "how many competitors are near this site?", "which areas have the most businesses?" and the rest are filled straight from the on-screen figures or a fixed page of the evidence PDF, with no LLM call, so the same screen always gives the same answer.
 - **Free questions go to the LLM** with a prompt that limits citations to the retrieved documents and `[App analysis]`, asks for a one-sentence conclusion plus at most three bullets, checks that increases and decreases are described the right way round, and allows labelled *"General guidance (not from Southampton evidence)"* only where the documents stop.
@@ -185,19 +206,16 @@ The chat ([rag/](rag/)) is a retrieval-augmented assistant: BM25 keyword search 
 
 | Job | Model | Why |
 |---|---|---|
-| Classify ideas, answer questions (website, default when `GROQ_API_KEY` is set) | **Qwen3.8 27B** on the **Groq free API** (reasoning off, `qwen/qwen3.8-27b`) | Free to run, very fast, same model family as our local benchmark; JSON mode for structured output |
-| Document search (website) | **BM25 keyword search**, no AI | Groq has no embeddings API, and keyword search over five council documents keeps the website on a single free AI service |
-| Classify and answer (local alternative) | **Qwen3 8B** via Ollama | Free, runs on a laptop, no data leaves the machine; used when no API key is set |
-| Embeddings (local) | **nomic-embed-text** | Small, good retrieval quality, runs in Ollama |
-| Planning brief (Module C, optional) | **Claude Haiku 5.5** | Writes a 150–250 word brief from engine JSON; every number audited |
-| Site scoring, coverage, optimiser | **No AI** | Numbers must be reproducible and testable |
+| Classify business ideas (`/api/classify`) | **Qwen3.8 27B** on **Groq** (`qwen/qwen3.8-27b`, reasoning off) | Fast (about 1 s), free tier for the demo, JSON mode for structured output; 21/22 on our benchmark |
+| Document search and answers (`/api/chat`) | **Keyword search (BM25) + Qwen3.8 27B on Groq** | Keyword search finds the passages (13/14 in the top 3 on our test set); the AI reads them and writes the cited answer |
+| Site scoring, coverage, optimiser, planning brief | **No AI** (deterministic code, audited template) | Numbers must be reproducible and testable |
 
 </details>
 
 <details>
 <summary><b>🏛️ The planning engine for public services (Module C)</b></summary>
 
-For a nursery, GP, pharmacy, café or library, [simulator/engine.py](simulator/engine.py) (mirrored in the browser by `viewer/src/engine.js`) computes before-and-after walking-distance coverage, who newly gains access by deprivation quintile, competition, diversity, jobs (assumption table), flood constraint, separate **community need** and **commercial viability** scores, a sensitivity check, and a greedy optimiser proven equal to exhaustive search over all 792 sites. [simulator/brief.py](simulator/brief.py) asks an LLM for a short planner's brief from the engine's JSON only. **Every number in the brief is extracted and must match the data**, with one retry, then a template fallback. Thin evidence (fewer than 5 existing sites) gets a rule-based refusal. Full method: [docs/SIMULATOR.md](docs/SIMULATOR.md). Streamlit app: `python run.py app`.
+For a nursery, GP, pharmacy, café or library, [simulator/engine.py](simulator/engine.py) (mirrored in the browser by `viewer/src/engine.js`) computes before-and-after walking-distance coverage, who newly gains access by deprivation quintile, competition, diversity, jobs (assumption table), flood constraint, separate **community need** and **commercial viability** scores, a sensitivity check, and a greedy optimiser proven equal to exhaustive search over all 792 sites. The planning brief is written from a fixed template filled with the engine's results, and **every number in it is extracted and checked against the data** before it is shown. Thin evidence (fewer than 5 existing sites) gets a rule-based refusal. Full method: [docs/SIMULATOR.md](docs/SIMULATOR.md).
 
 </details>
 
@@ -223,8 +241,7 @@ flowchart TB
     ST["serves built React app"]
   end
   subgraph LLM["🧠 rag/llm.py"]
-    GQ["Groq free API: Qwen3.8 27B<br/>(website chat + classify)"]
-    OL["Ollama: Qwen3 8B,<br/>nomic-embed-text (local)"]
+    GQ["Groq: Qwen3.8 27B<br/>(classify + answers)"]
   end
   subgraph Data["🗂️ Built offline (pipeline/)"]
     CD["city_data.py: ONS, Census,<br/>IMD, flood"]
@@ -247,7 +264,7 @@ flowchart TB
 | Classify | `rag/classify.py` | LLM → JSON → validated against real types | Page falls back to keyword matching and keeps working |
 | Score | `frontend/src/simulator/opportunity.js` | Percentile scores, ranked sites ≥1 km apart, feasibility brief | Pure functions; no network |
 | Explain | `rag/templates.py`, `rag/generator.py`, `rag/retriever.py` | Common questions: fixed answers from on-screen figures. Free questions: keyword retrieval, grounded prompt with allowed citations, linked sources | Error message in the chat; the rest of the app is unaffected |
-| Plan (public services) | `simulator/engine.py`, `simulator/brief.py` | Coverage, equity, optimiser; audited brief | Template brief if the audit fails twice or no key |
+| Plan (public services) | `viewer/src/engine.js` (port of `simulator/engine.py`) | Coverage, equity, optimiser; template brief with every number audited | Thin evidence (under 5 sites) gets a refusal instead of a brief |
 
 <details>
 <summary><b>🗺️ Repo map</b></summary>
@@ -256,15 +273,15 @@ flowchart TB
 |---|---|
 | `run.py` | One entry point: `python run.py` lists every command |
 | `frontend/` | React 19 + Vite + react-leaflet app: Places, Business simulator, assistant |
-| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator, deterministic answer templates), Groq and Ollama clients |
-| `simulator/` | Planning engine (no AI), audited brief, Streamlit app, config, paths |
+| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator, deterministic answer templates), Groq client |
+| `simulator/` | Planning engine (no AI), brief audit, config, paths |
 | `pipeline/` | Data builders: `city_data.py`, `population.py`, `neighbourhoods.py`, `places/` |
 | `viewer/` | Self-contained HTML pages (simulator, places register) and the data packer for the React app |
 | `data/` | `raw/` (sources + `SOURCES.json` + RAG documents), `processed/`, `db/` (places database) |
 | `tests/` | pytest: engine, places merge, classifier, assistant templates and follow-ups, AI clients |
 | `evaluation/` | Baseline comparison, classifier benchmark, live-brief runner, `results/` |
 | `docs/` | [CODEBASE.md](docs/CODEBASE.md) (every file, "where to change what"), [SIMULATOR.md](docs/SIMULATOR.md), [DATA_PLAN.md](docs/DATA_PLAN.md) |
-| `render.yaml` | One-service Render deployment (API + built frontend, on the Groq free API) |
+| `render.yaml` | One-service Render deployment (API + built frontend, on Groq) |
 
 </details>
 
@@ -280,11 +297,10 @@ All results are reproducible from the repo. Run date: **18 Oct 2026**.
 
 ```text
 Keyword matcher (no AI)               █████████             9 / 22  (41%)
-LLM, website: Qwen3.8 27B on Groq     █████████████████████ 21 / 22  (95%)   ~1 s per idea
-LLM, local: Qwen3 8B on Ollama        █████████████████████ 21 / 22  (95%)   ~21.5 s per idea
+LLM: Qwen3.8 27B on Groq             █████████████████████ 21 / 22  (95%)   ~1 s per idea
 ```
 
-| Idea | Keyword matcher | LLM (Groq, website) |
+| Idea | Keyword matcher | LLM (Groq) |
 |---|---|---|
 | sushi bar | Hairdresser or barber ❌ | Japanese ✅ |
 | curry house | Hotel/bed & breakfast ❌ | Indian ✅ |
@@ -295,15 +311,15 @@ LLM, local: Qwen3 8B on Ollama        ██████████████
 | dog grooming salon | Beauty salon ❌ | none in the data (a gap) ✅ |
 | yoga studio | Tattoo studio ❌ | none ❌ (expected Gym or fitness centre) |
 
-Website run: **`qwen/qwen3.8-27b` on Groq**, 18 Oct 2026, 0 errors, mean **1 s per idea** (with 20 s pauses between ideas for the free plan). Results: `evaluation/results/classify_benchmark_groq.json`. Local run: `evaluation/results/classify_benchmark.json`. Same prompt, validation rules and 22 ideas on both; both models miss only "yoga studio". The keyword matcher fell from 10 to 9 after coffee shops were merged into cafés: "barber shop" now matches "Café" through the word *shop*.
+Website run: **`qwen/qwen3.8-27b` on Groq**, 18 Oct 2026, 0 errors, mean **1 s per idea** (with 20 s pauses between ideas for the free plan). Results: `evaluation/results/classify_benchmark_groq.json`. The only miss is "yoga studio". The keyword matcher fell from 10 to 9 after coffee shops were merged into cafés: "barber shop" now matches "Café" through the word *shop*.
 
-> ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run per model, temperature 0. The first Groq run failed on every request (HTTP 403, Cloudflare error 1010) because the client sent urllib's default User-Agent; this would also have broken the website, and is fixed with a test. The benchmark also found and fixed two real bugs before the local run: the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
+> ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run, temperature 0. Building the benchmark found and fixed three real bugs: requests were blocked because the client sent a default User-Agent, the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
 
 ### 💬 Assistant: right passage, right answer, valid citations ([evaluation/assistant_eval.py](evaluation/assistant_eval.py))
 
 16 hand-labelled questions: 14 answerable from the indexed documents (each labelled with a figure only the right passage contains and the facts a correct answer must state) and 2 out of scope (shop rents, population in 2040), where a correct answer must say the evidence doesn't cover it instead of inventing a number. The built-in common questions are excluded because fixed templates answer them, not the LLM.
 
-| Measure | Website (Qwen3.8 27B on Groq, keyword search) |
+| Measure | Qwen3.8 27B on Groq, keyword search |
 |---|---|
 | Right passage in the top 3 search results | **13 / 14** |
 | Answers correct | **15 / 16** (13 / 14 in scope, 2 / 2 out of scope with no invented figure) |
@@ -313,9 +329,7 @@ Website run: **`qwen/qwen3.8-27b` on Groq**, 18 Oct 2026, 0 errors, mean **1 s p
 
 Run 18 Oct 2026 with 25 s pauses for the free plan. Results: `evaluation/results/assistant_eval_groq.json`. The one miss (*"How did Southampton City Council publicise the devolution consultation?"*) failed at search: the right passage wasn't in the top 3, so the answer couldn't state it.
 
-**Keyword-only vs hybrid search.** The website uses keyword search only (BM25) because Groq has no embeddings API. On the same 14 answerable questions, keyword-only found the right passage in the top 3 for **13**, hybrid keyword + vector search (local, nomic-embed-text) for **10** (`retrieval_eval_bm25-only.json`, `retrieval_eval_nomic-embed-text.json`). Dropping vector search cost nothing on this set; the questions quote exact figures and names, which favours keyword search.
-
-> ⚠️ **Caveats.** 16 questions written by us, one run, mostly about one document (the Economic Assessment). Timings were measured from this laptop to Groq with no other users; the deployed site's latency and free-plan headroom under load are still to be measured.
+> ⚠️ **Caveats.** 16 questions written by us, one run, mostly about one document (the Economic Assessment). Timings were measured from a laptop to Groq with no other users; the deployed site's latency and free-plan headroom under load are still to be measured.
 
 ### 🏛️ Planning engine vs the spreadsheet answer ([evaluation/run_evaluation.py](evaluation/run_evaluation.py))
 
@@ -360,7 +374,6 @@ Measured since the first draft: the classifier on the website model, the assista
 | What | Why it matters | How we will measure it |
 |---|---|---|
 | **Free-plan headroom on the deployed site** | One answer takes 0.7 s from a laptop, but Groq's free plan allows about two or three chat answers a minute across all users | Log latency and rate-limit (429) errors on the deployed site during the pitch session |
-| **Live audit of the AI planning brief** (Module C, Claude Haiku) | `logs/briefs.jsonl` contains only test-run records | `python run.py live-briefs` with `ANTHROPIC_API_KEY` set: share of briefs that pass the number audit first time |
 | **Whether the site scores predict success** | The weights are design choices, not validated | Back-test against business openings and closures (Companies House, FSA register changes) |
 | **Real users** | No business owner or council officer has used it yet | Short sessions with Southampton business owners and business-support officers: task completion and usefulness |
 
@@ -394,25 +407,50 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 
 ## 💼 Business and scale
 
-**Who pays (hypotheses, not yet tested with a buyer).**
+### Why there is a market
+
+<p align="center"><img src="docs/images/business/survival_gap.svg" alt="Of 1,005 Southampton business births in 2023, about 354 would still be trading after 3 years at Southampton's 35.2% survival rate, against about 531 at England's 52.8%" width="90%"></p>
+
+Southampton has fewer businesses per head than England (421 vs 653 per 10,000 working-age residents) and a much lower 3-year survival rate (35.2% vs 52.8%) [B1]. Applied to the 1,005 businesses born in 2023, that gap is roughly **177 more closures within three years** than at England's rate. Location is one cause of failure that can be checked before money is spent, and the council has a direct interest: business support and economic development are its own services.
+
+### Who pays
 
 | Customer | What they buy | Price hypothesis |
 |---|---|---|
-| **Southampton City Council** (business support, economic development, public health, early years) | City licence: free CivicLens for residents starting businesses, plus the planning engine for PNA and childcare sufficiency reports | **£6,000 per council per year**. A single outsourced Pharmaceutical Needs Assessment was tendered at an estimated £45k–£60k ([bidstats](https://bidstats.uk/tenders/2021/W52/765853914)) |
+| **Southampton City Council** (business support, economic development, public health, early years) | City licence: free CivicLens for residents starting businesses, plus the planning engine for Pharmaceutical Needs Assessments and childcare sufficiency reports | **£6,000 per council per year** |
 | Small chains, franchise developers | Site reports: ranked sites, competitors, customers, flood flag | **£150 per report**, or £2,000 per region per year |
-| Banks and business-start-up lenders | Location evidence attached to a start-up loan application | Per-report API pricing (to explore) |
+| Banks and business-start-up lenders | Location evidence attached to a start-up loan application | Per-report pricing (to explore) |
 
-**First three customers to approach:** Southampton City Council (Data Observatory, business support, public health), a neighbouring authority (Portsmouth or Hampshire, which use the same national data and are in the proposed Hampshire and the Solent combined authority), and a regional nursery or café group.
+<p align="center"><img src="docs/images/business/council_cost.svg" alt="An outsourced Pharmaceutical Needs Assessment was tendered at an estimated £45k to £60k, against a £6k CivicLens licence" width="90%"></p>
 
-**Cost per user.**
-- **Local (Ollama):** no per-request fee; the model runs on the machine.
-- **Website (Groq free API):** **£0 for the demo.** One classification is about **1,700 input tokens** plus a short JSON reply; one chat answer about 3,000 input tokens. Groq's free plan allows 30 requests and 8,000 tokens a minute and 1,000 requests a day (sample limits, checked 18 Oct 2026), so roughly two or three chat answers a minute across all users. Beyond that we would move to Groq's paid Developer plan. The built-in common questions and the document search use no AI tokens at all.
-- **Planning brief (Claude Haiku 5.5):** about **0.02p per brief** (≈1,500 in / 350 out tokens at $0.10 / $0.50 per million; estimate).
-- **Hosting:** one small web service (Render free tier for the demo; about £20–£40 a month in production) plus a few analyst hours per city per year to refresh data. **Data upkeep, not inference, is the real cost.**
+A council already pays for this kind of analysis: one outsourced Pharmaceutical Needs Assessment was tendered at an estimated **£45k–£60k** [B2]. Every Health and Wellbeing Board in England (one per upper-tier council) must publish a revised one at least every three years [B4]. A **£6k** yearly licence is a fraction of a single report. These prices are hypotheses; no buyer has tested them yet.
 
-**What a second city takes.** Every input is national open data (ONS, Census, IMD, FSA, NHS ODS, Environment Agency, OpenStreetMap). A new English city means changing the local authority code, rebuilding the data (`python run.py city-data`, `population`, `places --fsa-file FHRS<code>en-GB.xml`, `viewers`) and adding its own reports to the assistant. No model training. What changes at scale: a mirrored OpenStreetMap extract instead of the public Overpass API, network walking distance per city, and an Ofsted register for childcare. Scotland, Wales and Northern Ireland need their own deprivation indices.
+**First three customers to approach:** Southampton City Council (Data Observatory, business support, public health), a neighbouring authority (Portsmouth or Hampshire, which use the same national data and are in the proposed Hampshire and the Solent combined authority [B5]), and a regional nursery or café group.
+
+### What it costs to run
+
+<p align="center"><img src="docs/images/business/tokens_per_action.svg" alt="Classifying an idea uses about 1,700 input tokens and answering a question about 3,000; common questions and document search use none, against Groq's free limit of 8,000 tokens a minute" width="90%"></p>
+
+- **AI (Groq):** **£0 for the demo** on Groq's free plan, which allows 30 requests and 8,000 tokens a minute and 1,000 requests a day [B3]. That is roughly two or three AI answers a minute across all users. The built-in common questions and the document search use no AI tokens at all, which stretches it further. Beyond that, Groq's paid plan charges per token [B6].
+- **Hosting:** one web service on Render: the free tier for the demo, a paid instance in production [B7].
+- **Data upkeep, not AI, is the real cost:** a few analyst hours per city per year to refresh the open data.
+
+### How it grows
+
+<p align="center"><img src="docs/images/business/revenue_scenario.svg" alt="Revenue scenario: £9k in year 1 with Southampton, £45k in year 2 with 5 councils, £180k in year 3 with 20 councils" width="90%"></p>
+
+**What a second city takes.** Every input is national open data (ONS, Census, IMD, FSA, NHS ODS, Environment Agency, OpenStreetMap). A new English city means changing the local authority code, rebuilding the data (`python run.py city-data`, `population`, `places --fsa-file FHRS<code>en-GB.xml`, `viewers`) and adding its own reports to the assistant. No model training. At scale: a mirrored OpenStreetMap extract instead of the public Overpass API, network walking distance per city, and an Ofsted register for childcare. Scotland, Wales and Northern Ireland need their own deprivation indices.
 
 **What stops a big player copying it.** Not the data, which is all open. The defence is method and trust: validated AI output, deterministic tested numbers, an audit that blocks unverified figures, honest "gap" and refusal behaviour, and outputs shaped to the reports councils already write.
+
+**References.**
+[B1] Southampton City Council, [Economic Assessment, Summary of Findings, Aug 2025](https://data.southampton.gov.uk/media/iqgh14rf/economic-assessment-august-2025.pdf) (business survival, density and births). ·
+[B2] [Pharmaceutical Needs Assessment tender, bidstats.uk](https://bidstats.uk/tenders/2021/W52/765853914) (estimated value £45k–£60k). ·
+[B3] [Groq rate limits](https://console.groq.com/docs/rate-limits) (qwen/qwen3.8-27b: 30 requests and 8K tokens a minute, 1K requests a day; checked 18 Oct 2026). ·
+[B4] [The NHS (Pharmaceutical and Local Pharmaceutical Services) Regulations 2013, regulation 6](https://www.legislation.gov.uk/uksi/2013/349/regulation/6) (a revised PNA within three years of the last). ·
+[B5] GOV.UK, Hampshire and the Solent devolution consultation (2025), indexed in the assistant. ·
+[B6] [Groq pricing](https://groq.com/pricing). ·
+[B7] [Render pricing](https://render.com/pricing).
 
 ---
 
@@ -420,11 +458,11 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 
 | Risk | What CivicLens does |
 |---|---|
-| **AI invents numbers** | The LLM never produces a score or count. Classifier output is checked against real types. Module C briefs are audited number by number, with fallback. |
+| **AI invents numbers** | The LLM never outputs a score or count: it chooses what to compare, and code computes the numbers. Classifier output is checked against real types. Planning briefs are audited number by number. |
 | **AI invents sources** | The assistant may cite only the retrieved documents and `[App analysis]`; anything else must go in a sentence labelled *"General guidance (not from Southampton evidence)"*. Each citation links to the source page so a user can check it, and the built-in questions skip the LLM entirely. |
 | **Missing or stale data** | Every source is dated; places flagged *"may have closed"* are left out of competition; a niche with no businesses is shown as a *possible gap, check on the ground*, never as invented competitors. |
 | **Personal data** | None collected. Places are organisations; population data is aggregated ONS counts. No accounts, no tracking. Companies House personal data is never stored. |
-| **Council information** | Only public data. No non-public council information is sent to any AI service. Locally, everything runs on the user's machine (Ollama). On the website, questions are sent to Groq's API, so users are told not to enter personal details. |
+| **Council information** | Only public data. No non-public council information is sent to any AI service. Questions and the public evidence retrieved for them are sent to Groq's API, so users are told not to enter personal details. |
 | **Harm when wrong** | Scores are labelled as comparisons between sites, **not a sales or profit forecast**. Setup tips are labelled as AI suggestions to check with the council and official guidance. Licensing and safety questions should link to official guidance. |
 | **Less digital or older users** | Plain-English results, one text box, preset common questions in the assistant, no account needed. A council adviser can run it with the person. |
 | **Legal blockers** | All sources are OGL or ODbL with attribution; restricted sources (VOA, Google) are deliberately excluded. |
@@ -437,7 +475,7 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 |---|---|---|
 | 👤 **C1 Problem and user** (20%) | A named user (a person opening a small business; the council team advising them) facing a costly, frequent decision with no affordable tool | 35.2% 3-year survival vs 52.8% in England; business births down 29.5% ([Economic Assessment 2025](https://data.southampton.gov.uk/media/iqgh14rf/economic-assessment-august-2025.pdf)); [what people do today](#what-people-do-today) |
 | 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 9/22** against the keyword baseline, on the website model (Groq); validation rules; grounded RAG with allowed, linked citations |
-| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 57 tests; assistant answers 15/16 correct with 0 invalid citations on the website model; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
+| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 57 tests; assistant answers 15/16 correct with 0 invalid citations on the website model; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows the gap case |
 | 💼 **C4 Business and scale** (20%) | Council licence, paid site reports; near-zero inference cost; any English council with a data rebuild | [Business and scale](#-business-and-scale) |
 | 🛡️ **C5 Responsibility and trust** (15%) | No personal data, only public data, dated sources, refusal and gap behaviour, labelled AI suggestions | [Responsibility and trust](#️-responsibility-and-trust), [Known limits](#-known-limits) |
 
@@ -445,23 +483,9 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 
 ---
 
-## ✅ Submission checklist
-
-| Deliverable | Status |
-|---|---|
-| Public GitHub repository | ✅ this repo |
-| README: setup, data sources with dates and licences, what the AI does, AI-generated vs pre-existing, test results, limits | ✅ this file |
-| Demo video, 1–3 minutes, real product, YouTube | ⬜ TODO: add link at the top |
-| Project summary, ≤150 words | ⬜ TODO: paste into the team page ([draft below](#-150-word-summary-draft)) |
-| Live link or run instructions | ✅ [run instructions](#️-run-it-yourself) · ⬜ Render URL |
-| At least one failure case in the demo | ✅ gap in the market / AI off fallback / thin-data refusal |
-
-<details>
-<summary><b>📝 150-word summary (draft)</b></summary>
+## 📝 Project summary
 
 Starting a business in Southampton is risky: only 35% of new businesses survive three years, against 53% across England (Southampton Economic Assessment 2025). Choosing where to open is a big part of that risk, and a site report from a consultant costs more than most sole traders can spend. CivicLens lets anyone type a business idea in plain words. A language model maps it onto the real business types in the city's data, and a tested model scores all 792 neighbourhoods on target customers by age, competitors and similar businesses, passing trade and population growth, using ONS, Food Standards Agency, NHS and OpenStreetMap data. It ranks sites, explains each one, and an assistant answers follow-up questions with cited local evidence. The AI never produces a number. Built entirely on national open data, it can run in any English council for a yearly licence.
-
-</details>
 
 ---
 
@@ -469,11 +493,11 @@ Starting a business in Southampton is risky: only 35% of new businesses survive 
 
 **What existed before the event.** Nothing from earlier projects. The repository was created at 19:26 on Friday 16 Oct with a one-line README; all code was written after hacking opened at 20:00. Open-source libraries and pre-trained models are listed below.
 
-**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. **Runtime AI** (what the product itself uses): Qwen3.8 27B on the Groq free API on the website; Qwen3 8B and nomic-embed-text (Ollama) for local use; Claude Haiku 5.5 for the optional planning brief.
+**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. **Runtime AI** (what the product itself uses): Qwen3.8 27B on Groq, for classifying ideas and answering questions. No other AI model runs in the product.
 
 **Who helped.** SotonShip mentors and organisers; no outside code contributions.
 
-**Open-source libraries.** Python: pandas, numpy, shapely, pyproj, FastAPI, uvicorn, pypdf, rank-bm25, requests, streamlit, folium, pytest. Web: React, Vite, Leaflet, react-leaflet, lucide-react. Tools: Ollama.
+**Open-source libraries.** Python: pandas, numpy, shapely, pyproj, FastAPI, uvicorn, pypdf, rank-bm25, requests, streamlit, folium, pytest. Web: React, Vite, Leaflet, react-leaflet, lucide-react.
 
 **Data:** see [Data sources](#️-data-sources-with-dates-and-licences). Contains public sector information licensed under the Open Government Licence v3.0. © OpenStreetMap contributors (ODbL). Contains OS data © Crown copyright and database right.
 
@@ -502,8 +526,6 @@ All processed data is committed, so the app runs from a clean clone with no down
 
 </details>
 
-**Local and free (no API key).** Install [Ollama](https://ollama.com), run `ollama pull qwen3:8b && ollama pull nomic-embed-text` once, leave `GROQ_API_KEY` unset (or set `LLM_PROVIDER=ollama`), then the same `rag index`, `api` and `npm run dev` steps. Re-run `python run.py rag index` when you switch between local and hosted, because local search uses embeddings and the website doesn't.
-
 **Deploy on Render.** New → Blueprint → this repo (`main`); it reads [render.yaml](render.yaml), asks for `GROQ_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GROQ_CHAT_MODEL` (e.g. `openai/gpt-oss-120b`), `GROQ_REASONING_EFFORT`, `CORS_ORIGINS`.
 
 **Every command** (`python run.py` lists them):
@@ -513,13 +535,12 @@ All processed data is committed, so the app runs from a clean clone with no down
 | `python run.py test` | Run the 57 tests |
 | `python run.py eval` | Planning engine vs baseline → `evaluation/results/` |
 | `node evaluation/classify_benchmark.mjs` | AI classifier vs keyword baseline (needs the API running) |
-| `python run.py app` | Streamlit planning engine (Module C) |
 | `python run.py places --skip ofsted --fsa-file data/db/raw/FHRS877en-GB.xml` | Rebuild the places database (add `--osm-file data/db/raw/osm.json` if Overpass refuses) |
 | `python run.py population` | Refresh ONS mid-2024 residents |
 | `python run.py city-data` | Rebuild geography, Census, IMD, flood |
 | `python -m pipeline.neighbourhoods` | Refresh neighbourhood names |
 | `python run.py viewers` | Write the app's data files and the standalone HTML pages |
-| `python run.py rag index` · `api` · `rag-web` | RAG index, API, Streamlit chat |
+| `python run.py rag index` · `api` | Build the document index, start the API |
 
 Standalone pages, no install: open `viewer/site_simulator.html` or `viewer/places_register.html`. Where to change what: [docs/CODEBASE.md](docs/CODEBASE.md).
 
@@ -531,8 +552,10 @@ Standalone pages, no install: open `viewer/site_simulator.html` or `viewer/place
 - 🏚️ **No rents, vacant units or footfall counts.** Nearby shops and services stand in for passing trade. A top-ranked area may have no unit to rent.
 - 🍜 **Cuisine is missing for about 130 food places** (hygiene-register-only entries whose names don't say it, e.g. "Golden Leaf"). They count as restaurants or takeaways, not as a specific cuisine.
 - 🕰️ **Data ages.** OpenStreetMap can lag closures; the hygiene register updates at each inspection. Each source's date is shown above.
-- 🧠 **The classifier can miss.** It returned no like-for-like type for "yoga studio" in the benchmark, and a local run takes about 20 seconds.
-- 💬 **Citations can be mis-attributed on questions the documents don't cover.** The website model gave 0 invalid citations on our 16-question set, but in earlier local testing the 8B model tagged general licensing rules as `[App analysis]` when no licensing document is indexed. Adding Southampton's Statement of Licensing Policy to `data/raw/official/` would give it a real source.
+- 🧠 **The classifier can miss.** It returned no like-for-like type for "yoga studio" in the benchmark.
+- 💬 **The assistant only knows five documents.** It gave 0 invalid citations on our 16-question set, but questions outside those documents (licensing, planning rules) can only get labelled general guidance. Adding Southampton's Statement of Licensing Policy would give it a real source.
+- 🔎 **Keyword search can miss reworded questions.** It found the right passage for 13 of 14 test questions; the miss was worded differently from the source.
+- 🚦 **Groq's free plan allows about two or three AI answers a minute** across all users; beyond that the chat asks people to try again.
 - 🗺️ **The city boundary** cuts off customers just outside it (Eastleigh, Totton).
 - ⚖️ **Weights are design choices, not validated** against real business outcomes. Jobs figures are assumptions. This is decision support, not a decision.
 - 👥 **Not yet tested with real business owners or council officers.**
@@ -566,7 +589,7 @@ Today CivicLens answers *where* to open. The next step is *how the business is d
 ### 🧠 Smarter models
 
 - **Network walking distance** (OSMnx) that respects the River Itchen, railways and main roads instead of straight lines.
-- **Re-run the classifier benchmark on the hosted Groq model** and grow the 22 labelled ideas to a few hundred, written by people outside the team.
+- **Grow the 22 labelled benchmark ideas to a few hundred**, written by people outside the team.
 - **Learn the weights** of the opportunity model from survival data rather than setting them by hand.
 - **Revenue range estimates** per site from customers, spend data and competition, clearly labelled as ranges with assumptions.
 
@@ -600,7 +623,7 @@ Because it would invent numbers. Every score, count and percentage comes from de
 <details>
 <summary><b>Which AI model does it use?</b></summary>
 
-The website uses **Qwen3.8 27B through Groq's free API** to classify ideas and answer questions; document search is plain keyword search (BM25), no AI needed. Run locally without a key, it uses **Qwen3 8B** through Ollama instead. The optional planning brief for public services uses Claude Haiku 5.5. Site scoring uses no AI at all.
+One: **Qwen3.8 27B on Groq**. It classifies business ideas and writes the assistant's answers from passages found by keyword search (BM25). Site scoring and the planning brief use no AI at all.
 
 </details>
 
@@ -621,7 +644,7 @@ It says so: *possible gap in the market*, judged against similar businesses near
 <details>
 <summary><b>What if the AI is down or there is no API key?</b></summary>
 
-The simulator falls back to keyword matching and still ranks sites; the rest of the app keeps working and the chat shows an error message instead of an answer. If the Groq free limit is hit, the chat asks the user to try again in a minute. Without any API key, it can run fully offline on Ollama at no cost.
+The simulator falls back to keyword matching and still ranks sites; the rest of the app keeps working and the chat shows an error message instead of an answer. If the Groq free limit is hit, the chat asks the user to try again in a minute.
 
 </details>
 
@@ -635,14 +658,14 @@ No, and the app doesn't pretend it is. It uses dated snapshots (FSA extract of 1
 <details>
 <summary><b>Does it collect personal data?</b></summary>
 
-No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the default website setup, questions and retrieved public evidence are sent to Groq; document search runs locally. Users are asked not to type personal details.
+No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. Questions and the public evidence retrieved for them are sent to Groq; document search runs on our server. Users are asked not to type personal details.
 
 </details>
 
 <details>
 <summary><b>How much does it cost to run?</b></summary>
 
-Nothing for the demo: the website runs on Groq's free API, and locally it costs nothing. One classification is about 1,700 input tokens and one chat answer about 3,000, so at scale it moves to a paid plan at a small cost per user. Keeping the data fresh, not inference, is the main cost. See [Business and scale](#-business-and-scale).
+Nothing for the demo: the website runs on Groq's free plan. One classification is about 1,700 input tokens and one chat answer about 3,000, so at scale it moves to a paid plan at a small cost per user. Keeping the data fresh, not inference, is the main cost. See [Business and scale](#-business-and-scale).
 
 </details>
 

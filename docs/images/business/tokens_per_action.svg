@@ -1,0 +1,23 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 320' width='760' height='320' font-family='-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>
+<rect width='760' height='320' rx='10' fill='#ffffff'/>
+<text x='24' y='34' font-size='19' font-weight='700' fill='#1d2b28'>AI tokens per action on the website</text>
+<text x='24' y='56' font-size='13' fill='#5f6f6b'>Input (solid) and max output (light) tokens, vs Groq's free limit of 8,000 a minute</text>
+<text x='238' y='98.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>Classify a business idea</text>
+<rect x='250' y='78' width='310' height='30' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<rect x='250' y='78' width='65.9' height='30' rx='4' fill='#7a5cc4'/>
+<rect x='315.9' y='78' width='31.0' height='30' fill='#7a5cc4' opacity='0.4'/>
+<text x='354.9' y='98.0' font-size='13' font-weight='700' fill='#1d2b28'>≈1,700 in + ≤800 out</text>
+<text x='238' y='144.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>Answer a free question</text>
+<rect x='250' y='124' width='310' height='30' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<rect x='250' y='124' width='116.2' height='30' rx='4' fill='#7a5cc4'/>
+<rect x='366.2' y='124' width='19.4' height='30' fill='#7a5cc4' opacity='0.4'/>
+<text x='393.6' y='144.0' font-size='13' font-weight='700' fill='#1d2b28'>≈3,000 in + ≤500 out</text>
+<text x='238' y='190.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>Built-in common questions</text>
+<rect x='250' y='170' width='310' height='30' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<text x='568.0' y='190.0' font-size='13' font-weight='700' fill='#1d2b28'>0 (fixed templates)</text>
+<text x='238' y='236.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>Keyword document search</text>
+<rect x='250' y='216' width='310' height='30' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<text x='568.0' y='236.0' font-size='13' font-weight='700' fill='#1d2b28'>0 (BM25, no AI tokens)</text>
+<line x1='560' y1='70' x2='560' y2='256' stroke='#c0392b' stroke-width='2' stroke-dasharray='5 4'/>
+<text x='560' y='274' font-size='12' text-anchor='middle' fill='#c0392b'>8,000 tokens / minute</text>
+<text x='24' y='302' font-size='11.5' fill='#5f6f6b'>Sources: prompt and output sizes from rag/classify.py and rag/config.py; Groq free-plan limits [B3], checked 18 Oct 2026.</text></svg>

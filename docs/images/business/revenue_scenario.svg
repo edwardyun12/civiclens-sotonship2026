@@ -1,0 +1,34 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 380' width='760' height='380' font-family='-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>
+<rect width='760' height='380' rx='10' fill='#ffffff'/>
+<text x='24' y='34' font-size='19' font-weight='700' fill='#1d2b28'>Revenue scenario (hypothesis, not a forecast)</text>
+<text x='24' y='56' font-size='13' fill='#5f6f6b'>£6k per council licence a year, plus £150 site reports (20 per council)</text>
+<line x1='90' y1='300.0' x2='730' y2='300.0' stroke='#e3e8e6'/>
+<text x='82' y='304.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£0k</text>
+<line x1='90' y1='256.0' x2='730' y2='256.0' stroke='#e3e8e6'/>
+<text x='82' y='260.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£50k</text>
+<line x1='90' y1='212.0' x2='730' y2='212.0' stroke='#e3e8e6'/>
+<text x='82' y='216.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£100k</text>
+<line x1='90' y1='168.0' x2='730' y2='168.0' stroke='#e3e8e6'/>
+<text x='82' y='172.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£150k</text>
+<line x1='90' y1='124.0' x2='730' y2='124.0' stroke='#e3e8e6'/>
+<text x='82' y='128.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£200k</text>
+<line x1='90' y1='80.0' x2='730' y2='80.0' stroke='#e3e8e6'/>
+<text x='82' y='84.0' font-size='11.5' text-anchor='end' fill='#5f6f6b'>£250k</text>
+<rect x='130' y='294.7' width='120' height='5.3' fill='#2f7a4f'/>
+<rect x='130' y='292.1' width='120' height='2.6' fill='#7bbf1f'/>
+<text x='190.0' y='284.1' font-size='13.5' font-weight='700' text-anchor='middle' fill='#1d2b28'>£9k</text>
+<text x='190.0' y='320' font-size='13' font-weight='700' text-anchor='middle' fill='#1d2b28'>Year 1</text>
+<text x='190.0' y='337' font-size='11.5' text-anchor='middle' fill='#5f6f6b'>Southampton</text>
+<rect x='350' y='273.6' width='120' height='26.4' fill='#2f7a4f'/>
+<rect x='350' y='260.4' width='120' height='13.2' fill='#7bbf1f'/>
+<text x='410.0' y='252.4' font-size='13.5' font-weight='700' text-anchor='middle' fill='#1d2b28'>£45k</text>
+<text x='410.0' y='320' font-size='13' font-weight='700' text-anchor='middle' fill='#1d2b28'>Year 2</text>
+<text x='410.0' y='337' font-size='11.5' text-anchor='middle' fill='#5f6f6b'>5 councils (Solent area)</text>
+<rect x='570' y='194.4' width='120' height='105.6' fill='#2f7a4f'/>
+<rect x='570' y='141.6' width='120' height='52.8' fill='#7bbf1f'/>
+<text x='630.0' y='133.6' font-size='13.5' font-weight='700' text-anchor='middle' fill='#1d2b28'>£180k</text>
+<text x='630.0' y='320' font-size='13' font-weight='700' text-anchor='middle' fill='#1d2b28'>Year 3</text>
+<text x='630.0' y='337' font-size='11.5' text-anchor='middle' fill='#5f6f6b'>20 English councils</text>
+<rect x='560' y='78' width='12' height='12' fill='#2f7a4f'/><text x='578' y='89' font-size='12' fill='#1d2b28'>Council licences</text>
+<rect x='560' y='98' width='12' height='12' fill='#7bbf1f'/><text x='578' y='109' font-size='12' fill='#1d2b28'>Site reports</text>
+<text x='24' y='366' font-size='11.5' fill='#5f6f6b'>Assumptions: our price hypotheses (table above). Council counts are targets, not signed customers.</text></svg>

@@ -1,0 +1,14 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 232' width='760' height='232' font-family='-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>
+<rect width='760' height='232' rx='10' fill='#ffffff'/>
+<text x='24' y='34' font-size='19' font-weight='700' fill='#1d2b28'>What a council pays today vs CivicLens</text>
+<text x='24' y='56' font-size='13' fill='#5f6f6b'>One outsourced Pharmaceutical Needs Assessment vs a yearly CivicLens city licence</text>
+<text x='288' y='100.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>Outsourced PNA, one report</text>
+<rect x='300' y='78' width='230' height='34' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<rect x='300' y='78' width='172.5' height='34' rx='4' fill='#c0392b'/>
+<rect x='472.5' y='78' width='57.5' height='34' fill='#c0392b' opacity='0.45'/>
+<text x='538.0' y='100.0' font-size='13.5' font-weight='700' fill='#1d2b28'>£45k–£60k (tender estimate)</text>
+<text x='288' y='152.0' font-size='13.5' text-anchor='end' fill='#1d2b28'>CivicLens city licence, per year</text>
+<rect x='300' y='130' width='230' height='34' rx='4' fill='#e3e8e6' opacity='0.5'/>
+<rect x='300' y='130' width='23.0' height='34' rx='4' fill='#2f7a4f'/>
+<text x='331.0' y='152.0' font-size='13.5' font-weight='700' fill='#1d2b28'>£6k (price hypothesis)</text>
+<text x='24' y='214' font-size='11.5' fill='#5f6f6b'>Sources: PNA tender estimate, bidstats.uk [B2]. CivicLens price is our hypothesis, not yet tested with a buyer.</text></svg>
