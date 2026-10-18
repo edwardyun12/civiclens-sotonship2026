@@ -1,0 +1,239 @@
+// Places register: every named business and service in Southampton, merged across official registers
+// (built by src/build_places.py). Search, industry -> detailed type filter, and three map views.
+import { useEffect, useMemo, useState } from 'react'
+import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import { Building2, Flame, Layers3, MapPin, Search, Sparkles, X } from 'lucide-react'
+import HeatLayer, { HEAT_GRADIENT } from '../lib/HeatLayer.jsx'
+import { CATEGORICAL, OTHER, bounds, fmt, placeRows, useData } from '../lib/cityData.js'
+import { FitCity, pad } from '../lib/MapFit.jsx'
+
+const CAT_LABEL = { restaurant_cafe: 'Restaurant / café', takeaway: 'Takeaway', pub_bar: 'Pub / bar', other_catering: 'Other catering',
+  mobile_caterer: 'Mobile caterer', supermarket: 'Supermarket', shop_food: 'Food shop', shop_other: 'Other shop', nursery: 'Nursery / childcare',
+  gp: 'GP surgery', pharmacy: 'Pharmacy', dentist: 'Dentist', hospital: 'Hospital', health_other: 'Other health', library: 'Library',
+  education: 'School / college', care_childcare_health: 'Care', hotel: 'Hotel / B&B', community: 'Community', leisure: 'Leisure',
+  coworking: 'Coworking', hair_beauty: 'Hair and beauty', personal_services: 'Personal services', professional: 'Professional services',
+  finance: 'Finance', property: 'Property', it_tech: 'IT and tech', business_services: 'Business services', wholesale: 'Wholesale',
+  construction: 'Construction', manufacturing: 'Manufacturing', food_manufacturer: 'Food manufacturer', motor: 'Motor trade',
+  transport_logistics: 'Transport and logistics', utilities_primary: 'Utilities and primary', other: 'Other' }
+const catLabel = c => CAT_LABEL[c] || c
+// everyday words that should find a detailed type
+const SYN = { 'Bubble tea': 'boba milk tea', Japanese: 'sushi ramen', Korean: 'kbbq', 'Coffee shop': 'cafe coffee', Café: 'cafe coffee',
+  'Dental practice': 'dentist teeth', 'GP practice': 'doctor surgery', 'GP or clinic': 'doctor surgery', 'Fish and chips': 'chippy chip shop',
+  Barber: 'hair', 'Nail salon': 'nails manicure', 'Gym or fitness centre': 'fitness workout', 'Pub or bar': 'pub bar drinks',
+  'Asian supermarket': 'oriental grocery', Pharmacy: 'chemist', 'Veterinary practice': 'vet pets', Optician: 'glasses eyes' }
+const vague = k => /not known|no detail/.test(k) || !k
+// categories that are already specific ("GP surgery") don't need a "(no detail)" note
+const SPECIFIC = new Set(['gp', 'pharmacy', 'dentist', 'hospital', 'nursery', 'library', 'supermarket', 'pub_bar', 'hotel', 'hair_beauty', 'coworking', 'takeaway'])
+// same names the register uses, so one place type isn't split in two ("GP surgery" vs "GP practice")
+const SAME_AS = { gp: 'GP practice', dentist: 'Dental practice', nursery: 'Day nursery or childcare', supermarket: 'Supermarket or convenience store', pub_bar: 'Pub or bar' }
+const specOf = p => p.spec || SAME_AS[p.cat] || (SPECIFIC.has(p.cat) ? catLabel(p.cat) : `${catLabel(p.cat)} (no detail)`)
+
+// leading type per ward: most common, or the type furthest above its city-wide share (at least 3 places)
+function popular(rows, lq) {
+  const by = {}, city = {}; let N = 0
+  for (const p of rows) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = specOf(p); b.top[k] = (b.top[k] || 0) + 1; city[k] = (city[k] || 0) + 1; N++ }
+  const win = {}
+  for (const [w, b] of Object.entries(by)) {
+    let best = null
+    for (const [k, n] of Object.entries(b.top)) {
+      if (vague(k)) continue
+      const share = n / b.n, ratio = share / (city[k] / N)
+      if (lq ? n >= 3 && ratio > 1 && (!best || ratio > best.ratio) : !best || n > best.n) best = { k, n, share, ratio }
+    }
+    if (best) win[w] = best
+  }
+  const wins = {}; for (const b of Object.values(win)) wins[b.k] = (wins[b.k] || 0) + 1
+  const order = Object.entries(wins).sort((a, b) => b[1] - a[1] || city[b[0]] - city[a[0]]).map(([k]) => k)
+  const color = {}; order.forEach((k, i) => (color[k] = CATEGORICAL[i] || OTHER))
+  return { by, city, N, win, order, color }
+}
+
+function FitTo({ target }) {
+  const map = useMap()
+  useEffect(() => { if (target) map.flyToBounds(target, { ...pad(true), duration: 0.6 }) }, [map, target])
+  return null
+}
+
+export default function PlacesView() {
+  const [cols, error] = useData('places')
+  const [city] = useData('city')
+  const all = useMemo(() => (cols ? placeRows(cols).filter(p => p.inside) : []), [cols])
+  const [q, setQ] = useState('')
+  const [grp, setGrp] = useState('')
+  const [spec, setSpec] = useState(() => new Set())
+  const [specQ, setSpecQ] = useState('')
+  const [hideRO, setHideRO] = useState(true)
+  const [view, setView] = useState('popular')
+  const [lq, setLq] = useState(false)
+  const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
+  const [place, setPlace] = useState(null)
+
+  // filtered places, before the type and ward filters (used for counts and for comparing wards with the city)
+  const base = useMemo(() => {
+    const s = q.trim().toLowerCase()
+    return all.filter(p => (!hideRO || !p.ro) && (!grp || p.grp === grp) &&
+      (!s || `${p.name} ${p.pc} ${p.addr} ${p.spec}`.toLowerCase().includes(s)))
+  }, [all, q, grp, hideRO])
+  const typed = useMemo(() => (spec.size ? base.filter(p => spec.has(specOf(p))) : base), [base, spec])
+  const shown = useMemo(() => (ward ? typed.filter(p => p.ward === ward) : typed), [typed, ward])
+  const pop = useMemo(() => popular(typed, lq), [typed, lq])
+
+  const groups = useMemo(() => { const o = {}; for (const p of all) if (!hideRO || !p.ro) o[p.grp] = (o[p.grp] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]) }, [all, hideRO])
+  const specGroups = useMemo(() => {
+    const g = {}, s = specQ.trim().toLowerCase()
+    for (const p of ward ? base.filter(x => x.ward === ward) : base) {
+      const head = grp ? catLabel(p.cat) : p.grp, k = specOf(p)
+      const G = (g[head] ||= { n: 0, items: {} }); G.n++; G.items[k] = (G.items[k] || 0) + 1
+    }
+    return Object.entries(g).sort((a, b) => b[1].n - a[1].n).map(([head, G]) => [head, G.n,
+      Object.entries(G.items).filter(([k]) => !s || `${k} ${SYN[k] || ''} ${head}`.toLowerCase().includes(s)).sort((a, b) => b[1] - a[1])])
+      .filter(([, , items]) => items.length)
+  }, [base, grp, specQ, ward])
+
+  const outlines = useMemo(() => (city ? Object.entries(city.ward_outlines).map(([w, rings]) => ({ w, rings, pos: rings.map(r => r.map(([x, y]) => [y, x])) })) : []), [city])
+  const wardPop = useMemo(() => { const o = {}; if (city) city.oa.ward.forEach((w, i) => (o[w] = (o[w] || 0) + city.oa.pop[i])); return o }, [city])
+  const target = useMemo(() => (ward && city ? bounds(city.ward_outlines[ward]) : null), [ward, city])
+
+  const toggle = k => setSpec(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
+  const pickWard = w => { setWard(cur => (cur === w ? null : w)); setPlace(null) }
+  if (error) return <div className="tool-error">{error.message}</div>
+
+  return <div className="map-stage">
+    <MapContainer center={[50.92, -1.40]} zoom={13} minZoom={11} zoomSnap={0.25} scrollWheelZoom className="map-canvas" zoomControl={false} preferCanvas renderer={L.canvas({ padding: 0.3 })}>
+      <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <FitCity city={city} />
+      <FitTo target={target} />
+      {outlines.map(({ w, pos }) => {
+        const b = pop.win[w], on = ward === w, dim = ward && !on
+        const fill = view === 'popular' && b ? pop.color[b.k] : '#0b332b'
+        const opacity = view === 'popular' && b ? (dim ? 0.12 : 0.25 + 0.5 * (lq ? Math.min(1, (b.ratio - 1) / 2) : b.share)) : dim ? 0.35 : 0.02
+        return <Polygon key={w} positions={pos} pathOptions={{ color: on ? '#062b25' : '#0b332b', weight: on ? 4 : 1.2, opacity: on ? 1 : 0.55,
+          fillColor: view === 'popular' ? fill : dim ? '#f5f7f2' : '#0b332b', fillOpacity: opacity, fillRule: 'evenodd' }}
+          eventHandlers={{ click: () => pickWard(w) }}>
+          <Tooltip sticky className="ward-tip"><WardTip w={w} stats={pop.by[w]} pop={pop} wardPop={wardPop[w]} selected={on} /></Tooltip>
+        </Polygon>
+      })}
+      {view === 'heat' && <HeatLayer points={shown} />}
+      {view === 'points' && shown.slice(0, 20000).map(p => <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={place?.id === p.id ? 8 : 4}
+        pathOptions={{ color: '#fff', weight: 1, fillColor: groupColor(p.grp, groups), fillOpacity: p.ro ? 0.45 : 0.9 }}
+        eventHandlers={{ click: () => setPlace(p) }} />)}
+      {view === 'popular' && Object.entries(pop.win).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'m' + w} center={oa} radius={7} interactive={false}
+        pathOptions={{ color: '#fff', weight: 2.5, fillColor: pop.color[b.k], fillOpacity: ward && ward !== w ? 0.35 : 1 }}>
+        <Tooltip permanent direction="bottom" offset={[0, 6]} className="ward-label"><b>{w}</b><span>{b.k}</span></Tooltip></CircleMarker> })}
+    </MapContainer>
+
+    <aside className="tool-panel">
+      <span className="eyebrow dark"><Building2 size={13} /> Places register</span>
+      <h2>Find any business in the city</h2>
+      <label className="search"><Search size={15} /><input value={q} onChange={e => setQ(e.target.value)} placeholder="Name, postcode, street…" /></label>
+      <label className="field-label" htmlFor="grp">Industry</label>
+      <select id="grp" value={grp} onChange={e => { setGrp(e.target.value); setSpec(new Set()) }}>
+        <option value="">All industries ({fmt(groups.reduce((a, [, n]) => a + n, 0))})</option>
+        {groups.map(([g, n]) => <option key={g} value={g}>{g} ({fmt(n)})</option>)}
+      </select>
+      <div className="field-row"><label className="field-label" htmlFor="specq">Detailed type</label>{spec.size > 0 && <button className="link-button" onClick={() => setSpec(new Set())}>Clear {spec.size}</button>}</div>
+      <input id="specq" className="plain-input" value={specQ} onChange={e => setSpecQ(e.target.value)} placeholder="Bubble tea, Korean, barber…" />
+      <div className="type-list">
+        {specGroups.map(([head, n, items]) => <div key={head}>
+          <button className="type-head" onClick={() => setSpec(s => { const all = items.every(([k]) => s.has(k)), x = new Set(s); items.forEach(([k]) => (all ? x.delete(k) : x.add(k))); return x })}><span>{head}</span><span>{fmt(n)}</span></button>
+          {items.map(([k, c]) => <label key={k} className={`type-row ${spec.has(k) ? 'on' : ''}`}><input type="checkbox" checked={spec.has(k)} onChange={() => toggle(k)} /><span>{k}</span><span>{fmt(c)}</span></label>)}
+        </div>)}
+        {!specGroups.length && <p className="muted">No type matches “{specQ}”.</p>}
+      </div>
+      <label className="check"><input type="checkbox" checked={hideRO} onChange={e => setHideRO(e.target.checked)} /> Hide companies known only by their registered office</label>
+      <p className="count"><b>{fmt(shown.length)}</b> places{ward ? <> in <b>{ward}</b> <button className="link-button" onClick={() => setWard(null)}>whole city</button></> : ''}</p>
+    </aside>
+
+    <section className="layer-panel tool-layers">
+      <span><Layers3 size={14} /> Map view</span>
+      <div>
+        <button className={view === 'popular' ? 'active' : ''} onClick={() => setView('popular')}><Sparkles size={13} /> Popular</button>
+        <button className={view === 'heat' ? 'active' : ''} onClick={() => setView('heat')}><Flame size={13} /> Heatmap</button>
+        <button className={view === 'points' ? 'active' : ''} onClick={() => setView('points')}><MapPin size={13} /> Places</button>
+      </div>
+      {view === 'popular' && <div className="seg-small">
+        <button className={!lq ? 'active' : ''} onClick={() => setLq(false)}>Most common</button>
+        <button className={lq ? 'active' : ''} onClick={() => setLq(true)}>Stands out vs city</button>
+      </div>}
+      <p>{view === 'popular' ? (lq ? 'Each area is coloured by the type that is most over-represented there compared with the whole city (at least 3 places).' : 'Each area is coloured by its most common type. Stronger colour = bigger share of the area’s places.')
+        : view === 'heat' ? 'Where the filtered places cluster: darker = more places within about 250 m.' : 'Every filtered place. Faded dots are companies at their registered office.'} Click an area to explore it.</p>
+    </section>
+
+    <Legend view={view} pop={pop} />
+    {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
+    {ward && !place && city && <WardProfile ward={ward} typed={typed} pop={pop} wardPop={wardPop} city={city} onClose={() => setWard(null)} onPick={k => setSpec(new Set([k]))} onWard={pickWard} />}
+  </div>
+}
+
+function groupColor(g, groups) { const i = groups.findIndex(([x]) => x === g); return i >= 0 && i < CATEGORICAL.length ? CATEGORICAL[i] : OTHER }
+
+const centres = new Map()
+function wardCentre(city, w) {
+  if (!city) return null
+  if (!centres.has(w)) { let la = 0, lo = 0, n = 0; city.oa.ward.forEach((x, i) => { if (x === w) { la += city.oa.lat[i] * city.oa.pop[i]; lo += city.oa.lon[i] * city.oa.pop[i]; n += city.oa.pop[i] } }); centres.set(w, n ? [la / n, lo / n] : null) }
+  return centres.get(w)
+}
+
+function WardTip({ w, stats, pop, wardPop, selected }) {
+  const items = stats ? Object.entries(stats.top).sort((a, b) => b[1] - a[1]).slice(0, 5) : []
+  return <div className="tip">
+    <b>{w}</b><small>{selected ? 'Click to go back to the whole city' : 'Click to explore this area'}</small>
+    {stats ? <><small>{fmt(stats.n)} places · {(1000 * stats.n / Math.max(1, wardPop)).toFixed(1)} per 1,000 residents</small>
+      {items.map(([k, n]) => <div key={k} className="tip-row"><i style={{ background: pop.color[k] || OTHER }} /><span>{k}</span><span>{fmt(n)}</span></div>)}</> : <small>No matching places</small>}
+  </div>
+}
+
+function Legend({ view, pop }) {
+  if (view === 'heat') return <div className="legend tool-legend"><span>Fewer</span><i className="ramp" style={{ background: HEAT_GRADIENT }} /><span>More places close together</span></div>
+  if (view === 'points') return null
+  const shown = pop.order.slice(0, 6)
+  if (!shown.length) return <div className="legend tool-legend"><span>No type leads any area with these filters</span></div>
+  return <div className="legend tool-legend">{shown.map(k => <span key={k} className="key"><i style={{ background: pop.color[k] }} />{k}</span>)}{pop.order.length > 6 && <span className="key"><i style={{ background: OTHER }} />Other</span>}</div>
+}
+
+function PlaceDetail({ p, onClose }) {
+  return <aside className="place-card tool-card">
+    <button className="close-card" onClick={onClose} aria-label="Close place details"><X size={16} /></button>
+    <span className="place-kicker"><MapPin size={13} /> {p.grp}</span>
+    <h2>{p.name}</h2>
+    <dl className="facts">
+      <dt>Type</dt><dd>{specOf(p)}{p.from === 'name' && <em> · guessed from the name</em>}</dd>
+      {p.addr && <><dt>Address</dt><dd>{p.addr}</dd></>}
+      <dt>Postcode</dt><dd>{p.pc || '–'}{p.ward ? ` · ${p.ward}` : ''}</dd>
+      <dt>Sources</dt><dd>{p.src.replace(/\|/g, ' + ')}</dd>
+      <dt>Confidence</dt><dd><span className="conf"><i style={{ width: `${p.conf}%` }} /></span>{p.conf}/100{p.ro ? ' · registered office only' : ''}</dd>
+    </dl>
+    <div className="card-links">{p.gmap && <a href={p.gmap} target="_blank" rel="noreferrer">Check on Google Maps</a>}{p.web && <a href={p.web} target="_blank" rel="noreferrer">Website</a>}</div>
+  </aside>
+}
+
+function WardProfile({ ward, typed, pop, wardPop, city, onClose, onPick, onWard }) {
+  const here = typed.filter(p => p.ward === ward), inCity = typed.filter(p => p.ward).length
+  const residents = wardPop[ward] || 0, cityRes = Object.values(wardPop).reduce((a, b) => a + b, 0)
+  const rate = 1000 * here.length / Math.max(1, residents), cityRate = 1000 * inCity / Math.max(1, cityRes)
+  let dep = 0; city.oa.ward.forEach((w, i) => { if (w === ward && city.oa.q[i] === 1) dep += city.oa.pop[i] })
+  const H = {}; for (const p of here) { const k = specOf(p); H[k] = (H[k] || 0) + 1 }
+  const ratio = k => (H[k] || 0) / Math.max(1, here.length) / ((pop.city[k] || 0) / Math.max(1, pop.N))
+  const top = Object.entries(H).sort((a, b) => b[1] - a[1]).slice(0, 8), max = top.length ? top[0][1] : 1
+  const gaps = Object.entries(pop.city).filter(([k, n]) => n >= 8 && !vague(k) && ratio(k) < 0.5).sort((a, b) => ratio(a[0]) - ratio(b[0])).slice(0, 4)
+  return <aside className="ward-card">
+    <button className="close-card" onClick={onClose} aria-label="Back to the whole city"><X size={16} /></button>
+    <span className="place-kicker"><MapPin size={13} /> Area profile</span>
+    <h2>{ward}</h2>
+    <div className="ward-stats">
+      <div><b>{fmt(here.length)}</b><span>places</span></div>
+      <div><b>{rate.toFixed(1)}</b><span>per 1,000 residents · city {cityRate.toFixed(1)}</span></div>
+      <div><b>{fmt(residents)}</b><span>residents · {Math.round(100 * dep / Math.max(1, residents))}% in the most deprived fifth</span></div>
+    </div>
+    <h3>What’s here</h3>
+    {top.length ? <div className="bars">{top.map(([k, n]) => { const r = ratio(k)
+      return <button key={k} className="bar" onClick={() => onPick(k)} title={`Show only ${k}`}>
+        <span>{k}</span><span className="track"><i style={{ width: `${100 * n / max}%`, background: pop.color[k] || OTHER }} /></span><span className="n">{n}</span><span className={`x ${r >= 1.5 ? 'hi' : ''}`}>{r.toFixed(1)}×</span></button> })}</div>
+      : <p className="muted">No matching places in this area.</p>}
+    <p className="muted">× compares the type’s share here with its share across Southampton: 2.0× = twice as common here.</p>
+    {gaps.length > 0 && <><h3>Less of than the city average</h3><div className="chips">{gaps.map(([k]) => <button key={k} onClick={() => onPick(k)}>{k} · {H[k] || 0}</button>)}</div></>}
+    <h3>Other areas</h3>
+    <div className="chips small">{Object.keys(wardPop).filter(w => w !== ward).sort().map(w => <button key={w} onClick={() => onWard(w)}>{w}</button>)}</div>
+  </aside>
+}

@@ -1,7 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet'
-import { ArrowLeft, ArrowRight, Bot, ChevronDown, Layers3, MapPin, MessageCircle, Navigation, Send, Sparkles, X } from 'lucide-react'
+import { Activity, ArrowLeft, ArrowRight, Bot, Building2, ChevronDown, Layers3, MapPin, MessageCircle, Navigation, Send, Sparkles, Target, X } from 'lucide-react'
 import { centres } from './data.js'
+
+const PlacesView = lazy(() => import('./places/PlacesView.jsx'))
+const SimulatorView = lazy(() => import('./simulator/SimulatorView.jsx'))
+const TABS = [
+  { id: 'signals', hash: '#heatmap', label: 'Signals', icon: Activity },
+  { id: 'places', hash: '#places', label: 'Places', icon: Building2 },
+  { id: 'simulator', hash: '#simulator', label: 'Simulator', icon: Target },
+]
+const tabFromHash = () => (TABS.find(t => t.hash === window.location.hash) || {}).id || 'welcome'
 
 const layers = {
   vacancy: { label: 'Vacancy', title: 'Vacancy pressure', suffix: '%', detail: 'Share of surveyed commercial units recorded as vacant.' },
@@ -34,7 +43,11 @@ function Welcome({ onExplore }) {
         <span className="eyebrow"><Sparkles size={14} /> Discover local opportunity</span>
         <h1>See Southampton<br />through a <em>new lens.</em></h1>
         <p>Explore the signals shaping local business—from commercial vacancy to changing footfall—on one intelligent map.</p>
-        <button className="explore-button" onClick={onExplore}>Explore the heatmap <ArrowRight size={19} /></button>
+        <div className="welcome-actions">
+          <button className="explore-button" onClick={() => onExplore('#heatmap')}>Explore the heatmap <ArrowRight size={19} /></button>
+          <button className="explore-button ghost" onClick={() => onExplore('#places')}><Building2 size={18} /> Find places</button>
+          <button className="explore-button ghost" onClick={() => onExplore('#simulator')}><Target size={18} /> Test a site</button>
+        </div>
       </div>
       <div className="city-orbit" aria-hidden="true">
         <div className="orbit-line orbit-one" /><div className="orbit-line orbit-two" /><div className="orbit-line orbit-three" />
@@ -84,8 +97,8 @@ function PlaceCard({ place, metric, onClose }) {
   </aside>
 }
 
-function Chatbot() {
-  const [open, setOpen] = useState(true)
+function Chatbot({ startOpen = true }) {
+  const [open, setOpen] = useState(startOpen)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState([{ role:'assistant', content:'Ask about Southampton’s business landscape, local centres or planning evidence.', sources:[] }])
@@ -116,11 +129,23 @@ function Chatbot() {
   </>
 }
 
-function MapWorkspace({ onBack }) {
-  const [metric,setMetric]=useState('vacancy');const [selected,setSelected]=useState(null)
+function Workspace({ tab, onBack }) {
   return <main className="map-page">
-    <header className="map-header"><Brand/><button className="back-button" onClick={onBack}><ArrowLeft size={16}/> Welcome</button><div className="status"><i/> Evidence service online</div></header>
-    <div className="map-stage">
+    <header className="map-header"><Brand/><button className="back-button" onClick={onBack}><ArrowLeft size={16}/> Welcome</button>
+      <nav className="tabs" aria-label="Tools">{TABS.map(({ id, hash, label, icon: Icon }) => <a key={id} href={hash} className={tab === id ? 'active' : ''} aria-current={tab === id ? 'page' : undefined}><Icon size={15}/> {label}</a>)}</nav>
+      <div className="status"><i/> Evidence service online</div></header>
+    <Suspense fallback={<div className="map-stage"><div className="tool-error">Loading…</div></div>}>
+      {tab === 'signals' && <SignalsMap/>}
+      {tab === 'places' && <PlacesView/>}
+      {tab === 'simulator' && <SimulatorView/>}
+    </Suspense>
+    <Chatbot key={tab} startOpen={tab === 'signals'}/>
+  </main>
+}
+
+function SignalsMap() {
+  const [metric,setMetric]=useState('vacancy');const [selected,setSelected]=useState(null)
+  return <div className="map-stage">
       <Heatmap metric={metric} selected={selected} onSelect={setSelected}/>
       <section className="map-title"><span className="eyebrow"><Navigation size={13}/> Southampton intelligence</span><h1>Explore the city’s<br/><em>opportunity signals.</em></h1><p>Select a centre to inspect its local evidence.</p></section>
       <section className="layer-panel"><span><Layers3 size={14}/> Map layer</span><div>{Object.entries(layers).map(([id,layer])=><button key={id} className={metric===id?'active':''} onClick={()=>{setMetric(id);setSelected(null)}}>{layer.label}</button>)}</div><p>{layers[metric].detail}</p></section>
@@ -128,13 +153,11 @@ function MapWorkspace({ onBack }) {
       <PlaceCard place={selected} metric={metric} onClose={()=>setSelected(null)}/>
       <div className="map-source">Observed centre-level evidence · 2024 <button><ChevronDown size={13}/> Methodology</button></div>
     </div>
-    <Chatbot/>
-  </main>
 }
 
 export default function App(){
-  const [view,setView]=useState(()=>window.location.hash==='#heatmap'?'map':'welcome')
-  useEffect(()=>{const sync=()=>setView(window.location.hash==='#heatmap'?'map':'welcome');window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[])
+  const [view,setView]=useState(tabFromHash)
+  useEffect(()=>{const sync=()=>setView(tabFromHash());window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[])
   const back=()=>{history.pushState('',document.title,window.location.pathname+window.location.search);setView('welcome')}
-  return view==='map'?<MapWorkspace onBack={back}/>:<Welcome onExplore={()=>{window.location.hash='heatmap'}}/>
+  return view==='welcome'?<Welcome onExplore={hash=>{window.location.hash=hash}}/>:<Workspace tab={view} onBack={back}/>
 }

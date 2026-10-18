@@ -53,6 +53,69 @@ def area_data() -> dict:
             "ward_pop": oa.groupby("ward")["pop"].sum().astype(int).to_dict()}
 
 
+def ward_outlines() -> dict:
+    """Each ward's outline as closed rings [[lon, lat], ...]: the LSOA edges used once within the ward, chained."""
+    oa = pd.read_csv(ROOT / "data" / "processed" / "oa.csv")
+    lsoa_ward = oa.groupby("lsoa").ward.agg(lambda s: s.mode().iloc[0]).to_dict()
+    gj = json.loads((ROOT / "data" / "processed" / "lsoa.geojson").read_text(encoding="utf-8"))
+    segs = {}
+    for f in gj["features"]:
+        ward = lsoa_ward.get(f["properties"]["LSOA21CD"])
+        if not ward:
+            continue
+        g = f["geometry"]
+        for poly in (g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]):
+            for ring in poly:
+                rr = [(round(x, 6), round(y, 6)) for x, y in ring]
+                for a, b in zip(rr[:-1], rr[1:]):
+                    if a != b:
+                        k = (ward, *sorted((a, b)))
+                        segs[k] = segs.get(k, 0) + 1
+    out = {}
+    for ward in sorted(set(lsoa_ward.values())):
+        nb = {}
+        for (w, a, b), n in segs.items():
+            if w == ward and n == 1:
+                nb.setdefault(a, []).append(b); nb.setdefault(b, []).append(a)
+        rings = []
+        while nb:
+            start = next(iter(nb)); ring = [start]; cur = start
+            while True:
+                nxt = nb[cur].pop()
+                nb[nxt].remove(cur)
+                for p in (cur, nxt):
+                    if not nb[p]:
+                        del nb[p]
+                if nxt == start or nxt not in nb:
+                    ring.append(nxt); break
+                ring.append(nxt); cur = nxt
+            if len(ring) > 3:
+                rings.append([[round(x, 5), round(y, 5)] for x, y in ring[::2] + [ring[-1]]])  # every 2nd vertex is plenty
+        out[ward] = rings
+    return out
+
+
+def frontend_data(places: pd.DataFrame, city: dict, sources: dict):
+    """Data files for the CivicLens React app (src/front-end/public/data/)."""
+    out = ROOT / "src" / "front-end" / "public" / "data"
+    out.mkdir(parents=True, exist_ok=True)
+    p = places[places["lat"].notna()].copy()
+    fl = p["flags"].fillna("")
+    bad = fl.str.contains("SOURCES_DISAGREE_ON_LOCATION|TYPE_CONFLICT|FAR_FROM_OWN_POSTCODE|POSTCODE_INVALID|NO_COORDINATES")
+    s = lambda c: p[c].fillna("").astype(str).tolist()
+    cols = {"id": s("place_id"), "name": s("name"), "lat": p["lat"].round(6).tolist(), "lon": p["lon"].round(6).tolist(),
+            "grp": p["industry_group"].fillna("Other").tolist(), "cat": s("category"), "spec": s("specialty"),
+            "from": s("specialty_from"), "ward": s("ward"), "pc": s("postcode"), "addr": s("address"), "src": s("sources"),
+            "conf": p["confidence"].astype(int).tolist(), "inside": p["inside_city"].astype(str).str.lower().eq("true").astype(int).tolist(),
+            "ro": fl.str.contains("REGISTERED_OFFICE_ONLY").astype(int).tolist(), "bad": bad.astype(int).tolist(),
+            "cf": p["customer_facing"].astype(str).str.lower().eq("true").astype(int).tolist(), "web": s("website"),
+            "gmap": s("google_maps_search")}
+    (out / "places.json").write_text(json.dumps(cols, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    (out / "city.json").write_text(json.dumps({**city, "ward_outlines": ward_outlines(), "sources": sources},
+                                              separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
+    print(f"Wrote front-end data to {out}")
+
+
 def main():
     places = pd.read_csv(DB / "places.csv", dtype={"company_number": str})
     places_csv = (DB / "places.csv").read_text(encoding="utf-8")
@@ -83,6 +146,7 @@ def main():
            .replace("__AREA__", esc(json.dumps(area_data(), separators=(",", ":")))))
     (ROOT / "viewer" / "places_register.html").write_text(reg, encoding="utf-8", newline="")
     print(f"Built viewer/site_simulator.html ({len(sim):,} bytes) and viewer/places_register.html ({len(reg):,} bytes) from {DB}")
+    frontend_data(places, city_places, sources)
 
     if shutil.which("node"):  # JS engine must still match the Python engine's saved results
         tmp = Path(tempfile.mkdtemp())
