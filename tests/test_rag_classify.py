@@ -17,7 +17,7 @@ def fake(reply):
 def test_classifier_keeps_only_real_types_and_same_sector(monkeypatch):
     monkeypatch.setattr(K, "request", fake({
         "business": "Thai restaurant", "sector": "food and drink", "niche": "Thai cuisine",
-        "direct_types": ["Restaurant (cuisine not known)", "Thai", "café"], "related_types": ["Pharmacy", "Made up type"], "similar_types": ["Chinese", "Pharmacy", "Restaurant (cuisine not known)"],
+        "direct_types": ["Restaurant (cuisine not known)", "Thai", "café"], "related_types": ["Pharmacy", "Made up type"], "similar_types": ["Chinese | restaurant_cafe | 12", "Pharmacy", "Restaurant (cuisine not known)"],
         "name_keywords": ["Thai", "food", "Siam Kitchen"], "customers": ["25_44", "99"], "passing_trade": "very high",
         "reasoning": "ok", "setup_tips": ["Register as a food business"]}))
     out = K.classify_business("thai restaurant", TYPES, SECTORS)

@@ -1,0 +1,70 @@
+{
+ "built": "2026-10-18 06:51 UTC",
+ "places": 5447,
+ "source_records": 6334,
+ "records_by_source": {
+  "osm": 4493,
+  "fsa": 1701,
+  "nhs_ods": 140
+ },
+ "places_by_category": {
+  "shop_other": 1284,
+  "other": 1132,
+  "restaurant_cafe": 624,
+  "takeaway": 421,
+  "shop_food": 384,
+  "pub_bar": 241,
+  "community": 203,
+  "education": 176,
+  "other_catering": 170,
+  "care_childcare_health": 162,
+  "supermarket": 89,
+  "hotel": 83,
+  "pharmacy": 81,
+  "mobile_caterer": 80,
+  "gp": 76,
+  "leisure": 53,
+  "dentist": 42,
+  "nursery": 39,
+  "post_office": 35,
+  "finance": 30,
+  "library": 18,
+  "hospital": 11,
+  "food_manufacturer": 9,
+  "food_distributor": 2,
+  "coworking": 2
+ },
+ "places_by_n_sources": {
+  "1": 4610,
+  "2": 837
+ },
+ "flags": {
+  "SINGLE_SOURCE": 4610,
+  "OUTSIDE_CITY": 1729,
+  "OSM_NOT_CHECKED_3Y": 1105,
+  "COORDS_FROM_POSTCODE_ONLY": 331,
+  "NO_COORDINATES": 229,
+  "SOURCES_DISAGREE_ON_LOCATION": 150,
+  "FSA_INSPECTION_OVER_4Y": 101,
+  "FAR_FROM_OWN_POSTCODE": 89,
+  "POSSIBLE_DUPLICATE": 69,
+  "MERGED_DUPLICATE": 47,
+  "NAME_DIFFERS_BETWEEN_SOURCES": 45,
+  "POSTCODE_TERMINATED": 43,
+  "TYPE_CONFLICT": 35,
+  "FSA_RATING_PENDING": 13,
+  "POSTCODE_INVALID": 5
+ },
+ "inside_city": 3718,
+ "excluded": {},
+ "company_links": {},
+ "sources": {
+  "nhs_ods": {
+   "title": "NHS Organisation Data Service: active GP practices, branch surgeries, pharmacies",
+   "url": "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations",
+   "licence": "OGL v3.0 (NHS England)",
+   "downloaded": "2026-10-18 06:50 UTC",
+   "rows": 140
+  }
+ }
+}

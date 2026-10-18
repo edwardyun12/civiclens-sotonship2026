@@ -49,7 +49,7 @@ Reply with JSON only, in this exact shape:
 }}
 
 Rules:
-- Only use type names exactly as written in the list. Do not invent statistics or numbers.
+- Only use type names exactly as written in the list, the name only (e.g. "Chinese", not "Chinese | takeaway | 61"). Do not invent statistics or numbers.
 - Direct competitors must be the same niche: for a Thai restaurant a "Thai" type is direct, but a café, bakery or
   restaurant with unknown cuisine is only related. If no listed type is the same niche, direct_types is [].
 - Similar types are other niches of the same kind (other cuisines for a restaurant, other sports for a gym), never the same niche.
@@ -62,8 +62,9 @@ def _clean_list(values, allowed: dict[str, str] | None = None, limit: int = 6) -
     for value in values if isinstance(values, list) else []:
         if not isinstance(value, str):
             continue
-        key = value.strip().lower()
-        item = allowed.get(key) if allowed is not None else value.strip()
+        value = value.split("|")[0].strip()  # the model sometimes copies the whole "type | category | count" line
+        key = value.lower()
+        item = allowed.get(key) if allowed is not None else value
         if item and item not in out:
             out.append(item)
         if len(out) == limit:

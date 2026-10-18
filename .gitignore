@@ -30,3 +30,6 @@ Thumbs.db
 # places database: raw downloads are large or re-fetchable; Google results must not be shipped
 data/db/raw/
 data/db/google_check.csv
+
+# full places database: CSVs are committed, the SQLite copy is rebuilt by `python run.py places`
+data/db/places.sqlite

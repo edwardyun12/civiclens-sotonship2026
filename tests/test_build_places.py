@@ -283,3 +283,13 @@ def test_specialty_labels_for_advanced_search():
     assert sp(category="construction", name="Sparky Renovations Ltd", subtype="Spa, massage or wellbeing",
               subtype_from="name", industry="Specialised construction trades") == "Specialised construction trades"
     assert sp(category="restaurant_cafe", name="Pink Olive Cafe", subtype="Tattoo studio", subtype_from="name") == "Café"
+
+
+def test_cuisine_from_name():
+    from pipeline.places.business_types import cuisine_from
+    assert cuisine_from("China Inn")[0] == "Chinese"
+    assert cuisine_from("Bamboo Vietnam")[0] == "Vietnamese"
+    assert cuisine_from("K.BAP Korean BBQ")[0] == "Korean"
+    assert cuisine_from("Siam Orchid")[0] == "Thai"
+    assert cuisine_from("Golden Leaf") is None          # no guess when the name doesn't say
+    assert cuisine_from("Phoenix Fish Bar")[0] == "Fish and chips"  # 'pho' is not in 'Phoenix'
