@@ -152,6 +152,74 @@ def fetch_population(oas: list[str]) -> pd.DataFrame:
     return p
 
 
+SAPE_URL = ("https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/"
+            "datasets/lowersuperoutputareamidyearpopulationestimates/mid2022revisednov2025tomid2024/sapelsoasyoa20222024.xlsx")
+SAPE_YEAR = 2024
+
+
+def fetch_sape(sape_file: str | None = None) -> pd.DataFrame:
+    """ONS mid-2024 small area population estimates (released 7 Nov 2025), Southampton's 2021 LSOAs.
+    Returns lsoa, pop_est (all ages), pop_0_4_est. The 83 MB workbook is read once; the city's rows are kept in
+    data/raw/ons_sape_mid2024_lsoa.csv so later runs (and --update-pop without a file) don't download it again."""
+    out_f = RAW / "ons_sape_mid2024_lsoa.csv"
+    print(f"[6b] ONS mid-{SAPE_YEAR} LSOA population estimates")
+    if sape_file is None and out_f.exists():
+        df = pd.read_csv(out_f)
+    else:
+        import openpyxl
+        from io import BytesIO
+        if sape_file:
+            src = sape_file
+        else:
+            r = requests.get(SAPE_URL, headers={"User-Agent": "Mozilla/5.0"}, timeout=600)
+            r.raise_for_status()
+            src = BytesIO(r.content)
+        ws = openpyxl.load_workbook(src, read_only=True)[f"Mid-{SAPE_YEAR} LSOA 2021"]
+        rows = ws.iter_rows(values_only=True)
+        head = next(r for r in rows if r and r[0] == "LAD 2023 Code")
+        ix = {h: i for i, h in enumerate(head)}
+        young = [f"{s}{a}" for s in "FM" for a in range(5)]
+        recs = [{"lsoa": r[ix["LSOA 2021 Code"]], "pop_est": r[ix["Total"]],
+                 "pop_0_4_est": sum(r[ix[c]] for c in young)} for r in rows if r and r[0] == LAD_CODE]
+        df = pd.DataFrame(recs)
+        df.to_csv(out_f, index=False)
+    note("sape", f"ONS small area population estimates, mid-{SAPE_YEAR}, LSOA 2021 (released 7 Nov 2025)",
+         SAPE_URL, "OGL v3.0 (Source: Office for National Statistics)", len(df))
+    print(f"   mid-{SAPE_YEAR}: {int(df.pop_est.sum()):,} residents, {int(df.pop_0_4_est.sum()):,} aged 0-4")
+    return df
+
+
+def apply_sape(oa: pd.DataFrame, sape: pd.DataFrame) -> pd.DataFrame:
+    """Bring OA populations up to mid-2024. Census 2021 gives how each LSOA's people split across its OAs; the ONS
+    estimate gives the LSOA total. Each OA is scaled by its LSOA's growth (all ages and 0-4 separately), so the LSOA
+    sums match ONS exactly. The Census counts stay in pop_2021 / pop_0_4_2021 (the 17 Oct baseline uses them)."""
+    oa = oa.copy()
+    if "pop_2021" not in oa:  # first run: the current pop columns are the Census counts
+        oa["pop_2021"], oa["pop_0_4_2021"] = oa["pop"], oa["pop_0_4"]
+    s = sape.set_index("lsoa")
+    base = oa.groupby("lsoa")[["pop_2021", "pop_0_4_2021"]].transform("sum")
+    tot, young = oa["lsoa"].map(s["pop_est"]), oa["lsoa"].map(s["pop_0_4_est"])
+    if tot.isna().any():
+        raise RuntimeError(f"No mid-{SAPE_YEAR} estimate for LSOAs: {sorted(oa.loc[tot.isna(), 'lsoa'].unique())}")
+    oa["pop"] = (oa["pop_2021"] * tot / base["pop_2021"]).round(1)
+    # an LSOA with no Census 0-4s (none in Southampton) would divide by zero: spread by total population instead
+    w04 = (oa["pop_0_4_2021"] / base["pop_0_4_2021"]).where(base["pop_0_4_2021"] > 0, oa["pop_2021"] / base["pop_2021"])
+    oa["pop_0_4"] = (w04 * young).round(1)
+    oa["pop_year"] = SAPE_YEAR
+    return oa
+
+
+def update_population(sape_file: str | None = None) -> None:
+    """--update-pop: refresh oa.csv to the latest ONS estimates without re-downloading everything else."""
+    oa = apply_sape(pd.read_csv(PROC / "oa.csv"), fetch_sape(sape_file))
+    oa.to_csv(PROC / "oa.csv", index=False)
+    print(f"OA rows: {len(oa)}, population {int(oa.pop_2021.sum()):,} (Census 2021) -> {int(oa['pop'].sum()):,} "
+          f"(mid-{SAPE_YEAR}); aged 0-4 {int(oa.pop_0_4_2021.sum()):,} -> {int(oa.pop_0_4.sum()):,}")
+    old = json.loads((RAW / "SOURCES.json").read_text()) if (RAW / "SOURCES.json").exists() else {}
+    old.update(SOURCES)
+    (RAW / "SOURCES.json").write_text(json.dumps(old, indent=2))
+
+
 # ---------------------------------------------------------------- facilities
 # OSM tags per category. Keep these in sync with src/config.py CATEGORIES.
 OSM_QUERIES = {
@@ -388,6 +456,7 @@ def main(skip_osm: bool = False, osm_file: str | None = None) -> None:
                              "WD22CD": "ward_code", "WD22NM": "ward"})[
         ["oa_code", "lsoa", "lsoa_name", "ward_code", "ward", "lat", "lon", "pop", "pop_0_4",
          "imd_rank", "imd_decile", "imd_quintile", "imd_match"]]
+    out = apply_sape(out, fetch_sape())
     out.to_csv(PROC / "oa.csv", index=False)
     (PROC / "lsoa.geojson").write_text(json.dumps(gj))
     print(f"OA rows: {len(out)}, population: {int(out['pop'].sum()):,}, aged 0-4: {int(out['pop_0_4'].sum()):,}")
@@ -411,5 +480,8 @@ def main(skip_osm: bool = False, osm_file: str | None = None) -> None:
 
 
 if __name__ == "__main__":
+    if "--update-pop" in sys.argv:
+        update_population(sys.argv[sys.argv.index("--sape-file") + 1] if "--sape-file" in sys.argv else None)
+        sys.exit()
     f = sys.argv[sys.argv.index("--osm-file") + 1] if "--osm-file" in sys.argv else None
     main(skip_osm="--skip-osm" in sys.argv, osm_file=f)

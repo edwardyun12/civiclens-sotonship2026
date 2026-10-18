@@ -33,7 +33,8 @@ All downloaded 17 Oct 2026. Full list with URLs and row counts: `data/raw/SOURCE
 | Data | Source | Licence | Used for |
 |---|---|---|---|
 | Output Area population-weighted centroids (792) | ONS Open Geography, OA Dec 2021 PWC V4 | OGL v3.0 | Demand points |
-| Population, total and aged 0-4, by Output Area | Census 2021 TS007A via Nomis | OGL v3.0 | Demand (0-4 for nurseries) |
+| Population, total and aged 0-4, by Output Area | Census 2021 TS007A via Nomis | OGL v3.0 | How each LSOA's residents split across its OAs; the 17 Oct baseline's demand |
+| Population, total and aged 0-4, by 2021 LSOA, mid-2024 (released 7 Nov 2025) | ONS small area population estimates (`sapelsoasyoa20222024.xlsx`) | OGL v3.0 | Demand (0-4 for nurseries): each OA scaled by its LSOA's growth since the Census. City 248,982 → 259,424 (+4.2%); aged 0-4 13,782 → 13,584 (-1.4%). Biggest growth Bargate +19%, Swaythling +16% |
 | OA to LSOA to ward lookups; LSOA 2021 boundaries | ONS Open Geography | OGL v3.0, contains OS data © Crown copyright | Wards, city boundary, map |
 | Index of Multiple Deprivation 2019 (national rank) | MHCLG, via ONS lookup | OGL v3.0 | Equity panel, need score |
 | GP practices, branch surgeries, pharmacies (active) | NHS Organisation Data Service | OGL v3.0 | Existing GP and pharmacy sites |
@@ -140,7 +141,9 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 - **No capacity**: a GP with a full list counts the same as one with space. ODS sites are geocoded to the
   postcode centroid.
 - **IMD 2019 is on 2011 areas**. 38 of 792 Output Areas sit in changed LSOAs and were placed spatially.
-- **Population is Census 2021**, not the latest mid-year estimate.
+- **Population is the ONS mid-2024 LSOA estimate, spread over Output Areas by their Census 2021 shares.** OAs
+  inside an LSOA all grow at the same rate, so new blocks are only placed to LSOA level. ONS asks that unit-level
+  estimates are rounded to the nearest 100 when quoted. The 17 Oct test numbers (`SIM_DATASET=baseline`) still use Census 2021.
 - Scores and weights are unvalidated. Jobs figures are assumptions. This is decision support for a human
   planner, not a decision.
 

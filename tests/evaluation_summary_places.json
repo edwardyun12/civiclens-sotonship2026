@@ -1,44 +1,45 @@
 {
   "dataset": "places",
-  "computed_with": "JS port of src/engine.py (matches Python on 49/49 checks); rerun python -m tests.run_evaluation to regenerate",
+  "population": "ONS mid-2024 estimates on Census 2021 Output Areas",
+  "computed_with": "python -m tests.run_evaluation (src/engine.py)",
   "baseline_cases": 10,
-  "baseline_differs": 5,
-  "people_gained_vs_baseline_total": 9403,
+  "baseline_differs": 6,
+  "people_gained_vs_baseline_total": 9195,
   "optimiser": {
     "nursery": {
-      "seconds": 0.032,
-      "coverage_before_pct": 60.2,
-      "coverage_after_top3_pct": 76.7,
+      "seconds": 0.012,
+      "coverage_before_pct": 60.5,
+      "coverage_after_top3_pct": 76.8,
       "top3_wards": [
-        "Sholing",
         "Bevois",
+        "Sholing",
         "Millbrook"
       ]
     },
     "gp": {
-      "seconds": 0.017,
-      "coverage_before_pct": 83.1,
-      "coverage_after_top3_pct": 91.1,
+      "seconds": 0.008,
+      "coverage_before_pct": 83.6,
+      "coverage_after_top3_pct": 91.5,
       "top3_wards": [
         "Redbridge",
-        "Sholing",
-        "Bassett"
+        "Bassett",
+        "Sholing"
       ]
     },
     "pharmacy": {
-      "seconds": 0.007,
-      "coverage_before_pct": 86.3,
-      "coverage_after_top3_pct": 93.1,
+      "seconds": 0.008,
+      "coverage_before_pct": 86.7,
+      "coverage_after_top3_pct": 93.4,
       "top3_wards": [
-        "Sholing",
         "Bassett",
+        "Sholing",
         "Woolston"
       ]
     },
     "cafe": {
-      "seconds": 0.007,
-      "coverage_before_pct": 79.4,
-      "coverage_after_top3_pct": 89.0,
+      "seconds": 0.008,
+      "coverage_before_pct": 80.2,
+      "coverage_after_top3_pct": 89.4,
       "top3_wards": [
         "Sholing",
         "Coxford",
@@ -46,9 +47,9 @@
       ]
     },
     "library": {
-      "seconds": 0.03,
-      "coverage_before_pct": 43.7,
-      "coverage_after_top3_pct": 59.7,
+      "seconds": 0.008,
+      "coverage_before_pct": 44.6,
+      "coverage_after_top3_pct": 60.2,
       "top3_wards": [
         "Freemantle",
         "Redbridge",
@@ -64,7 +65,7 @@
     "library": 17
   },
   "city_centre_cafe": {
-    "coverage_change_pct_points": 0,
+    "coverage_change_pct_points": 0.0,
     "competitors_within_400m": 32
   }
 }

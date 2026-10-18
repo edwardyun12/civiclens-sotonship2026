@@ -73,7 +73,8 @@ Nothing here is a validated fact. Change values here, not inside functions.
 ## 5. `src/engine.py`: the deterministic engine
 
 All distances are metres on British National Grid (EPSG:27700). Demand points are the 792 Census 2021 Output Area
-population-weighted centroids. Candidate sites for the optimiser and for score percentiles are the same 792 points.
+population-weighted centroids, weighted by ONS mid-2024 residents (`city.pop_year`; the baseline dataset swaps
+in the Census 2021 counts). Candidate sites for the optimiser and for score percentiles are the same 792 points.
 
 | Function / class | What it does | Why it exists |
 |---|---|---|
@@ -139,11 +140,13 @@ Modes: **Test a site** (map click / postcode / ward; compare up to 2 other uses 
 ## 8. `src/fetch_data.py`: city data (run rarely)
 
 `python -m src.fetch_data [--skip-osm] [--osm-file PATH]` rebuilds `data/processed/` and `data/raw/SOURCES.json`.
+`python -m src.fetch_data --update-pop [--sape-file PATH]` only refreshes `oa.csv` to the latest ONS population estimate.
 
 | Function | Source → output |
 |---|---|
 | `arcgis_query`, `in_list`, `fetch_geography` | ONS ArcGIS: OA centroids, OA→LSOA→ward lookups, LSOA boundaries, IMD 2019 |
 | `fetch_population` | Census 2021 TS007A via Nomis: total and aged 0-4 per OA |
+| `fetch_sape`, `apply_sape`, `update_population` | ONS mid-2024 LSOA estimates (83 MB xlsx; city rows cached in `data/raw/ons_sape_mid2024_lsoa.csv`). Scales each OA by its LSOA's growth → `pop`, `pop_0_4`, `pop_year`; Census counts kept as `pop_2021`, `pop_0_4_2021` |
 | `fetch_facilities`, `parse_osm`, `classify` | Overpass: the 5 uses (+ coworking) → `facilities_osm.csv` |
 | `geocode`, `fetch_nhs`, `merge_registers` | NHS ODS GPs/pharmacies geocoded by postcode; replace OSM for those uses → `facilities.csv` (**the 17 Oct baseline**) |
 | `polygonal`, `fetch_flood` | Environment Agency Flood Zone 3 → `flood_zone3.geojson` |

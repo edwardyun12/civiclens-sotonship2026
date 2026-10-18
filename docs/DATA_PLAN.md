@@ -53,7 +53,7 @@ tables feed the map pop-ups, the comparison table and the brief.
 
 | # | Source | What it adds | Geography | Licence |
 |---|---|---|---|---|
-| A1 | **ONS small area population estimates, mid-2024** (released 7 Nov 2025) | Population by single year of age and sex, newer than Census 2021 | LSOA | OGL v3 |
+| A1 | **ONS small area population estimates, mid-2024** (released 7 Nov 2025) | Population by single year of age and sex, newer than Census 2021. **Done 18 Oct: drives simulator demand** | LSOA | OGL v3 |
 | A2 | **Census 2021 TS045 car or van availability** | Share of households with no car: who really depends on walking distance | Output Area | OGL v3 |
 | A3 | Census 2021 extras: TS003 household composition, TS066 economic activity, TS037 general health, TS021 ethnic group | Families with young children, working parents, health need | Output Area | OGL v3 |
 | A4 | **ONS UK Business Counts** (IDBR, via Nomis, March 2026) | Number of businesses by 5-digit SIC and size band | MSOA (finest level) | OGL v3 |

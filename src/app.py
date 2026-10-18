@@ -180,7 +180,8 @@ if demo:
 
 st.sidebar.divider()
 st.sidebar.caption(
-    "Data: Census 2021, IMD 2019, ONS geography, NHS ODS, OpenStreetMap (ODbL), EA Flood Map. "
+    "Data: ONS mid-2024 population estimates spread over Census 2021 Output Areas, IMD 2019, ONS geography, "
+    "NHS ODS, OpenStreetMap (ODbL), EA Flood Map. "
     "Straight-line distances from Output Area centroids. Scores are unvalidated design choices. "
     "Decision support only.")
 

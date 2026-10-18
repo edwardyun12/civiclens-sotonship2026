@@ -1,11 +1,11 @@
 case,use,wards,newly_covered,competitors_400m,most_deprived_40pct_newly,our_pick,baseline_pick,differs,people_gained_vs_baseline
-1,cafe,Bargate / Portswood / Redbridge,0 / 0 / 6100,16 / 7 / 0,0 / 0 / 6100,Redbridge,Redbridge,False,0
-2,cafe,Bevois / Shirley / Sholing,0 / 0 / 6562,2 / 4 / 0,0 / 0 / 3385,Sholing,Sholing,False,0
-3,nursery,Bargate / Bevois / Sholing,54 / 704 / 502,1 / 0 / 0,54 / 658 / 283,Bevois,Bevois,False,0
-4,nursery,Portswood / Millbrook / Woolston,275 / 340 / 294,0 / 0 / 0,174 / 131 / 294,Millbrook,Portswood,True,65
-5,gp,Bargate / Redbridge / Coxford,0 / 7653 / 1434,1 / 0 / 0,0 / 7653 / 334,Redbridge,Redbridge,False,0
-6,gp,Swaythling / Harefield / Peartree,0 / 351 / 3123,2 / 0 / 0,0 / 0 / 2213,Peartree,Harefield,True,2772
-7,pharmacy,Bevois / Bitterne Park / Coxford,0 / 679 / 1100,0 / 1 / 0,0 / 0 / 0,Coxford,Bevois,True,1100
-8,pharmacy,Freemantle / Bassett / Woolston,1074 / 4670 / 300,0 / 0 / 1,1074 / 0 / 300,Bassett,Freemantle,True,3596
-9,library,Bargate / Peartree / Redbridge,8923 / 9775 / 10793,0 / 0 / 0,5719 / 7210 / 10793,Redbridge,Bargate,True,1870
-10,library,Bitterne / Freemantle / Swaythling,3860 / 14533 / 8263,1 / 0 / 0,3335 / 10406 / 7363,Freemantle,Freemantle,False,0
+1,cafe,Bargate / Portswood / Redbridge,0 / 0 / 6054,13 / 7 / 0,0 / 0 / 6054,Redbridge,Redbridge,False,0
+2,cafe,Bevois / Shirley / Sholing,0 / 0 / 6417,2 / 4 / 0,0 / 0 / 3256,Sholing,Sholing,False,0
+3,nursery,Bargate / Bevois / Sholing,341 / 741 / 480,0 / 0 / 0,340 / 681 / 270,Bevois,Bargate,True,400
+4,nursery,Portswood / Millbrook / Woolston,273 / 334 / 155,0 / 0 / 0,152 / 133 / 155,Millbrook,Portswood,True,61
+5,gp,Bargate / Redbridge / Coxford,0 / 7550 / 1405,1 / 0 / 0,0 / 7550 / 321,Redbridge,Redbridge,False,0
+6,gp,Swaythling / Harefield / Peartree,0 / 342 / 3035,2 / 0 / 0,0 / 0 / 2114,Peartree,Harefield,True,2693
+7,pharmacy,Bevois / Bitterne Park / Coxford,0 / 673 / 1084,0 / 1 / 0,0 / 0 / 0,Coxford,Bevois,True,1084
+8,pharmacy,Freemantle / Bassett / Woolston,1146 / 5118 / 304,0 / 0 / 0,1146 / 0 / 304,Bassett,Freemantle,True,3972
+9,library,Bargate / Peartree / Redbridge,6114 / 9669 / 10654,1 / 0 / 0,5890 / 7154 / 10654,Redbridge,Peartree,True,985
+10,library,Bitterne / Freemantle / Swaythling,3840 / 15174 / 9857,1 / 0 / 0,3308 / 10823 / 8576,Freemantle,Freemantle,False,0

@@ -246,7 +246,9 @@ footer ul { margin: 0; padding-left: 18px }
   function fillCats() { const v0 = cat.value; cat.innerHTML = ""; for (const [k, v] of Object.entries(C)) cat.add(new Option(`${v.label} (${E.facilities(k).length} existing)`, k)); if (v0) cat.value = v0; }
   fillCats();
   function useFacilities(key, fac, msg) {
-    E = SimEngine.create({ ...DATA, fac }); fillCats(); cat.value = S.cat;
+    // the baseline also uses the Census 2021 residents its published numbers were computed on
+    const oa = key === "baseline" && DATA.oa.pop21 ? { ...DATA.oa, pop: DATA.oa.pop21, pop04: DATA.oa.pop0421 } : DATA.oa;
+    E = SimEngine.create({ ...DATA, oa, fac }); fillCats(); cat.value = S.cat;
     $("dataset").value = key; $("ds-msg").textContent = msg; S.editedBrief = null; run();
   }
   $("dataset").onchange = (e) => { const k = e.target.value; if (FAC[k]) useFacilities(k, FAC[k], k === "places" ? "Merged OSM + NHS register + Companies House database. GPs and pharmacies must be on the NHS register." : "The 17 Oct file the published numbers were computed on."); };

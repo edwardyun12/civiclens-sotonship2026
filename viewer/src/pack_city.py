@@ -92,7 +92,9 @@ data = {
     "oa": {
         "code": oa.oa_code.tolist(), "ward": oa.ward.tolist(),
         "lat": oa.lat.round(6).tolist(), "lon": oa.lon.round(6).tolist(),
-        "pop": oa["pop"].astype(int).tolist(), "pop04": oa.pop_0_4.astype(int).tolist(),
+        "pop": oa["pop"].round().astype(int).tolist(), "pop04": oa.pop_0_4.round().astype(int).tolist(),
+        # Census 2021 counts for the 17 Oct baseline (pop/pop04 are ONS mid-2024 estimates when present)
+        **({"pop21": oa.pop_2021.astype(int).tolist(), "pop0421": oa.pop_0_4_2021.astype(int).tolist()} if "pop_2021" in oa else {}),
         "q": oa.imd_quintile.astype(int).tolist(), "flood": oa_flood.astype(int).tolist(),
     },
     "fac": [{"c": r.category, "n": (r["name"] if isinstance(r["name"], str) else ""), "lat": round(r.lat, 6),

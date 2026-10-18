@@ -47,10 +47,10 @@ def places_slim(places: pd.DataFrame) -> dict:
 
 def area_data() -> dict:
     oa = pd.read_csv(ROOT / "data" / "processed" / "oa.csv")
-    return {"oa": {"lat": oa.lat.round(6).tolist(), "lon": oa.lon.round(6).tolist(), "pop": oa["pop"].astype(int).tolist(),
+    return {"oa": {"lat": oa.lat.round(6).tolist(), "lon": oa.lon.round(6).tolist(), "pop": oa["pop"].round().astype(int).tolist(),
                    "ward": oa.ward.tolist(), "q": oa.imd_quintile.astype(int).tolist()},
             "lsoa_ward": oa.groupby("lsoa").ward.agg(lambda s: s.mode().iloc[0]).to_dict(),
-            "ward_pop": oa.groupby("ward")["pop"].sum().astype(int).to_dict()}
+            "ward_pop": oa.groupby("ward")["pop"].sum().round().astype(int).to_dict()}
 
 
 def ward_outlines() -> dict:

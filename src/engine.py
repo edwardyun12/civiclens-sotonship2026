@@ -56,6 +56,7 @@ class City:
     boundary_wgs: object           # shapely polygon in lat/lon (for maps)
     sources: dict
     flood: object | None = None    # shapely geometry in BNG, or None if not loaded
+    pop_year: int = 2021           # year of the residents figures (2024 = ONS mid-2024 estimate)
     _cand_dist: np.ndarray | None = field(default=None, repr=False)
 
     # Candidate sites for the optimiser and for score percentiles = all OA centroids.
@@ -116,6 +117,11 @@ def dataset_file(proc: Path, dataset: str | None) -> tuple[str, Path]:
 def load_city(proc: Path = PROC, dataset: str | None = None) -> City:
     oa = pd.read_csv(proc / "oa.csv")
     dataset, fac_file = dataset_file(proc, dataset)
+    # Demand is the ONS mid-2024 estimate spread over OAs (src/fetch_data.py apply_sape). The 17 Oct baseline
+    # keeps the Census 2021 counts its published test numbers were computed on.
+    if dataset == "baseline" and "pop_2021" in oa:
+        oa["pop"], oa["pop_0_4"], oa["pop_year"] = oa["pop_2021"], oa["pop_0_4_2021"], 2021
+    pop_year = int(oa["pop_year"].iloc[0]) if "pop_year" in oa else 2021
     fac = pd.read_csv(fac_file)
     oa["x"], oa["y"] = to_bng(oa.lat, oa.lon)
     fac["x"], fac["y"] = to_bng(fac.lat, fac.lon)
@@ -134,6 +140,7 @@ def load_city(proc: Path = PROC, dataset: str | None = None) -> City:
             flood = transform(lambda x, y, z=None: _TO_BNG.transform(x, y), unary_union(geoms))
     city = City(oa=oa, fac=fac, boundary=bng, boundary_wgs=wgs, sources=sources, flood=flood)
     city.dataset = dataset
+    city.pop_year = pop_year
     return city
 
 
@@ -304,6 +311,7 @@ def evaluate_site(city: City, category: str, lat: float, lon: float, radius: flo
     ward = city.oa.ward.iloc[int(np.argmin(ds))]
     return {
         "category": category, "category_label": cfg["label"], "demand_label": cfg["demand_label"],
+        "population_year": city.pop_year,
         "site": {"lat": round(lat_s, 5), "lon": round(lon_s, 5), "ward": ward},
         "radius_m": int(radius), "walk_minutes": round(radius / C.WALK_M_PER_MIN),
         "existing_facilities": n_fac,

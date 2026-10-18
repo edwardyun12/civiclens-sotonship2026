@@ -23,7 +23,7 @@ PRICES = {"claude-haiku-5-5": (0.10, 0.50), "claude-sonnet-5-5": (2.0, 10.0), "c
 USD_TO_GBP = float(os.environ.get("USD_TO_GBP", "0.75"))  # ASSUMPTION: rough exchange rate
 
 SOURCE_TAGS = {
-    "census": "Census 2021 TS007A (ONS, OGL)",
+    "census": "Census 2021 TS007A spread, scaled to ONS mid-2024 small area population estimates (ONS, OGL)",
     "imd": "English Indices of Deprivation 2019 (MHCLG, OGL)",
     "osm": "OpenStreetMap (ODbL)",
     "nhs": "NHS Organisation Data Service (OGL)",
@@ -62,7 +62,8 @@ def build_payload(results: list[dict], sens: dict | None = None, extra: dict | N
         scen.append(s)
     p = {"scenarios": scen,
          "score_notes": "need_score and viability_score are 0-100 percentiles against every possible site in the city; weights are design choices, not validated",
-         "data_years": {"census": 2021, "imd": 2019},
+         "data_years": {"census": 2021, "population_estimate": results[0].get("population_year", 2021) if results else 2021,
+                        "imd": 2019},
          "definitions": {"most_deprived_share_pct": 40, "competition_radius_m": 400, "score_scale_max": 100,
                          "demand_age_band": "0-4", "sensitivity_weight_change_pct": 20},
          "sources": SOURCE_TAGS}
@@ -136,7 +137,9 @@ def template(payload: dict) -> str:
             f"There are {s['competitors_within_400m']} existing {s['category_label'].lower()} sites within 400 m [osm]. "
             f"Community need {s['need_score']}/100, commercial viability {s['viability_score']}/100. "
             f"Confidence: {s['confidence']}.")
-    lines.append("Limits: straight-line distances from Census 2021 Output Area centroids; score weights are "
+    yr = payload.get("data_years", {}).get("population_estimate", 2021)
+    lines.append(f"Limits: residents are {'Census 2021 counts' if yr == 2021 else f'ONS mid-{yr} estimates'} at Output Area "
+                 "centroids; straight-line distances; score weights are "
                  "design choices, not validated; decision support only.")
     return "\n\n".join(lines)
 

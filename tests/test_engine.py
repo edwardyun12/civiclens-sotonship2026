@@ -193,3 +193,23 @@ def test_17_ward_centroid_inside_city(city):
 def test_18_two_scores_never_merged(city):
     r = E.evaluate_site(city, "cafe", *CENTRE_CAFE)
     assert "need_score" in r and "viability_score" in r and "score" not in r
+
+
+# ---------------------------------------------------------------- mid-2024 population update
+def test_sape_scaling_keeps_census_split_and_matches_ons_totals():
+    from src.fetch_data import apply_sape
+    oa = pd.DataFrame({"lsoa": ["L1", "L1", "L2"], "pop": [100., 300., 50.], "pop_0_4": [10., 0., 5.]})
+    sape = pd.DataFrame({"lsoa": ["L1", "L2"], "pop_est": [440, 40], "pop_0_4_est": [5, 6]})
+    out = apply_sape(oa, sape)
+    assert out["pop"].tolist() == [110., 330., 40.]          # L1 grows 10%, split 1:3 as in the Census
+    assert out["pop_0_4"].tolist() == [5., 0., 6.]
+    assert out["pop_2021"].tolist() == [100., 300., 50.] and (out.pop_year == 2024).all()
+    with pytest.raises(RuntimeError):
+        apply_sape(oa, sape[sape.lsoa == "L1"])
+
+
+def test_baseline_dataset_keeps_census_2021_population():
+    base, cur = E.load_city(dataset="baseline"), E.load_city()
+    assert base.pop_year == 2021 and int(base.oa["pop"].sum()) == 248982
+    if "pop_2021" in cur.oa:
+        assert cur.pop_year == 2024 and int(cur.oa["pop"].sum()) > 255000
