@@ -317,6 +317,12 @@ score or count. If Ollama is off, the page falls back to `matchBusiness` and say
 **Assistant context:** `lib/assistantContext.js` holds a plain-text summary of what is on screen (set by the
 Places and Simulator pages); the chatbot (`App.jsx`) sends it as `context` with each question, and
 `rag/generator.py prepare_answer(app_context=...)` adds it to the prompt as "App analysis" that the model may cite.
+A page can also register `about(question)`: the simulator's `aboutQuestion` finds a ward or neighbourhood the question
+names (`findPlace`, using `public/data/neighbourhoods.json` from `python -m pipeline.neighbourhoods`, OpenStreetMap),
+reads the business from the question (exact type match, else the LLM classification), and adds the model's analysis
+of that place, so "a Japanese store in Weston" is answered for Weston rather than the site on screen.
+The prompt lets Qwen add a final "General guidance (not from Southampton evidence)" sentence when the sources do not
+cover a question, and lists the only citation labels it may use.
 
 ## 11. `tests/` and `evaluation/`
 

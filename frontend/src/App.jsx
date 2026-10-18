@@ -34,7 +34,7 @@ function Chatbot({ startOpen = true, page }) {
     const history=messages.map(({role,content})=>({role,content})).slice(-4)
     setMessages(current=>[...current,{role:'user',content:question},{role:'assistant',content:'',sources:[]}]);setInput('');setLoading(true)
     try{
-      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history,top_k:3,context:getAssistantContext()||null})})
+      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history,top_k:3,context:(await getAssistantContext(question))||null})})
       if(!response.ok||!response.body)throw new Error('The evidence service is unavailable.')
       const reader=response.body.getReader();const decoder=new TextDecoder();let buffer=''
       while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const lines=buffer.split('\n');buffer=lines.pop()??''

@@ -56,6 +56,6 @@ def direct_response(question: str) -> str | None:
             "- compare figures, areas, and business conditions;\n"
             "- identify evidence relevant to business and planning questions; and\n"
             "- provide document and page citations for factual claims.\n\n"
-            "If the available evidence does not support an answer, I will say that I don't know."
+            "Where the evidence doesn't cover something, I add general guidance and label it as such."
         )
     return None

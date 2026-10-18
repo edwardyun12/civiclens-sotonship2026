@@ -10,7 +10,7 @@ import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, Cli
 import '@engine'
 import { fmt, metres, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, KeepInView } from '../lib/MapFit.jsx'
-import { setAssistantContext } from '../lib/assistantContext.js'
+import { businessWords, findPlace, setAssistantContext } from '../lib/assistantContext.js'
 import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, targetFromAI, verdict } from './opportunity.js'
 
 const SimEngine = window.SimEngine
@@ -52,12 +52,26 @@ function PlaceTip({ p, kind, site }) {
 
 // AI classifications already made this session (the local model takes a few seconds per idea)
 const classified = new Map()
+// ask the local LLM (same model as the assistant) to classify an idea against the data's own sectors and types
+function classifyIdea(idea, types) {
+  const key = idea.trim().toLowerCase()
+  if (!classified.has(key)) {
+    const job = fetch('/api/classify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: idea, types: types.slice(0, 300).map(({ label, cat, grp, n }) => ({ label, cat: cat || '', grp: grp || '', n })),
+        sectors: [...new Set(types.map(x => x.grp).filter(Boolean))] }) })
+      .then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error || 'no answer'); return d })
+    job.catch(() => classified.delete(key))   // a failure is not remembered, so it can be retried
+    classified.set(key, job)
+  }
+  return classified.get(key)
+}
 
 function ClickToPlace({ on }) { useMapEvents({ click: e => on([e.latlng.lat, e.latlng.lng]) }); return null }
 
 export default function SimulatorView() {
   const [city, error] = useData('city')
   const [cols] = useData('places')
+  const [hoods] = useData('neighbourhoods')
   const places = useMemo(() => (cols ? placeRows(cols).filter(p => p.inside) : []), [cols])
   const types = useMemo(() => businessTypes(places), [places])
   const quick = useMemo(() => { const have = new Set(types.map(t => t.label)); const q = QUICK.filter(x => have.has(x)); for (const t of types) if (q.length < 6 && !q.includes(t.label)) q.push(t.label); return q.slice(0, 6) }, [types])
@@ -76,20 +90,13 @@ export default function SimulatorView() {
   const [ai, setAi] = useState({ status: 'idle' })     // the local LLM's reading of the idea: idle | loading | done | error
   useEffect(() => { const t = setTimeout(() => setQuery(text), 350); return () => clearTimeout(t) }, [text])
 
-  // ask the local LLM (same model as the assistant) to classify the idea against the data's own sectors and types
+  // the typed idea is classified by the local LLM; results build on that classification
   const askAI = async idea => {
-    const key = idea.trim().toLowerCase()
-    if (key.length < 2 || !types.length) return
+    if (idea.trim().length < 2 || !types.length) return
     setText(idea); setQuery(idea)
-    if (classified.has(key)) { setAi({ status: 'done', text: idea, result: classified.get(key) }); return }
     setAi({ status: 'loading', text: idea })
     try {
-      const r = await fetch('/api/classify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: idea, types: types.slice(0, 300).map(({ label, cat, grp, n }) => ({ label, cat: cat || '', grp: grp || '', n })),
-          sectors: [...new Set(types.map(x => x.grp).filter(Boolean))] }) })
-      const d = await r.json()
-      if (!d.ok) throw new Error(d.error || 'no answer')
-      classified.set(key, d)
+      const d = await classifyIdea(idea, types)
       setAi(cur => (cur.text === idea ? { status: 'done', text: idea, result: d } : cur))
     } catch (e) {
       setAi(cur => (cur.text === idea ? { status: 'error', text: idea, error: e.message } : cur))
@@ -121,6 +128,35 @@ export default function SimulatorView() {
   const onMap = p => { setPoint(p); setScope('map') }
   const choosePick = i => { setPick(i); if (scope === 'map') setScope('city') }
 
+  // a chat question that names an area or neighbourhood ("a Japanese store in Weston") gets the model's own analysis
+  // of that place, for the business it names (quick type matching) or else the business on screen
+  const aboutQuestion = async question => {
+    const place = findPlace(question, Object.keys(city?.ward_outlines || {}), hoods)
+    if (!place || !ctx) return ''
+    const words = businessWords(question, place.name)
+    let t = target
+    if (words && words.toLowerCase() !== target.text?.trim().toLowerCase()) {
+      const quick = matchBusiness(words, types)
+      if (quick?.level === 'type') t = quick
+      else {
+        try { t = targetFromAI(await classifyIdea(words, types), words, types) } catch { t = quick || target }
+      }
+    }
+    const c = t === target ? ctx : analyse(city, places, t, { ages: t.ages, radius })
+    const s = place.kind === 'ward' ? suggest(c, { k: 1, ward: place.ward })[0] : siteAt(c, place.lat, place.lon)
+    if (!s) return `The question is about ${place.name}; no suitable site was found there (flood zone or no data).`
+    const b = feasibilityBrief(c, s, places.length), f = s.factors, best = suggest(c, { k: 3 })
+    return [
+      `The question is about ${place.name}${place.kind === 'neighbourhood' ? ` (a neighbourhood in ${place.ward} ward)` : ' ward'}. Answer about ${place.name}, not about the site selected on screen.`,
+      t.level === 'ai' && t !== target ? `AI classification of "${words}": ${t.label}; sector ${t.grp}; niche ${t.niche}; like-for-like types ${[...t.directSpecs].join(', ') || 'none in the data'}; name keywords ${t.keywords.join(', ')}.` : '',
+      `Business analysed: ${t.label}${t === target ? ' (the business on screen)' : ` (read from the question "${words}")`}${t.level === 'category' ? `; no exact type in the data, so compared with all ${t.n} similar businesses` : ''}${t.matched ? '' : '; no businesses like it in the data, so competitors could not be counted'}.`,
+      `App analysis for ${place.name} (${place.kind === 'ward' ? 'best site in the ward' : 'at the neighbourhood centre'}): feasibility ${s.score}/100 (${verdict(s.score)[1]}). Factors (percentile vs all sites in Southampton): customers ${f.demand}, room in the market ${f.room}, passing trade ${f.footfall}, growth ${f.growth}.`,
+      `${Math.round(s.customers)} target customers and ${Math.round(s.residents)} residents within ${radius} m; ${s.compR} direct competitors within ${radius} m${s.nearest != null ? `, nearest ${Math.round(s.nearest)} m away` : ''}; ${s.relR} related businesses; ${s.footfall} shops/services within 400 m; population change since 2021 ${s.growth.toFixed(1)}%;${s.flood ? ' in flood zone 3;' : ''}`,
+      b.strengths.length ? `Strengths in ${place.name}: ${b.strengths.join(' ')}` : '', b.risks.length ? `Risks in ${place.name}: ${b.risks.join(' ')}` : '',
+      best.length ? `For comparison, the best sites in Southampton for ${t.label}: ${best.map((p, i) => `${i + 1}. ${p.ward} ${p.score}/100`).join('; ')}.` : '',
+    ].filter(Boolean).join('\n')
+  }
+
   // tell the assistant what is on screen
   useEffect(() => {
     if (!ctx || !site || !brief) return
@@ -135,8 +171,8 @@ export default function SimulatorView() {
       brief.changes.length ? `Suggested changes: ${brief.changes.map(c => c.text).join(' ')}` : '',
       picks.length ? `Top suggested sites: ${picks.map((p, i) => `${i + 1}. ${p.ward} ${p.score}/100`).join('; ')}.` : '',
       engine?.r ? `Planning view (${engine.r.category_label}): coverage ${engine.r.coverage_before_pct}% -> ${engine.r.coverage_after_pct}%, ${engine.r.newly_covered} newly within walking distance, community need ${engine.r.need_score}/100.` : '',
-    ].filter(Boolean).join('\n'))
-  }, [ctx, site, brief, picks, engine, scope, area])
+    ].filter(Boolean).join('\n'), aboutQuestion)
+  }, [ctx, site, brief, picks, engine, scope, area, hoods])
 
   if (error) return <div className="tool-error">{error.message}</div>
   if (!city || !cols) return <div className="tool-error">Loading the city…</div>
@@ -174,7 +210,6 @@ export default function SimulatorView() {
       </form>
       <datalist id="biz-types">{types.slice(0, 200).map(t => <option key={t.label} value={t.label} />)}</datalist>
       <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => askAI(q)}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
-      <AiCard ai={ai} target={target} aiReady={aiReady} />
       {target && target.level !== 'ai' && <p className={`match ${target.matched ? '' : 'warn'}`}>{target.matched
         ? target.level === 'category' ? <>No exact match, so compared with all <b>{fmt(target.n)} {catText(target.cat)}</b> in the data.</>
           : <>Compared with <b>{fmt(target.n)} {target.label.toLowerCase()}</b> in the data; related: other {catText(target.cat)}.</>
@@ -273,16 +308,6 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
     <details className="limits"><summary>Limitations ({brief.limits.length})</summary><ul>{brief.limits.map((t, i) => <li key={i}>{t}</li>)}</ul></details>
     {engine?.brief && <EngineBrief b={engine.brief} />}
   </aside>
-}
-
-function AiCard({ ai, target, aiReady }) {
-  if (ai.status === 'idle') return <p className="muted small">Type any business and press Enter: the AI works out its sector, niche, competitors and customers.</p>
-  if (ai.status === 'loading') return <div className="ai-card loading"><Loader2 size={15} className="spin" /><span>Thinking about “{ai.text}”: sector, niche, competitors and customers…</span></div>
-  if (ai.status === 'error') return <div className="ai-card error"><AlertTriangle size={15} /><span>The AI isn’t available ({ai.error}). Using quick matching instead; start Ollama and the assistant API to use it.</span></div>
-  if (!target) return null
-  if (!aiReady || target.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target.text}”.</p>
-  // the full classification (sector, niche, competitors, reasoning) goes to the assistant chat, not this panel
-  return <p className="muted small"><Sparkles size={12} /> Read by the AI as <b>{target.label}</b>{target.grp ? <> in {target.grp}</> : ''}. Ask the assistant why.</p>
 }
 
 function EngineBrief({ b }) {
