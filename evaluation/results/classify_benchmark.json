@@ -1,0 +1,553 @@
+{
+ "run": "2026-10-18T08:45:42.347Z",
+ "places": 3718,
+ "types": 87,
+ "cases": 22,
+ "quick_matcher_hits": 10,
+ "llm_hits": 21,
+ "llm_errors": 0,
+ "mean_llm_seconds": 21.5,
+ "rows": [
+  {
+   "idea": "japanese restaurant",
+   "accepted": [
+    "Japanese"
+   ],
+   "quick": [
+    "Restaurant/Cafe/Canteen"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Japanese"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Chinese",
+    "Thai",
+    "Korean",
+    "Indian",
+    "Italian",
+    "Mexican",
+    "British",
+    "Vietnamese"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 24.825,
+   "error": null
+  },
+  {
+   "idea": "sushi bar",
+   "accepted": [
+    "Japanese"
+   ],
+   "quick": [
+    "Hairdresser or barber"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Japanese",
+    "Noodle bar"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Korean",
+    "Thai",
+    "Chinese",
+    "Indian",
+    "Italian",
+    "Mexican",
+    "Spanish",
+    "Greek"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 28.415,
+   "error": null
+  },
+  {
+   "idea": "korean bbq",
+   "accepted": [
+    "Korean"
+   ],
+   "quick": [
+    "Korean"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Korean"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Japanese",
+    "Chinese",
+    "Indian",
+    "Thai",
+    "Italian",
+    "Mexican",
+    "Vietnamese",
+    "Pan-Asian"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 26.203,
+   "error": null
+  },
+  {
+   "idea": "ramen shop",
+   "accepted": [
+    "Japanese",
+    "Noodle bar"
+   ],
+   "quick": [
+    "Coffee shop"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Japanese",
+    "Noodle bar"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Pan-Asian",
+    "Chinese",
+    "Thai",
+    "Indian",
+    "Italian",
+    "Mexican",
+    "Korean",
+    "Vietnamese"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 20.874,
+   "error": null
+  },
+  {
+   "idea": "thai takeaway",
+   "accepted": [
+    "Thai"
+   ],
+   "quick": [
+    "Thai"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Thai"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Chinese",
+    "Indian",
+    "Pan-Asian",
+    "Korean",
+    "Vietnamese",
+    "Japanese",
+    "Mexican",
+    "Italian"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 23.481,
+   "error": null
+  },
+  {
+   "idea": "dim sum restaurant",
+   "accepted": [
+    "Chinese"
+   ],
+   "quick": [
+    "(all restaurant_cafe)"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Chinese",
+    "Pan-Asian"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Noodle bar",
+    "Japanese",
+    "Thai",
+    "Vietnamese",
+    "Korean",
+    "Indian",
+    "Italian",
+    "Mexican"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 19.384,
+   "error": null
+  },
+  {
+   "idea": "curry house",
+   "accepted": [
+    "Indian"
+   ],
+   "quick": [
+    "Hotel/bed & breakfast/guest house"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Indian"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Chinese",
+    "Thai",
+    "Korean",
+    "Japanese",
+    "Vietnamese",
+    "Pan-Asian",
+    "British",
+    "Mexican"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 23.293,
+   "error": null
+  },
+  {
+   "idea": "vietnamese pho place",
+   "accepted": [
+    "Vietnamese"
+   ],
+   "quick": [
+    "Mobile phone shop"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Vietnamese"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Chinese",
+    "Indian",
+    "Thai",
+    "Japanese",
+    "Korean",
+    "Italian",
+    "Mexican",
+    "Pan-Asian"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 25.348,
+   "error": null
+  },
+  {
+   "idea": "pizzeria",
+   "accepted": [
+    "Pizza"
+   ],
+   "quick": [],
+   "quick_hit": false,
+   "ai": [
+    "Pizza"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Italian",
+    "Chinese",
+    "Indian",
+    "Mexican",
+    "Greek",
+    "Spanish",
+    "Korean",
+    "Japanese"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 23.952,
+   "error": null
+  },
+  {
+   "idea": "chippy",
+   "accepted": [
+    "Fish and chips"
+   ],
+   "quick": [
+    "Fish and chips"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Fish and chips"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Pizza",
+    "Kebab",
+    "Sandwich shop",
+    "Chinese",
+    "Indian",
+    "Italian",
+    "Mexican"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 17.938,
+   "error": null
+  },
+  {
+   "idea": "bubble tea shop",
+   "accepted": [
+    "Bubble tea"
+   ],
+   "quick": [
+    "Bubble tea"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Bubble tea"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Tea room",
+    "Coffee shop",
+    "Café",
+    "Chinese",
+    "Thai",
+    "Japanese",
+    "Korean",
+    "Vietnamese"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 25.434,
+   "error": null
+  },
+  {
+   "idea": "craft beer bar",
+   "accepted": [
+    "Bar",
+    "Pub or bar",
+    "Pub/bar/nightclub"
+   ],
+   "quick": [
+    "(all pub_bar)"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Bar",
+    "Pub"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Pub or bar",
+    "Café",
+    "Coffee shop",
+    "Tea room",
+    "Burgers",
+    "Fish and chips",
+    "Sandwich shop"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 18.465,
+   "error": null
+  },
+  {
+   "idea": "gastropub",
+   "accepted": [
+    "Pub",
+    "Pub or bar"
+   ],
+   "quick": [],
+   "quick_hit": false,
+   "ai": [
+    "Pub",
+    "Bar"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Pub or bar"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 19.351,
+   "error": null
+  },
+  {
+   "idea": "barber shop",
+   "accepted": [
+    "Barber",
+    "Hairdresser or barber"
+   ],
+   "quick": [
+    "Hairdresser or barber"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Hairdresser or barber",
+    "Barber"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Beauty salon",
+    "Tattoo studio",
+    "Nail salon",
+    "Optician",
+    "Laundry or dry cleaner",
+    "Mobile phone shop",
+    "Vape shop"
+   ],
+   "ai_sector": "Retail",
+   "seconds": 18.222,
+   "error": null
+  },
+  {
+   "idea": "nail bar",
+   "accepted": [
+    "Nail salon"
+   ],
+   "quick": [
+    "Hairdresser or barber"
+   ],
+   "quick_hit": false,
+   "ai": [
+    "Nail salon"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Hairdresser or barber",
+    "Tattoo studio",
+    "Optician",
+    "Laundry or dry cleaner",
+    "Mobile phone shop"
+   ],
+   "ai_sector": "Retail",
+   "seconds": 20.188,
+   "error": null
+  },
+  {
+   "idea": "yoga studio",
+   "accepted": [
+    "Gym or fitness centre",
+    "Sports facility"
+   ],
+   "quick": [
+    "Tattoo studio"
+   ],
+   "quick_hit": false,
+   "ai": [],
+   "ai_hit": false,
+   "ai_similar": [],
+   "ai_sector": "Health",
+   "seconds": 15.623,
+   "error": null
+  },
+  {
+   "idea": "halal butcher",
+   "accepted": [
+    "Butcher",
+    "Halal food shop"
+   ],
+   "quick": [
+    "Butcher"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Butcher",
+    "Halal food shop"
+   ],
+   "ai_hit": true,
+   "ai_similar": [],
+   "ai_sector": "Retail",
+   "seconds": 24.827,
+   "error": null
+  },
+  {
+   "idea": "polish deli",
+   "accepted": [
+    "Polish or Eastern European shop"
+   ],
+   "quick": [
+    "Polish or Eastern European shop"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Polish or Eastern European shop"
+   ],
+   "ai_hit": true,
+   "ai_similar": [],
+   "ai_sector": "Retail",
+   "seconds": 25.24,
+   "error": null
+  },
+  {
+   "idea": "vape shop",
+   "accepted": [
+    "Vape shop"
+   ],
+   "quick": [
+    "Vape shop"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Vape shop"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Clothing shop",
+    "Beauty salon",
+    "Hairdresser or barber",
+    "Tattoo studio",
+    "Nail salon",
+    "Mobile phone shop",
+    "Optician",
+    "Laundry or dry cleaner"
+   ],
+   "ai_sector": "Retail",
+   "seconds": 17.568,
+   "error": null
+  },
+  {
+   "idea": "ice cream parlour",
+   "accepted": [
+    "Desserts or ice cream",
+    "Ice cream or dessert"
+   ],
+   "quick": [
+    "Desserts or ice cream"
+   ],
+   "quick_hit": true,
+   "ai": [
+    "Desserts or ice cream"
+   ],
+   "ai_hit": true,
+   "ai_similar": [
+    "Chinese",
+    "Indian",
+    "Italian",
+    "Mexican",
+    "Thai",
+    "Korean",
+    "Japanese",
+    "British"
+   ],
+   "ai_sector": "Food and drink",
+   "seconds": 19.277,
+   "error": null
+  },
+  {
+   "idea": "dog grooming salon",
+   "accepted": [],
+   "quick": [
+    "Beauty salon"
+   ],
+   "quick_hit": false,
+   "ai": [],
+   "ai_hit": true,
+   "ai_similar": [
+    "Gym or fitness centre"
+   ],
+   "ai_sector": "Leisure and hospitality",
+   "seconds": 18.854,
+   "error": null
+  },
+  {
+   "idea": "kids coding club",
+   "accepted": [],
+   "quick": [],
+   "quick_hit": true,
+   "ai": [],
+   "ai_hit": true,
+   "ai_similar": [
+    "School/college/university",
+    "Day nursery or childcare",
+    "Pre-school or nursery"
+   ],
+   "ai_sector": "Childcare, education and care",
+   "seconds": 15.444,
+   "error": null
+  }
+ ]
+}
