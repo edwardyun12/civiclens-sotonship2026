@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from rag.classify import classify_business
 from rag.generator import prepare_answer, stream_generated_answer
 from rag.routing import direct_response
 
@@ -28,6 +29,19 @@ class ChatRequest(BaseModel):
     context: str | None = Field(default=None, max_length=4_000)
 
 
+class BusinessType(BaseModel):
+    label: str = Field(max_length=120)
+    cat: str = ""
+    grp: str = ""
+    n: int = 0
+
+
+class ClassifyRequest(BaseModel):
+    text: str = Field(min_length=2, max_length=200)
+    types: list[BusinessType] = Field(default_factory=list, max_length=400)
+    sectors: list[str] = Field(default_factory=list, max_length=30)
+
+
 app = FastAPI(title="Southampton Opportunity Engine API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +55,15 @@ app.add_middleware(
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/api/classify")
+def classify(payload: ClassifyRequest) -> dict:
+    """Business simulator: let the local LLM classify a business idea into sector, niche and competitor types."""
+    try:
+        return {"ok": True, **classify_business(payload.text, [t.model_dump() for t in payload.types], payload.sectors)}
+    except Exception as exc:  # the page falls back to its own matching
+        return {"ok": False, "error": str(exc)}
 
 
 @app.post("/api/chat")

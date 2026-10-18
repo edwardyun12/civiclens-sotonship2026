@@ -304,6 +304,16 @@ better site within 1.5 km) and limitations. For nursery / GP / pharmacy / café 
 coverage and the audited planning brief. Place-type helpers shared with the Places page are in
 `lib/placeTypes.js`.
 
+**AI classification:** pressing Enter / *Analyse with AI* (or `?idea=thai%20restaurant#simulator`) sends the idea
+plus the data's own sectors and detailed types to `POST /api/classify` (`rag/classify.py`). The local LLM (same
+model as the assistant, `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, related
+types, name keywords, customers, passing trade, reasoning and setup tips. The server keeps only types and sectors
+that exist (vague "cuisine not known" types can only be related; related must share the sector; generic name words
+are dropped). `targetFromAI` turns it into the model's target: direct competitors = the like-for-like types plus
+same-sector places whose name contains a keyword; passing trade sets the footfall weight. The AI never produces a
+score or count. If Ollama is off, the page falls back to `matchBusiness` and says so. Tests:
+`tests/test_rag_classify.py`.
+
 **Assistant context:** `lib/assistantContext.js` holds a plain-text summary of what is on screen (set by the
 Places and Simulator pages); the chatbot (`App.jsx`) sends it as `context` with each question, and
 `rag/generator.py prepare_answer(app_context=...)` adds it to the prompt as "App analysis" that the model may cite.

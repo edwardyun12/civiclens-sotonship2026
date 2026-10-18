@@ -71,6 +71,20 @@ export function matchBusiness(text, types) {
   return { text, label: text.trim().replace(/^./, c => c.toUpperCase()), spec: null, cat: null, grp: null, n: 0, matched: false, engineUse, ages: rule ? rule[1] : ALL_AGES }
 }
 
+// The local LLM's classification (rag/classify.py, checked against the data's own types) -> a target for analyse().
+// Direct competitors = the chosen like-for-like types plus places in the same sector whose name contains a niche
+// keyword ("Thai Orchid"); related = the chosen same-sector types.
+export function targetFromAI(c, text, types) {
+  const q = norm(text), byLabel = Object.fromEntries(types.map(t => [t.label, t]))
+  const first = byLabel[c.direct_types[0]] || byLabel[c.related_types[0]]
+  return { text, label: c.business || text, niche: c.niche, grp: c.sector || first?.grp || null, cat: first?.cat || null,
+    directSpecs: new Set(c.direct_types), relatedSpecs: new Set(c.related_types), keywords: c.name_keywords || [],
+    ages: c.customers?.length ? c.customers : ALL_AGES, passing: c.passing_trade, reasoning: c.reasoning, tips: c.setup_tips || [],
+    matched: c.direct_types.length > 0 || (c.name_keywords || []).length > 0, level: 'ai', source: 'ai', model: c.model,
+    engineUse: (ENGINE_USES.find(([re]) => re.test(q) || re.test(norm(c.business))) || [])[1] || null,
+    n: c.direct_types.reduce((a, k) => a + (byLabel[k]?.n || 0), 0) }
+}
+
 const ageCol = (o, col) => (col === 'pop04' ? o.pop04 : o.ages?.[col])
 
 // Score every Output Area centre as a site for this business
@@ -88,9 +102,15 @@ export function analyse(city, places, target, { ages, radius = 800 }) {
   for (const p of places) {
     if (p.ro || !Number.isFinite(p.lat)) continue
     const [x, y] = toXY(p.lat, p.lon), q = { x, y, lat: p.lat, lon: p.lon, name: p.name, spec: specOf(p), ward: p.ward }
-    const isDirect = target?.level === 'category' ? p.cat === target.cat : target?.spec && q.spec === target.spec
+    let isDirect, isRelated
+    if (target?.level === 'ai') {
+      const name = norm(p.name), sameSector = !target.grp || p.grp === target.grp
+      isDirect = target.directSpecs.has(q.spec) || (sameSector && target.keywords.some(k => name.split(' ').some(w => w.startsWith(k))))
+      isRelated = target.relatedSpecs.has(q.spec)
+    } else if (target?.level === 'category') { isDirect = p.cat === target.cat; isRelated = p.grp === target.grp }
+    else { isDirect = target?.spec && q.spec === target.spec; isRelated = target?.cat && p.cat === target.cat }
     if (isDirect) direct.push(q)
-    else if (target?.level === 'category' ? p.grp === target.grp : target?.cat && p.cat === target.cat) related.push(q)
+    else if (isRelated) related.push(q)
     if (p.cf) facing.push(q)
   }
   const ctx = { city, o, N, R, ox, oy, w, pop21, groups, direct, related, facing, target, ages }
@@ -109,6 +129,10 @@ export function analyse(city, places, target, { ages, radius = 800 }) {
 }
 
 function weightsFor(target) {
+  // the AI's "how much does it depend on passing trade" wins over the sector default
+  if (target?.passing === 'high') return { demand: 0.3, room: 0.35, footfall: 0.25, growth: 0.1 }
+  if (target?.passing === 'low') return { demand: 0.45, room: 0.4, footfall: 0.05, growth: 0.1 }
+  if (target?.passing === 'medium') return { demand: 0.35, room: 0.35, footfall: 0.2, growth: 0.1 }
   return FOOTFALL_SECTORS.has(target?.grp) ? { demand: 0.3, room: 0.35, footfall: 0.25, growth: 0.1 } : { demand: 0.4, room: 0.4, footfall: 0.1, growth: 0.1 }
 }
 
@@ -205,7 +229,7 @@ export function feasibilityBrief(ctx, s, nPlaces) {
     if (gap != null && gap >= 1.5) strengths.push(`Each ${label.toLowerCase()} nearby has about ${round(perComp)} potential customers, ${gap.toFixed(1)}× the city average: likely under-served.`)
     else if (gap != null && gap <= 0.6) risks.push(`Each ${label.toLowerCase()} nearby has only about ${round(perComp)} potential customers, ${gap.toFixed(1)}× the city average.`)
   }
-  if (FOOTFALL_SECTORS.has(t?.grp)) {
+  if (ctx.weights.footfall >= 0.2) {
     if (f.footfall >= 65) strengths.push(`Busy spot: ${s.footfall} shops and services within 400 m bring passing trade.`)
     else if (f.footfall < 30) risks.push(`Quiet spot: ${s.footfall} shops and services within 400 m, so it relies on people coming on purpose.`)
   }
@@ -218,8 +242,9 @@ export function feasibilityBrief(ctx, s, nPlaces) {
   if (better) changes.push({ text: `Moving about ${round(Math.hypot(better.x - s.x, better.y - s.y) / 50) * 50} m ${direction(s, better)} (${better.ward}) raises feasibility from ${s.score} to ${better.score}.`, site: better })
   if (t?.matched && s.comp400 >= 2) changes.push({ text: `Stand out from the ${s.comp400} nearby ${label.toLowerCase()}: a different offer, opening hours or price point.` })
   if (f.demand < 40) changes.push({ text: 'Reach beyond walking distance: delivery, online booking or a site near a bus route.' })
-  if (FOOTFALL_SECTORS.has(t?.grp) && f.footfall < 30) changes.push({ text: 'Look for a unit on a local high street or next to a supermarket for passing trade.' })
-  if (!t?.matched) changes.push({ text: `There are no places like “${t?.text}” in the current data, so competitors aren’t counted. Check nearby competitors yourself before deciding.` })
+  if (ctx.weights.footfall >= 0.2 && f.footfall < 30) changes.push({ text: 'Look for a unit on a local high street or next to a supermarket for passing trade.' })
+  if (t?.level === 'ai' && !ctx.direct.length) changes.push({ text: `No like-for-like ${label.toLowerCase()} found in the data${t.keywords.length ? ` (also searched names for ${t.keywords.join(', ')})` : ''}: a gap in the market, or a sign the data is incomplete. Check on the ground.` })
+  if (!t?.matched && t?.level !== 'ai') changes.push({ text: `There are no places like “${t?.text}” in the current data, so competitors aren’t counted. Check nearby competitors yourself before deciding.` })
   if (t?.level === 'category') changes.push({ text: `No exact match for “${t.text}” in the data, so it is compared with all ${t.n} similar businesses. A distinctive offer may face less competition than shown.` })
   const limits = [
     'Straight-line walking distance; rivers, railways and main roads aren’t taken into account.',

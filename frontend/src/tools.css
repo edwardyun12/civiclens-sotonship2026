@@ -164,6 +164,25 @@
 .chips.small button { padding: 5px 9px; font-size: 12px }
 
 /* simulator */
+.idea-form { display: flex; flex-direction: column; gap: 6px }
+.ai-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 8px; background: var(--deep); color: #fff;
+  padding: 9px 12px; font-size: 13px; font-weight: 700 }
+.ai-button svg { color: var(--lime) }
+.ai-button:disabled { opacity: .7; cursor: progress }
+.spin { animation: spin 1s linear infinite }
+@keyframes spin { to { transform: rotate(360deg) } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none } }
+.ai-card { display: flex; flex-direction: column; gap: 4px; background: #f3f0ff; border: 1px solid #ddd4fb; border-left: 4px solid #7a5cc4; border-radius: 10px;
+  padding: 9px 11px; font-size: 12.5px; line-height: 1.45; color: #2e2450 }
+.ai-card.loading, .ai-card.error { flex-direction: row; align-items: flex-start; gap: 8px }
+.ai-card.error { background: #fff1dc; border-color: #f1d3a3; border-left-color: #d38b1c; color: #6e4206 }
+.ai-card p { margin: 0 }
+.ai-card .ai-head { display: flex; align-items: center; gap: 6px; color: #5b3fb0 }
+.ai-card .ai-head small { margin-left: auto; color: #8a7bb8; font-size: 11px }
+.ai-path { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-size: 13px }
+.ai-path span { color: #6c5fa0 }
+.ai-card .why { color: #5a5078; font-style: italic }
+.tips { margin: 0; padding-left: 18px; font-size: 12.8px; line-height: 1.5; color: #24423a }
 .match { margin: 2px 0 0; font-size: 12px; line-height: 1.45; color: #3c544c; background: #eef5e4; border-radius: 8px; padding: 7px 9px }
 .match.warn { background: #fff1dc; color: #7a4a06 }
 .chips.small.age-chips button { min-width: 44px }

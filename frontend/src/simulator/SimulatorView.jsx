@@ -4,19 +4,22 @@
 // (viewer/src/engine.js, a verified port of simulator/engine.py) adds coverage and an audited planning brief.
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Circle, CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
-import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, Crosshair, Droplets, Footprints, Info, Lightbulb,
-  Map as MapIcon, MapPin, Search, ShieldAlert, Store, Target, TrendingUp, Users } from 'lucide-react'
+import { AlertTriangle, BadgeCheck, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Crosshair, Droplets, Footprints, Info, Lightbulb,
+  Loader2, Map as MapIcon, MapPin, Search, ShieldAlert, Sparkles, Store, Target, TrendingUp, Users } from 'lucide-react'
 import '@engine'
 import { fmt, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, KeepInView } from '../lib/MapFit.jsx'
 import { setAssistantContext } from '../lib/assistantContext.js'
-import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, verdict } from './opportunity.js'
+import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, targetFromAI, verdict } from './opportunity.js'
 
 const SimEngine = window.SimEngine
 // quick picks: these when the data has them, topped up with the most common types
 const QUICK = ['Café', 'Coffee shop', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
 const TONE = { good: '#2f7a4f', ok: '#7bbf1f', warn: '#d38b1c', bad: '#c0392b' }
+
+// AI classifications already made this session (the local model takes a few seconds per idea)
+const classified = new Map()
 
 function ClickToPlace({ on }) { useMapEvents({ click: e => on([e.latlng.lat, e.latlng.lng]) }); return null }
 
@@ -37,9 +40,32 @@ export default function SimulatorView() {
   const [pick, setPick] = useState(0)                  // which suggested site is open
   const [point, setPoint] = useState(null)             // a site clicked on the map
   const [flood, setFlood] = useState(false)
+  const [ai, setAi] = useState({ status: 'idle' })     // the local LLM's reading of the idea: idle | loading | done | error
   useEffect(() => { const t = setTimeout(() => setQuery(text), 350); return () => clearTimeout(t) }, [text])
 
-  const target = useMemo(() => (types.length ? matchBusiness(query, types) : null), [query, types])
+  // ask the local LLM (same model as the assistant) to classify the idea against the data's own sectors and types
+  const askAI = async idea => {
+    const key = idea.trim().toLowerCase()
+    if (key.length < 2 || !types.length) return
+    setText(idea); setQuery(idea)
+    if (classified.has(key)) { setAi({ status: 'done', text: idea, result: classified.get(key) }); return }
+    setAi({ status: 'loading', text: idea })
+    try {
+      const r = await fetch('/api/classify', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: idea, types: types.slice(0, 300).map(({ label, cat, grp, n }) => ({ label, cat: cat || '', grp: grp || '', n })),
+          sectors: [...new Set(types.map(x => x.grp).filter(Boolean))] }) })
+      const d = await r.json()
+      if (!d.ok) throw new Error(d.error || 'no answer')
+      classified.set(key, d)
+      setAi(cur => (cur.text === idea ? { status: 'done', text: idea, result: d } : cur))
+    } catch (e) {
+      setAi(cur => (cur.text === idea ? { status: 'error', text: idea, error: e.message } : cur))
+    }
+  }
+  // ?idea=thai%20restaurant#simulator analyses an idea straight from a link
+  useEffect(() => { const idea = new URLSearchParams(window.location.search).get('idea'); if (idea && types.length) askAI(idea) }, [types.length > 0])
+  const aiReady = ai.status === 'done' && ai.text.trim().toLowerCase() === query.trim().toLowerCase()
+  const target = useMemo(() => (!types.length ? null : aiReady ? targetFromAI(ai.result, query, types) : matchBusiness(query, types)), [query, types, aiReady, ai])
   useEffect(() => { setAges(null); setPick(0) }, [target?.label])
   const customers = ages || target?.ages || AGE_GROUPS.map(a => a[0])
   const ctx = useMemo(() => (city && places.length && target ? analyse(city, places, target, { ages: customers, radius }) : null),
@@ -67,6 +93,7 @@ export default function SimulatorView() {
     if (!ctx || !site || !brief) return
     const [, v] = verdict(site.score), f = site.factors
     setAssistantContext([
+      target.level === 'ai' ? `AI classification of "${target.text}": ${target.label}; sector ${target.grp}; niche ${target.niche}; like-for-like types ${[...target.directSpecs].join(', ') || 'none in the data'}; name keywords ${target.keywords.join(', ')}; related ${[...target.relatedSpecs].join(', ')}; passing trade ${target.passing}. ${target.reasoning}` : '',
       `Page: Business simulator. Business: ${target.label}${target.matched ? '' : ' (not matched to a type in the data)'}. Customers: ${customers.map(k => AGE_GROUPS.find(a => a[0] === k)[1]).join(', ')}. Walking distance ${radius} m.`,
       `Search: ${scope === 'area' ? `area ${area || 'not chosen'}` : scope === 'map' ? 'site picked on the map' : 'whole Southampton'}.`,
       `Selected site in ${site.ward}: feasibility ${site.score}/100 (${v}). Factors (percentile vs all sites): customers ${f.demand}, room in the market ${f.room}, passing trade ${f.footfall}, growth ${f.growth}.`,
@@ -92,8 +119,8 @@ export default function SimulatorView() {
         pathOptions={{ stroke: false, fillColor: '#3d78b8', fillOpacity: 0.35, fillRule: 'evenodd' }} />)}
       {scope === 'area' && area && outlines[area] && <Polygon positions={outlines[area].map(r => r.map(([x, y]) => [y, x]))} interactive={false}
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
-      {ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={2.5} interactive={false}
-        pathOptions={{ stroke: false, fillColor: '#8f9c96', fillOpacity: 0.6 }} />)}
+      {ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={3.5} interactive={false}
+        pathOptions={{ color: '#fff', weight: 0.8, fillColor: '#7d8b85', fillOpacity: 0.8 }} />)}
       {ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={4.5}
         pathOptions={{ color: '#fff', weight: 1.2, fillColor: '#c0392b', fillOpacity: 0.9 }}><Tooltip>{p.name || 'Unnamed'} · {p.spec}</Tooltip></CircleMarker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
@@ -109,10 +136,14 @@ export default function SimulatorView() {
       <span className="eyebrow dark"><Target size={13} /> Business simulator</span>
       <h2>Where should my business go?</h2>
       <label className="field-label" htmlFor="biz">What do you want to open?</label>
-      <label className="search"><Store size={15} /><input id="biz" list="biz-types" value={text} onChange={e => setText(e.target.value)} placeholder="Café, bubble tea, barber, nursery…" /></label>
+      <form className="idea-form" onSubmit={e => { e.preventDefault(); askAI(text) }}>
+        <label className="search"><Store size={15} /><input id="biz" list="biz-types" value={text} onChange={e => setText(e.target.value)} placeholder="Thai restaurant, dog grooming, kids coding club…" /></label>
+        <button type="submit" className="ai-button" disabled={ai.status === 'loading'}>{ai.status === 'loading' ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />} Analyse with AI</button>
+      </form>
       <datalist id="biz-types">{types.slice(0, 200).map(t => <option key={t.label} value={t.label} />)}</datalist>
-      <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => { setText(q); setQuery(q) }}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
-      {target && <p className={`match ${target.matched ? '' : 'warn'}`}>{target.matched
+      <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => askAI(q)}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
+      <AiCard ai={ai} target={target} aiReady={aiReady} />
+      {target && target.level !== 'ai' && <p className={`match ${target.matched ? '' : 'warn'}`}>{target.matched
         ? target.level === 'category' ? <>No exact match, so compared with all <b>{fmt(target.n)} {catText(target.cat)}</b> in the data.</>
           : <>Compared with <b>{fmt(target.n)} {target.label.toLowerCase()}</b> in the data; related: other {catText(target.cat)}.</>
         : <>No places like “{target.text}” in the current data, so competitors can’t be counted.</>}</p>}
@@ -203,9 +234,29 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
       {brief.changes.map((c, i) => <p key={'c' + i} className="callout change"><Lightbulb size={15} /><span>{c.text}{c.site && <> <button className="link-button" onClick={() => onSite(c.site)}>Show that site</button></>}</span></p>)}
       {!brief.strengths.length && !brief.risks.length && <p className="callout info"><Info size={15} /><span>An average site on every measure: nothing stands out either way.</span></p>}
     </div>
+    {target.tips?.length > 0 && <><h3><ClipboardList size={14} /> Before you open</h3>
+      <ul className="tips">{target.tips.map((x, i) => <li key={i}>{x}</li>)}</ul>
+      <p className="muted small">Suggestions from the AI model ({target.model}), not from the data: check them with the council and official guidance.</p></>}
     <details className="limits"><summary>Limitations ({brief.limits.length})</summary><ul>{brief.limits.map((t, i) => <li key={i}>{t}</li>)}</ul></details>
     {engine?.brief && <EngineBrief b={engine.brief} />}
   </aside>
+}
+
+function AiCard({ ai, target, aiReady }) {
+  if (ai.status === 'idle') return <p className="muted small">Type any business and press Enter: the AI works out its sector, niche, competitors and customers.</p>
+  if (ai.status === 'loading') return <div className="ai-card loading"><Loader2 size={15} className="spin" /><span>Thinking about “{ai.text}”: sector, niche, competitors and customers…</span></div>
+  if (ai.status === 'error') return <div className="ai-card error"><AlertTriangle size={15} /><span>The AI isn’t available ({ai.error}). Using quick matching instead; start Ollama and the assistant API to use it.</span></div>
+  if (!aiReady || target?.level !== 'ai') return <p className="muted small">Press Enter to let the AI analyse “{target?.text}”.</p>
+  const direct = [...target.directSpecs], related = [...target.relatedSpecs]
+  return <div className="ai-card">
+    <div className="ai-head"><Sparkles size={14} /> <b>AI understanding</b><small>{target.model}</small></div>
+    <div className="ai-path"><span>{target.grp || 'Sector unknown'}</span><span>›</span><b>{target.label}</b></div>
+    {target.niche && <p><b>Niche:</b> {target.niche}</p>}
+    <p><b>Like-for-like competitors:</b> {direct.length ? direct.join(', ') : 'none listed in the data'}{target.keywords.length ? <>, plus places named with <i>{target.keywords.join(', ')}</i></> : ''}</p>
+    {related.length > 0 && <p><b>Related:</b> {related.join(', ')}</p>}
+    <p><b>Passing trade:</b> {target.passing}</p>
+    {target.reasoning && <p className="why">{target.reasoning}</p>}
+  </div>
 }
 
 function EngineBrief({ b }) {
