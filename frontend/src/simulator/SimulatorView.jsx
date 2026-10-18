@@ -15,7 +15,7 @@ import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, si
 
 const SimEngine = window.SimEngine
 // quick picks: these when the data has them, topped up with the most common types
-const QUICK = ['Café', 'Coffee shop', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
+const QUICK = ['Café', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
 const TONE = { good: '#2f7a4f', ok: '#7bbf1f', warn: '#d38b1c', bad: '#c0392b' }
 const COMPETITOR = '#f0544f', RELATED = '#8a9bb0'

@@ -10,7 +10,7 @@ export const CAT_LABEL = { restaurant_cafe: 'Restaurant / café', takeaway: 'Tak
   transport_logistics: 'Transport and logistics', utilities_primary: 'Utilities and primary', other: 'Other' }
 export const catLabel = c => CAT_LABEL[c] || c
 // everyday words that should find a detailed type
-export const SYN = { 'Bubble tea': 'boba milk tea', Japanese: 'sushi ramen', Korean: 'kbbq', 'Coffee shop': 'cafe coffee', Café: 'cafe coffee',
+export const SYN = { 'Bubble tea': 'boba milk tea', Japanese: 'sushi ramen', Korean: 'kbbq', Café: 'cafe coffee coffee shop espresso',
   'Dental practice': 'dentist teeth', 'GP practice': 'doctor surgery', 'GP or clinic': 'doctor surgery', 'Fish and chips': 'chippy chip shop',
   Barber: 'hair', 'Nail salon': 'nails manicure', 'Gym or fitness centre': 'fitness workout', 'Pub or bar': 'pub bar drinks',
   'Asian supermarket': 'oriental grocery', Pharmacy: 'chemist', 'Veterinary practice': 'vet pets', Optician: 'glasses eyes' }
@@ -19,4 +19,7 @@ export const vague = k => /not known|no detail/.test(k) || !k
 const SPECIFIC = new Set(['gp', 'pharmacy', 'dentist', 'hospital', 'nursery', 'library', 'supermarket', 'pub_bar', 'hotel', 'hair_beauty', 'coworking', 'takeaway'])
 // same names the register uses, so one place type isn't split in two ("GP surgery" vs "GP practice")
 const SAME_AS = { gp: 'GP practice', dentist: 'Dental practice', nursery: 'Day nursery or childcare', supermarket: 'Supermarket or convenience store', pub_bar: 'Pub or bar' }
-export const specOf = p => p.spec || SAME_AS[p.cat] || (SPECIFIC.has(p.cat) ? catLabel(p.cat) : `${catLabel(p.cat)} (no detail)`)
+// Keep the source's more detailed label in places.json, but present and analyse coffee shops as cafés.
+// Otherwise the same kind of business appears twice and is under-counted as direct competition.
+const DISPLAY_AS = { 'Coffee shop': 'Café' }
+export const specOf = p => DISPLAY_AS[p.spec] || p.spec || SAME_AS[p.cat] || (SPECIFIC.has(p.cat) ? catLabel(p.cat) : `${catLabel(p.cat)} (no detail)`)
