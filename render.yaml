@@ -2,7 +2,7 @@
 # Render dashboard -> New -> Blueprint -> pick this repo. It asks for GEMINI_API_KEY (https://aistudio.google.com/apikey).
 services:
   - type: web
-    name: sotonship2026
+    name: civiclens
     runtime: python
     branch: feature/simulator
     plan: free
