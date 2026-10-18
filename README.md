@@ -44,6 +44,7 @@
 - [🙏 Credits and AI use](#-credits-and-ai-use)
 - [🛠️ Run it yourself](#️-run-it-yourself)
 - [🚧 Known limits](#-known-limits)
+- [🔭 Future work](#-future-work)
 - [❓ Questions and answers](#-questions-and-answers)
 
 </details>
@@ -514,6 +515,46 @@ Standalone pages, no install: open `viewer/site_simulator.html` or `viewer/place
 - 🗺️ **The city boundary** cuts off customers just outside it (Eastleigh, Totton).
 - ⚖️ **Weights are design choices, not validated** against real business outcomes. Jobs figures are assumptions. This is decision support, not a decision.
 - 👥 **Not yet tested with real business owners or council officers.**
+
+---
+
+## 🔭 Future work
+
+Ordered roughly by how soon we could ship it. Each item fixes a [known limit](#-known-limits) or extends what a user can decide with CivicLens.
+
+### 📊 Business analytics from your own financial statements
+
+Today CivicLens answers *where* to open. The next step is *how the business is doing* once it is open.
+
+- **Upload accounts and statements.** A user uploads a profit and loss statement, balance sheet, bank export or till report (PDF, Excel or CSV).
+- **AI reads them into a fixed structure.** An LLM extracts revenue, cost of sales, wages, rent, other overheads, cash and period dates into a fixed schema. As with the classifier today, every extracted figure is checked against the source (totals must add up, periods must match) before it is used, and the user confirms anything uncertain.
+- **Dashboards built by code, explained by AI.** Margins, break-even point, cash runway, month-on-month trends and cost breakdowns are computed deterministically and shown as charts. The assistant explains them in plain English and cites the line of the statement each number came from. The AI still never produces a number itself.
+- **Benchmarks against the local area.** Compare a café's revenue per square metre or wage share with similar businesses, and link back to the site analysis: "your rent is high for footfall in this ward".
+- **Train the model on the task.** Collect a labelled set of real (anonymised, consented) statements, then fine-tune or few-shot a model for extraction, and measure field-level accuracy against a rule-based parser as the baseline, as we did for the classifier.
+- **Trust first.** Financial statements are personal and commercially sensitive: processing on the user's device or in a UK/EU region, nothing stored without consent, deletion on request, and a clear note that this is decision support, not accounting or financial advice.
+
+### 🗂️ Bigger and better datasets
+
+- **Rents and vacant units** (commercial property listings or council vacancy surveys), so a top site also has somewhere to rent.
+- **Measured footfall** (council footfall counters, transport ridership, mobile footfall data where licensable) instead of nearby shops as a stand-in.
+- **Business survival outcomes** from Companies House openings and dissolutions, to validate and tune the scoring weights against what actually happened.
+- **Ofsted childcare register and CQC ratings** for the public-service planner; **Statement of Licensing Policy** and planning use classes so the assistant can cite real rules for licences and change of use.
+- **Customers just outside the boundary** (Eastleigh, Totton, New Forest), so edge-of-city sites are not undersold.
+- **Scheduled refreshes**: rebuild FSA, OpenStreetMap and NHS data weekly and show each source's age in the app.
+
+### 🧠 Smarter models
+
+- **Network walking distance** (OSMnx) that respects the River Itchen, railways and main roads instead of straight lines.
+- **Re-run the classifier benchmark on the hosted Groq model** and grow the 22 labelled ideas to a few hundred, written by people outside the team.
+- **Learn the weights** of the opportunity model from survival data rather than setting them by hand.
+- **Revenue range estimates** per site from customers, spend data and competition, clearly labelled as ranges with assumptions.
+
+### 🌍 Product and scale
+
+- **Other councils**: Portsmouth and Hampshire next (same national data, same proposed combined authority), then any English council with a one-command data rebuild.
+- **Saved projects and PDF site reports** a user can take to a bank, landlord or business adviser.
+- **Council adviser view**: see what people are searching for (aggregated, anonymous) to spot unmet demand across the city.
+- **User testing** with Southampton business owners and council business-support officers, and accessibility checks for less digital users.
 
 ---
 
