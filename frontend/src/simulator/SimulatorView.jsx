@@ -31,8 +31,9 @@ export default function SimulatorView() {
   const quick = useMemo(() => { const have = new Set(types.map(t => t.label)); const q = QUICK.filter(x => have.has(x)); for (const t of types) if (q.length < 6 && !q.includes(t.label)) q.push(t.label); return q.slice(0, 6) }, [types])
   const E = useMemo(() => (city ? SimEngine.create(city) : null), [city])
 
-  const [text, setText] = useState('Café')
-  const [query, setQuery] = useState('Café')            // what is analysed (typing settles first)
+  const [text, setText] = useState('')
+  const [typed, setQuery] = useState('')               // what is analysed (typing settles first)
+  const query = typed.trim() ? typed : quick[0] || 'Café'  // empty box: show a starter business so the map is never blank
   const [ages, setAges] = useState(null)               // null = the business's default customers
   const [radius, setRadius] = useState(800)
   const [scope, setScope] = useState('city')
