@@ -141,21 +141,9 @@ The Assessment flags multiple-registration effects on some of these figures; the
 
 > **The AI decides what to compare; the model counts.** The LLM reads the idea and decides which businesses compete, who the customers are and how much passing trade matters. Deterministic code then turns those decisions into every score, count and percentage from dated open data, so each number can be traced and re-computed.
 
-```mermaid
-flowchart LR
-  A["✍️ Idea in plain words<br/>'korean bbq'"] --> B["🧠 LLM classifier<br/>rag/classify.py"]
-  T[("83 business types<br/>in Southampton data")] --> B
-  B --> V{"✅ Server-side checks<br/>only real types · same sector<br/>no generic keywords"}
-  V --> M["📐 Opportunity model<br/>opportunity.js"]
-  D[("ONS mid-2024 ages · 3,718 places<br/>FSA · OSM · NHS · flood")] --> M
-  M --> S["📍 Ranked sites + feasibility brief"]
-  S --> C["📝 Screen summary"]
-  Q["💬 Question<br/>'…in Weston?'"] --> P["📍 Place + business<br/>found in the question"]
-  P --> M
-  C --> R["🔎 RAG assistant<br/>BM25 keyword search"]
-  K[("Economic Assessment 2025 ·<br/>devolution docs")] --> R
-  R --> O["💬 Cited answer"]
-```
+<p align="center"><img src="docs/images/architecture-ai.svg" alt="CivicLens architecture. Left, the business simulator: business idea, AI classifier on Groq, server-side checks, scoring model over 792 areas, ranked sites. Right, the assistant: question, keyword search, AI answer writer on Groq, citation links, cited answer. The scoring model's on-screen figures also feed the answer writer." width="85%"></p>
+
+<p align="center"><sub>Purple = AI (Qwen3.8 27B on Groq). Teal = deterministic, tested code. The dashed line: the assistant also receives the figures on screen.</sub></p>
 
 ### 1. The LLM classifies the idea against the city's own categories
 
