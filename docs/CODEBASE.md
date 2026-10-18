@@ -281,8 +281,9 @@ Open `viewer/places_register.html` or `viewer/site_simulator.html` by double-cli
 | `build_viewers.py` | Fills the templates' `__PLACEHOLDERS__` with data and writes the two HTML files, plus `frontend/public/data/{places,city}.json` |
 
 The React app (`frontend/`) has the same map views on its Places page (`places/PlacesView.jsx`): Popular,
-Heatmap (places), **People** (residents: all or aged 0–4, mid-2024 or Census 2021; ward tooltip shows the change
-since 2021) and Places. Both heat maps use `lib/HeatLayer.jsx` (points may carry a weight `w`).
+Heatmap (places), **People** (where residents live, by age group: all, 0–4, 5–15, 16–24, 25–44, 45–64, 65+;
+ward tooltip and area profile show each area's age mix against the city) and Places. `?view=people&ward=Bargate#places`
+opens a view and ward. Age groups come from `AGE_BANDS` in `pipeline/population.py` (each OA takes its LSOA's age mix). Both heat maps use `lib/HeatLayer.jsx` (points may carry a weight `w`).
 
 ## 11. `tests/` and `evaluation/`
 

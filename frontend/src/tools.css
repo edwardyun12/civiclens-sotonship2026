@@ -9,9 +9,11 @@
 .tabs a.active svg { color: var(--lime) }
 
 /* welcome page: extra entry points */
-.welcome-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 42px }
-.welcome-actions .explore-button { margin-top: 0 }
-.explore-button.ghost { background: transparent; color: #e9f3ef; border: 1px solid #ffffff38; box-shadow: none; gap: 10px }
+.welcome-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 42px }
+.welcome-actions .explore-button { margin-top: 0; min-width: 210px; justify-content: center; gap: 12px; border: 1px solid transparent; line-height: 1 }
+.explore-button.ghost { background: transparent; color: #e9f3ef; border: 1px solid #ffffff38; box-shadow: none }
+@media (max-width: 1100px) { .welcome-actions { justify-content: center } }
+@media (max-width: 760px) { .welcome-actions { flex-direction: column; align-items: stretch } .welcome-actions .explore-button { justify-content: center } }
 .explore-button.ghost:hover { border-color: var(--lime); color: var(--lime); box-shadow: none }
 
 /* shared bits */
@@ -46,19 +48,41 @@
 .count { margin: 4px 0 0; font-size: 13px; color: var(--muted) }
 .count b { color: var(--ink) }
 
-/* map view switch (bottom left, beside the panel) */
-.layer-panel.tool-layers { left: 366px; bottom: 20px; width: 360px }
-.layer-panel.tool-layers>span { font-size: 10.5px }
-.layer-panel.tool-layers button { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 9px 12px }
-.layer-panel.tool-layers p { font-size: 12px; line-height: 1.5; color: #a9c0b8 }
-.seg-small { display: flex; gap: 0 !important; margin: -2px 0 10px !important; border: 1px solid #ffffff24; border-radius: 7px; overflow: hidden; width: max-content }
-.seg-small button { border: 0 !important; border-radius: 0 !important; padding: 7px 11px !important; font-size: 11.5px !important }
+/* map toolbar (top left of the map, beside the panel): view switch, options, legend, one-line note */
+.map-toolbar { position: absolute; z-index: 600; top: 20px; left: 366px; width: min(520px, calc(100% - 386px)); display: flex; flex-direction: column; gap: 10px;
+  background: var(--card); backdrop-filter: blur(18px); border: 1px solid #fff9; border-radius: 14px; padding: 12px; box-shadow: 0 16px 44px #13352b24; color: var(--ink) }
+.view-switch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #e8ede6; padding: 4px; border-radius: 10px }
+.view-switch button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: none; color: #4f655e; border-radius: 7px;
+  padding: 8px 6px; font-size: 13px; font-weight: 600; white-space: nowrap }
+.view-switch button:hover { color: var(--ink); background: #ffffff90 }
+.view-switch button.active { background: var(--deep); color: #fff }
+.view-switch button.active svg { color: var(--lime) }
+.view-switch button:focus-visible, .seg-small button:focus-visible { outline: 2px solid #80a925; outline-offset: 1px }
+.view-options { display: flex; flex-wrap: wrap; gap: 8px }
+.seg-small { display: inline-flex; border: 1px solid #d2dbd3; border-radius: 8px; overflow: hidden; background: #fff }
+.seg-small button { border: 0; background: none; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #4f655e }
+.seg-small button + button { border-left: 1px solid #d2dbd3 }
+.seg-small button.active { background: var(--lime); color: var(--deep) }
+.map-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 12px; color: #43584f }
+.map-key .key { display: inline-flex; align-items: center; gap: 6px }
+.map-key i { width: 11px; height: 11px; border-radius: 3px; flex: none }
+.map-key i.ramp { width: 140px; height: 10px; border-radius: 3px }
+.view-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted) }
 
-/* legend (top centre) */
+/* simulator legend (top of the map, beside the panel) */
 .legend.tool-legend { top: 20px; bottom: auto; left: 366px; right: auto; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; padding: 9px 14px; max-width: calc(100% - 800px); border-radius: 12px; color: #43584f }
 .tool-legend .key { display: inline-flex; align-items: center; gap: 6px }
 .legend.tool-legend i { width: 11px; height: 11px; border-radius: 3px }
-.legend.tool-legend i.ramp { width: 120px; height: 10px; border-radius: 3px }
+
+/* age mix bars (People tooltip and area profile) */
+.age-mix { display: flex; flex-direction: column; gap: 3px; margin-top: 4px }
+.age-row { display: grid; grid-template-columns: 3rem 1fr 2.4rem 3.6rem; gap: 8px; align-items: center; font-size: 12.5px; color: #24423a }
+.age-mix.compact .age-row { grid-template-columns: 2.6rem 7rem 2.2rem; font-size: 11.5px }
+.age-row .track { position: relative; overflow: visible }
+.age-row .track i { background: #c2416f; border-radius: 3px }
+.age-row .track b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--deep); border-radius: 1px }
+.age-row .n { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700 }
+.age-row .c { text-align: right; font-variant-numeric: tabular-nums; color: #7a8c86; font-size: 12px }
 
 /* map tooltips and labels */
 .leaflet-tooltip.ward-tip { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--hair); box-shadow: 0 12px 30px #0b2d2526 }
@@ -67,9 +91,9 @@
 .tip small { color: var(--muted); font-size: 11.5px }
 .tip-row { display: grid; grid-template-columns: 10px 1fr auto; gap: 7px; align-items: center; font-size: 12.5px; color: #24423a }
 .tip-row i { width: 10px; height: 10px; border-radius: 3px }
-.leaflet-tooltip.ward-label { background: #f6f8f3e6; border: 0; box-shadow: 0 4px 14px #0b2d2522; border-radius: 7px; padding: 4px 8px; text-align: center; font-family: 'DM Sans' }
+.leaflet-tooltip.ward-label { background: #f6f8f3e0; border: 0; box-shadow: 0 2px 8px #0b2d2520; border-radius: 6px; padding: 2px 6px; text-align: center; font-family: 'DM Sans' }
 .leaflet-tooltip.ward-label:before { display: none }
-.ward-label b { display: block; font: 800 11px Manrope; text-transform: uppercase; letter-spacing: .06em; color: var(--ink) }
+.ward-label b { display: block; font: 800 10px Manrope; text-transform: uppercase; letter-spacing: .05em; color: var(--ink) }
 .ward-label span { display: block; font-size: 11.5px; color: #3c544c }
 .leaflet-tooltip.site-label { font-weight: 700; color: var(--ink) }
 .leaflet-tooltip.rank-label { background: none; border: 0; box-shadow: none; font: 800 14px Manrope; color: var(--deep); padding: 0 }
@@ -160,7 +184,8 @@
 @media (max-width: 1100px) {
   .tabs a { padding: 8px 10px }
   .tool-panel { width: 300px }
-  .layer-panel.tool-layers, .legend.tool-legend { left: 336px }
+  .map-toolbar { left: 336px; width: min(460px, calc(100% - 356px)) }
+  .view-switch button { font-size: 12px; padding: 8px 4px }
   .ward-card, .result-card { width: 330px }
 }
 @media (max-width: 760px) {
@@ -169,7 +194,16 @@
   .tabs { margin-left: 8px }
   .tabs a { font-size: 0; gap: 0; padding: 9px }
   .tool-panel { top: auto; bottom: 0; left: 0; right: 0; width: auto; max-height: 45vh; border-radius: 14px 14px 0 0 }
-  .layer-panel.tool-layers { left: 12px; right: 12px; width: auto; top: 12px; bottom: auto }
-  .legend.tool-legend { display: none }
+  .map-stage { overflow: hidden }
+  .tool-panel { max-height: 42vh; padding: 16px; box-shadow: 0 -10px 30px #13352b22 }
+  .tool-panel h2 { font-size: 20px }
+  .map-toolbar { left: 10px; right: 10px; top: 10px; width: auto; padding: 8px; gap: 6px; border-radius: 12px }
+  .view-switch button { font-size: 12px; padding: 7px 2px; gap: 4px }
+  .view-note { display: none }
+  .view-options { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none }
+  .seg-small { flex: none }
+  .map-key { font-size: 11px; gap: 4px 10px }
+  .map-key i.ramp { width: 90px }
+  .leaflet-tooltip.ward-label { display: none }
   .ward-card, .result-card, .place-card.tool-card { left: 0; right: 0; width: auto; top: auto; bottom: 0; max-height: 60vh; z-index: 700; border-radius: 14px 14px 0 0 }
 }

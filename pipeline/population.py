@@ -19,6 +19,8 @@ from simulator.paths import PROC, RAW
 SAPE_URL = ("https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/populationestimates/"
             "datasets/lowersuperoutputareamidyearpopulationestimates/mid2022revisednov2025tomid2024/sapelsoasyoa20222024.xlsx")
 SAPE_YEAR = 2024
+# Age groups for the People map and ward profiles: column -> (first age, last age). 90 = "90 and over" in the file.
+AGE_BANDS = {"pop_5_15": (5, 15), "pop_16_24": (16, 24), "pop_25_44": (25, 44), "pop_45_64": (45, 64), "pop_65_plus": (65, 90)}
 
 
 def fetch_sape(sape_file: str | None = None) -> pd.DataFrame:
@@ -27,8 +29,9 @@ def fetch_sape(sape_file: str | None = None) -> pd.DataFrame:
     data/raw/ons_sape_mid2024_lsoa.csv so later runs (and --update-pop without a file) don't download it again."""
     out_f = RAW / "ons_sape_mid2024_lsoa.csv"
     print(f"[6b] ONS mid-{SAPE_YEAR} LSOA population estimates")
-    if sape_file is None and out_f.exists():
-        df = pd.read_csv(out_f)
+    cached = pd.read_csv(out_f) if out_f.exists() else None
+    if sape_file is None and cached is not None and all(f"{b}_est" in cached for b in AGE_BANDS):
+        df = cached
     else:
         import openpyxl
         from io import BytesIO
@@ -43,8 +46,11 @@ def fetch_sape(sape_file: str | None = None) -> pd.DataFrame:
         head = next(r for r in rows if r and r[0] == "LAD 2023 Code")
         ix = {h: i for i, h in enumerate(head)}
         young = [f"{s}{a}" for s in "FM" for a in range(5)]
+        bands = {b: [f"{s}{a}" for s in "FM" for a in range(lo, hi + 1)] for b, (lo, hi) in AGE_BANDS.items()}
         recs = [{"lsoa": r[ix["LSOA 2021 Code"]], "pop_est": r[ix["Total"]],
-                 "pop_0_4_est": sum(r[ix[c]] for c in young)} for r in rows if r and r[0] == LAD_CODE]
+                 "pop_0_4_est": sum(r[ix[c]] for c in young),
+                 **{f"{b}_est": sum(r[ix[c]] for c in cols) for b, cols in bands.items()}}
+                for r in rows if r and r[0] == LAD_CODE]
         df = pd.DataFrame(recs)
         df.to_csv(out_f, index=False)
     note("sape", f"ONS small area population estimates, mid-{SAPE_YEAR}, LSOA 2021 (released 7 Nov 2025)",
@@ -69,6 +75,10 @@ def apply_sape(oa: pd.DataFrame, sape: pd.DataFrame) -> pd.DataFrame:
     # an LSOA with no Census 0-4s (none in Southampton) would divide by zero: spread by total population instead
     w04 = (oa["pop_0_4_2021"] / base["pop_0_4_2021"]).where(base["pop_0_4_2021"] > 0, oa["pop_2021"] / base["pop_2021"])
     oa["pop_0_4"] = (w04 * young).round(1)
+    # older age groups: Census OAs only give 0-4, so each OA takes its LSOA's age mix
+    for b in AGE_BANDS:
+        if f"{b}_est" in s:
+            oa[b] = (oa["pop"] * oa["lsoa"].map(s[f"{b}_est"]) / tot).round(1)
     oa["pop_year"] = SAPE_YEAR
     return oa
 

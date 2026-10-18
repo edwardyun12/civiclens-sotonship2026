@@ -1,10 +1,10 @@
 // Places register: every named business and service in Southampton, merged across official registers
 // (built by pipeline/places). Search, industry -> detailed type filter, and four map views: Popular, Heatmap
-// (where places cluster), People (where residents live: ONS mid-2024 or Census 2021, from city.json) and Places.
+// (where places cluster), People (where residents live, by age group, from city.json) and Places.
 import { useEffect, useMemo, useState } from 'react'
 import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { Building2, Flame, Layers3, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
+import { Building2, Flame, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
 import HeatLayer, { HEAT_GRADIENT, PEOPLE_GRADIENT, PEOPLE_RAMP } from '../lib/HeatLayer.jsx'
 import { CATEGORICAL, OTHER, bounds, fmt, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, pad } from '../lib/MapFit.jsx'
@@ -18,6 +18,7 @@ const CAT_LABEL = { restaurant_cafe: 'Restaurant / café', takeaway: 'Takeaway',
   construction: 'Construction', manufacturing: 'Manufacturing', food_manufacturer: 'Food manufacturer', motor: 'Motor trade',
   transport_logistics: 'Transport and logistics', utilities_primary: 'Utilities and primary', other: 'Other' }
 const catLabel = c => CAT_LABEL[c] || c
+const VIEWS = [['popular', 'Popular', Sparkles], ['heat', 'Heatmap', Flame], ['people', 'People', Users], ['points', 'Places', MapPin]]
 // everyday words that should find a detailed type
 const SYN = { 'Bubble tea': 'boba milk tea', Japanese: 'sushi ramen', Korean: 'kbbq', 'Coffee shop': 'cafe coffee', Café: 'cafe coffee',
   'Dental practice': 'dentist teeth', 'GP practice': 'doctor surgery', 'GP or clinic': 'doctor surgery', 'Fish and chips': 'chippy chip shop',
@@ -65,10 +66,9 @@ export default function PlacesView() {
   const [spec, setSpec] = useState(() => new Set())
   const [specQ, setSpecQ] = useState('')
   const [hideRO, setHideRO] = useState(true)
-  const [view, setView] = useState('popular')
+  const [view, setView] = useState(() => { const v = new URLSearchParams(window.location.search).get('view'); return VIEWS.some(([id]) => id === v) ? v : 'popular' })  // e.g. ?view=people#places
   const [lq, setLq] = useState(false)
-  const [who, setWho] = useState('all')      // People view: all residents or children aged 0-4
-  const [year, setYear] = useState('2024')   // People view: ONS mid-2024 estimate or Census 2021
+  const [age, setAge] = useState('all')      // People view: age group (AGES)
   const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
   const [place, setPlace] = useState(null)
 
@@ -95,7 +95,7 @@ export default function PlacesView() {
   }, [base, grp, specQ, ward])
 
   const outlines = useMemo(() => (city ? Object.entries(city.ward_outlines).map(([w, rings]) => ({ w, rings, pos: rings.map(r => r.map(([x, y]) => [y, x])) })) : []), [city])
-  const people = useMemo(() => peoplePoints(city, who, year), [city, who, year])
+  const people = useMemo(() => peoplePoints(city, age), [city, age])
   const wardPop = useMemo(() => { const o = {}; if (city) city.oa.ward.forEach((w, i) => (o[w] = (o[w] || 0) + city.oa.pop[i])); return o }, [city])
   const target = useMemo(() => (ward && city ? bounds(city.ward_outlines[ward]) : null), [ward, city])
 
@@ -126,7 +126,7 @@ export default function PlacesView() {
         eventHandlers={{ click: () => setPlace(p) }} />)}
       {view === 'popular' && Object.entries(pop.win).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'m' + w} center={oa} radius={7} interactive={false}
         pathOptions={{ color: '#fff', weight: 2.5, fillColor: pop.color[b.k], fillOpacity: ward && ward !== w ? 0.35 : 1 }}>
-        <Tooltip permanent direction="bottom" offset={[0, 6]} className="ward-label"><b>{w}</b><span>{b.k}</span></Tooltip></CircleMarker> })}
+        <Tooltip permanent direction="bottom" offset={[0, 4]} className="ward-label"><b>{w}</b></Tooltip></CircleMarker> })}
     </MapContainer>
 
     <aside className="tool-panel">
@@ -151,35 +151,22 @@ export default function PlacesView() {
       <p className="count"><b>{fmt(shown.length)}</b> places{ward ? <> in <b>{ward}</b> <button className="link-button" onClick={() => setWard(null)}>whole city</button></> : ''}</p>
     </aside>
 
-    <section className="layer-panel tool-layers">
-      <span><Layers3 size={14} /> Map view</span>
-      <div>
-        <button className={view === 'popular' ? 'active' : ''} onClick={() => setView('popular')}><Sparkles size={13} /> Popular</button>
-        <button className={view === 'heat' ? 'active' : ''} onClick={() => setView('heat')}><Flame size={13} /> Heatmap</button>
-        <button className={view === 'people' ? 'active' : ''} onClick={() => setView('people')}><Users size={13} /> People</button>
-        <button className={view === 'points' ? 'active' : ''} onClick={() => setView('points')}><MapPin size={13} /> Places</button>
+    <section className="map-toolbar" aria-label="Map view">
+      <div className="view-switch" role="tablist" aria-label="Map view">
+        {VIEWS.map(([id, label, Icon]) => <button key={id} role="tab" aria-selected={view === id} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon size={14} /> {label}</button>)}
       </div>
-      {view === 'people' && <div className="seg-small">
-        <button className={who === 'all' ? 'active' : ''} onClick={() => setWho('all')}>All residents</button>
-        <button className={who === 'u5' ? 'active' : ''} onClick={() => setWho('u5')}>Aged 0–4</button>
+      {(view === 'popular' || view === 'people') && <div className="view-options">
+        {view === 'popular' && <Seg value={lq} onChange={setLq} options={[[false, 'Most common'], [true, 'Stands out vs city']]} />}
+        {view === 'people' && <Seg value={age} onChange={setAge} options={people.ages.map(([k, label]) => [k, label])} />}
       </div>}
-      {view === 'people' && people.has2021 && <div className="seg-small">
-        <button className={year === '2024' ? 'active' : ''} onClick={() => setYear('2024')}>Mid-2024</button>
-        <button className={year === '2021' ? 'active' : ''} onClick={() => setYear('2021')}>Census 2021</button>
-      </div>}
-      {view === 'popular' && <div className="seg-small">
-        <button className={!lq ? 'active' : ''} onClick={() => setLq(false)}>Most common</button>
-        <button className={lq ? 'active' : ''} onClick={() => setLq(true)}>Stands out vs city</button>
-      </div>}
-      <p>{view === 'popular' ? (lq ? 'Each area is coloured by the type that is most over-represented there compared with the whole city (at least 3 places).' : 'Each area is coloured by its most common type. Stronger colour = bigger share of the area’s places.')
-        : view === 'heat' ? 'Where the filtered places cluster: darker = more places within about 250 m.'
-        : view === 'people' ? `Where people live: ${fmt(people.total)} ${who === 'all' ? 'residents' : 'children aged 0–4'} (${people.label}) at the population-weighted centres of the city’s ${people.points.length} Output Areas. Darker = more people within about 300 m.`
-        : 'Every filtered place. Faded dots are companies at their registered office.'} Click an area to explore it.</p>
+      <Legend view={view} pop={pop} people={people} />
+      <p className="view-note">{view === 'popular' ? (lq ? 'Each area shows the type most over-represented there compared with the whole city (at least 3 places).' : 'Each area shows its most common type. Stronger colour = bigger share of its places.')
+        : view === 'heat' ? 'Where the filtered places cluster. Darker = more places within about 250 m.'
+        : view === 'people' ? `Where ${fmt(people.total)} ${people.noun} live. Darker = more people within about 300 m. Hover an area for its age mix.`
+        : 'Every filtered place. Faded dots are companies known only by their registered office.'} Click an area to explore it.</p>
     </section>
-
-    <Legend view={view} pop={pop} people={people} />
     {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
-    {ward && !place && city && <WardProfile ward={ward} typed={typed} pop={pop} wardPop={wardPop} city={city} onClose={() => setWard(null)} onPick={k => setSpec(new Set([k]))} onWard={pickWard} />}
+    {ward && !place && city && <WardProfile ward={ward} typed={typed} pop={pop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={k => setSpec(new Set([k]))} onWard={pickWard} />}
   </div>
 }
 
@@ -192,34 +179,50 @@ function wardCentre(city, w) {
   return centres.get(w)
 }
 
-// Residents at each Output Area centre (city.json, from data/processed/oa.csv). pop/pop04 are the ONS mid-2024
-// estimates; pop21/pop0421 are the Census 2021 counts (present once pipeline/population.py has run).
-function peoplePoints(city, who, year) {
-  if (!city) return { points: [], byWard: {}, change: {}, total: 0, label: '', has2021: false, who }
-  const o = city.oa, has2021 = Array.isArray(o.pop21), old = year === '2021' && has2021
-  const v = who === 'u5' ? (old ? o.pop0421 : o.pop04) : (old ? o.pop21 : o.pop)
-  const points = [], byWard = {}
+// Age groups: [key, button label, noun, column in city.json] (pop04 is 0-4; the rest live in city.oa.ages)
+const AGES = [['all', 'All ages', 'residents', 'pop'], ['0_4', '0–4', 'children aged 0–4', 'pop04'],
+  ['5_15', '5–15', 'children aged 5–15', 'pop_5_15'], ['16_24', '16–24', 'people aged 16–24', 'pop_16_24'],
+  ['25_44', '25–44', 'people aged 25–44', 'pop_25_44'], ['45_64', '45–64', 'people aged 45–64', 'pop_45_64'],
+  ['65', '65+', 'people aged 65 and over', 'pop_65_plus']]
+const ageColumn = (o, col) => (col === 'pop' || col === 'pop04' ? o[col] : o.ages?.[col])
+
+// Residents at each Output Area centre (city.json, from data/processed/oa.csv, latest population estimate)
+function peoplePoints(city, age) {
+  const empty = { points: [], byWard: {}, mix: {}, total: 0, noun: 'residents', ages: AGES.slice(0, 2) }
+  if (!city) return empty
+  const o = city.oa, ages = AGES.filter(([, , , col]) => ageColumn(o, col))
+  const [, , noun, col] = ages.find(a => a[0] === age) || ages[0], v = ageColumn(o, col)
+  const points = [], byWard = {}, mix = {}
   let total = 0
   for (let i = 0; i < o.lat.length; i++) {
     points.push({ lat: o.lat[i], lon: o.lon[i], w: v[i] })
     byWard[o.ward[i]] = (byWard[o.ward[i]] || 0) + v[i]
     total += v[i]
   }
-  const change = {}  // % change per ward since Census 2021, for the tooltip
-  if (has2021) {
-    const a = who === 'u5' ? o.pop0421 : o.pop21, b = who === 'u5' ? o.pop04 : o.pop, A = {}, B = {}
-    o.ward.forEach((w, i) => { A[w] = (A[w] || 0) + a[i]; B[w] = (B[w] || 0) + b[i] })
-    for (const w in A) change[w] = 100 * (B[w] / A[w] - 1)
+  // age mix per ward (and the city) for tooltips and the area profile
+  for (const [k, label, , c] of ages.slice(1)) {
+    const a = ageColumn(o, c)
+    o.ward.forEach((w, i) => { const m = (mix[w] ||= {}); m[k] = (m[k] || 0) + a[i] })
   }
-  return { points, byWard, change, total, label: old || !has2021 ? 'Census 2021' : 'ONS mid-2024 estimate', has2021, who }
+  return { points, byWard, mix, total, noun, ages }
+}
+
+// Bars of each age group's share of an area's residents, with the city share for comparison
+function AgeMix({ mix, ages, city, compact }) {
+  if (!mix) return null
+  const sum = o => Object.values(o).reduce((a, b) => a + b, 0), n = sum(mix), cn = city ? sum(city) : 0
+  return <div className={`age-mix ${compact ? 'compact' : ''}`}>{ages.slice(1).map(([k, label]) => {
+    const s = 100 * (mix[k] || 0) / Math.max(1, n), cs = cn ? 100 * (city[k] || 0) / cn : null
+    return <div key={k} className="age-row"><span>{label}</span><span className="track"><i style={{ width: `${Math.min(100, s * 2.5)}%` }} />{cs != null && <b style={{ left: `${Math.min(100, cs * 2.5)}%` }} />}</span>
+      <span className="n">{s.toFixed(0)}%</span>{!compact && <span className="c">{fmt(Math.round(mix[k] || 0))}</span>}</div>
+  })}</div>
 }
 
 function PeopleTip({ w, people, selected }) {
-  const c = people.change[w]
   return <div className="tip">
     <b>{w}</b><small>{selected ? 'Click to go back to the whole city' : 'Click to explore this area'}</small>
-    <small>{fmt(Math.round(people.byWard[w] || 0))} {people.who === 'u5' ? 'children aged 0–4' : 'residents'} · {people.label}</small>
-    {c != null && <small>{c >= 0 ? '+' : '−'}{Math.abs(c).toFixed(1)}% from Census 2021 to mid-2024</small>}
+    <small>{fmt(Math.round(people.byWard[w] || 0))} {people.noun}</small>
+    <AgeMix mix={people.mix[w]} ages={people.ages} compact />
   </div>
 }
 
@@ -232,13 +235,18 @@ function WardTip({ w, stats, pop, wardPop, selected }) {
   </div>
 }
 
+function Seg({ value, onChange, options }) {
+  return <div className="seg-small" role="group">{options.map(([v, label]) =>
+    <button key={String(v)} className={value === v ? 'active' : ''} aria-pressed={value === v} onClick={() => onChange(v)}>{label}</button>)}</div>
+}
+
 function Legend({ view, pop, people }) {
-  if (view === 'people') return <div className="legend tool-legend"><span>Fewer people</span><i className="ramp" style={{ background: PEOPLE_GRADIENT }} /><span>More people · {people.label}</span></div>
-  if (view === 'heat') return <div className="legend tool-legend"><span>Fewer</span><i className="ramp" style={{ background: HEAT_GRADIENT }} /><span>More places close together</span></div>
+  if (view === 'people') return <div className="map-key"><span>Fewer</span><i className="ramp" style={{ background: PEOPLE_GRADIENT }} /><span>More {people.noun}</span></div>
+  if (view === 'heat') return <div className="map-key"><span>Fewer</span><i className="ramp" style={{ background: HEAT_GRADIENT }} /><span>More places</span></div>
   if (view === 'points') return null
   const shown = pop.order.slice(0, 6)
-  if (!shown.length) return <div className="legend tool-legend"><span>No type leads any area with these filters</span></div>
-  return <div className="legend tool-legend">{shown.map(k => <span key={k} className="key"><i style={{ background: pop.color[k] }} />{k}</span>)}{pop.order.length > 6 && <span className="key"><i style={{ background: OTHER }} />Other</span>}</div>
+  if (!shown.length) return <div className="map-key"><span>No type leads any area with these filters</span></div>
+  return <div className="map-key">{shown.map(k => <span key={k} className="key"><i style={{ background: pop.color[k] }} />{k}</span>)}{pop.order.length > 6 && <span className="key"><i style={{ background: OTHER }} />Other</span>}</div>
 }
 
 function PlaceDetail({ p, onClose }) {
@@ -257,7 +265,7 @@ function PlaceDetail({ p, onClose }) {
   </aside>
 }
 
-function WardProfile({ ward, typed, pop, wardPop, city, onClose, onPick, onWard }) {
+function WardProfile({ ward, typed, pop, wardPop, city, people, onClose, onPick, onWard }) {
   const here = typed.filter(p => p.ward === ward), inCity = typed.filter(p => p.ward).length
   const residents = wardPop[ward] || 0, cityRes = Object.values(wardPop).reduce((a, b) => a + b, 0)
   const rate = 1000 * here.length / Math.max(1, residents), cityRate = 1000 * inCity / Math.max(1, cityRes)
@@ -275,6 +283,9 @@ function WardProfile({ ward, typed, pop, wardPop, city, onClose, onPick, onWard 
       <div><b>{rate.toFixed(1)}</b><span>per 1,000 residents · city {cityRate.toFixed(1)}</span></div>
       <div><b>{fmt(residents)}</b><span>residents · {Math.round(100 * dep / Math.max(1, residents))}% in the most deprived fifth</span></div>
     </div>
+    {people.mix[ward] && <><h3>Who lives here</h3>
+      <AgeMix mix={people.mix[ward]} ages={people.ages} city={Object.values(people.mix).reduce((t, m) => { for (const k in m) t[k] = (t[k] || 0) + m[k]; return t }, {})} />
+      <p className="muted">Share of the area’s residents in each age group. The dark tick is the city average.</p></>}
     <h3>What’s here</h3>
     {top.length ? <div className="bars">{top.map(([k, n]) => { const r = ratio(k)
       return <button key={k} className="bar" onClick={() => onPick(k)} title={`Show only ${k}`}>
