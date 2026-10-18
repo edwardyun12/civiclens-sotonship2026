@@ -1,12 +1,15 @@
-// Business-idea classifier benchmark: the local LLM (POST /api/classify, rag/classify.py) against the quick
+// Business-idea classifier benchmark: the LLM behind POST /api/classify (rag/classify.py) against the quick
 // keyword matcher the page falls back to (matchBusiness in frontend/src/simulator/opportunity.js).
 // For each idea we hand-labelled which business types in the data are true like-for-like competitors ([] = none
 // exist, a gap). A method scores a hit when its like-for-like types include an accepted one (or both are empty).
-// Needs Ollama + `python run.py api`.   Run from the repo root:  node evaluation/classify_benchmark.mjs
+// Needs `python run.py api` (Groq with GROQ_API_KEY set, or Ollama).   Run from the repo root:  node evaluation/classify_benchmark.mjs
+// PAUSE_MS between ideas (default 0; use 20000 on the Groq free plan, 8,000 tokens a minute).
 import { readFileSync, writeFileSync } from 'node:fs'
 import { businessTypes, matchBusiness } from '../frontend/src/simulator/opportunity.js'
 
 const API = process.env.API || 'http://127.0.0.1:8000'
+const PAUSE_MS = Number(process.env.PAUSE_MS || 0)
+const health = await fetch(`${API}/api/health`).then(r => r.json()).catch(() => ({}))
 const CASES = [
   ['japanese restaurant', ['Japanese']], ['sushi bar', ['Japanese']], ['korean bbq', ['Korean']],
   ['ramen shop', ['Japanese', 'Noodle bar']], ['thai takeaway', ['Thai']], ['dim sum restaurant', ['Chinese']],
@@ -27,6 +30,7 @@ const hit = (pred, ok) => (ok.length ? pred.some(p => ok.includes(p)) : pred.len
 
 const rows = []
 for (const [idea, ok] of CASES) {
+  if (rows.length && PAUSE_MS) await new Promise(r => setTimeout(r, PAUSE_MS))
   const q = matchBusiness(idea, types)
   // the matcher's like-for-like: one type; a category match counts every place in the category (not like-for-like)
   const quick = q?.level === 'type' ? [q.label] : q?.level === 'category' ? [`(all ${q.cat})`] : []
@@ -45,8 +49,11 @@ for (const [idea, ok] of CASES) {
   console.log(`${r.quick_hit ? 'Y' : '-'} ${r.ai_hit ? 'Y' : '-'}  ${idea.padEnd(22)} quick=${JSON.stringify(quick)}  ai=${JSON.stringify(aiPred)}${err ? ' ERROR ' + err : ''}`)
 }
 const n = rows.length, sum = k => rows.filter(r => r[k]).length
-const summary = { run: new Date().toISOString(), places: places.length, types: types.length, cases: n,
+const summary = { run: new Date().toISOString(), provider: health.provider || null, model: health.model || null, places: places.length, types: types.length, cases: n,
   quick_matcher_hits: sum('quick_hit'), llm_hits: sum('ai_hit'), llm_errors: rows.filter(r => r.error).length,
   mean_llm_seconds: +(rows.reduce((a, r) => a + r.seconds, 0) / n).toFixed(1), rows }
-writeFileSync('evaluation/results/classify_benchmark.json', JSON.stringify(summary, null, 1))
+// the local run keeps its original file; other providers get their own, e.g. classify_benchmark_groq.json
+const out = !health.provider || health.provider === 'ollama' ? 'evaluation/results/classify_benchmark.json' : `evaluation/results/classify_benchmark_${health.provider}.json`
+writeFileSync(out, JSON.stringify(summary, null, 1))
+console.log(`Saved ${out}`)
 console.log(`\nQuick matcher ${summary.quick_matcher_hits}/${n}, LLM ${summary.llm_hits}/${n}, mean ${summary.mean_llm_seconds} s per idea`)
