@@ -1,0 +1,171 @@
+{
+ "run": "2026-10-18T10:51:49+0100",
+ "provider": "groq",
+ "chat_model": "qwen/qwen3.8-27b",
+ "search": "bm25-only",
+ "questions": 16,
+ "retrieval_top3_hits": 13,
+ "retrieval_cases": 14,
+ "rows": [
+  {
+   "question": "What share of new Southampton businesses are still trading after three years, compared with England?",
+   "evidence": "35.2",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment 2025, p. 3",
+    "Southampton Business Opportunity Data, p. 2"
+   ]
+  },
+  {
+   "question": "What is the five-year business survival rate in Southampton?",
+   "evidence": "33.1",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment 2025, p. 8",
+    "Southampton Business Opportunity Data, p. 3"
+   ]
+  },
+  {
+   "question": "How many businesses does Southampton have per 10,000 working-age residents, and how does England compare?",
+   "evidence": "653",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 4",
+    "Southampton Economic Assessment 2025, p. 9",
+    "Southampton Business Opportunity Data, p. 3"
+   ]
+  },
+  {
+   "question": "By how much did new business registrations in Southampton fall in 2023?",
+   "evidence": "29.5",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ]
+  },
+  {
+   "question": "Which sector lost the most enterprises in Southampton last year?",
+   "evidence": "155",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ]
+  },
+  {
+   "question": "What proportion of working-age people in Southampton were claiming out-of-work benefits in February 2025?",
+   "evidence": "7,910",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Business Opportunity Data, p. 4"
+   ]
+  },
+  {
+   "question": "Is Southampton's claimant rate back to where it was before the pandemic?",
+   "evidence": "3.5%",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Economic Assessment Summary Aug 2025, section 5"
+   ]
+  },
+  {
+   "question": "What share of economically active adults in Southampton hold only Level 3 qualifications?",
+   "evidence": "23.5",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 14",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Economic Assessment Summary Aug 2025, section 14"
+   ]
+  },
+  {
+   "question": "How did footfall in Shirley change between 2023 and 2024?",
+   "evidence": "5,337",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Business Opportunity Data, p. 6"
+   ]
+  },
+  {
+   "question": "Which of Southampton's centres saw footfall rise in 2024?",
+   "evidence": "4,268",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Southampton Business Opportunity Data, p. 9"
+   ]
+  },
+  {
+   "question": "What is the commercial vacancy rate in Portswood?",
+   "evidence": "6.45",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Business Opportunity Data, p. 14"
+   ]
+  },
+  {
+   "question": "How many commercial units are there in Southampton city centre?",
+   "evidence": "458",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 7"
+   ]
+  },
+  {
+   "question": "Which councils would make up the proposed Hampshire and the Solent mayoral combined county authority?",
+   "evidence": "Isle of Wight Council",
+   "retrieval_hit": true,
+   "top3": [
+    "Hampshire Solent Devolution Consultation 2025, section 36",
+    "Hampshire Solent Devolution Consultation 2025, section 2",
+    "Hampshire Solent Devolution Consultation 2025, section 10"
+   ]
+  },
+  {
+   "question": "How did Southampton City Council publicise the devolution consultation?",
+   "evidence": "16,300",
+   "retrieval_hit": false,
+   "top3": [
+    "Hampshire Solent Devolution Consultation 2025, section 3",
+    "Southampton Business Opportunity Data, p. 9",
+    "Hampshire Solent Devolution Consultation 2025, section 1"
+   ]
+  },
+  {
+   "question": "How much does it cost to rent a shop on Above Bar Street?",
+   "evidence": null,
+   "retrieval_hit": null,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 14",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 5"
+   ]
+  },
+  {
+   "question": "What will Southampton's population be in 2040?",
+   "evidence": null,
+   "retrieval_hit": null,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Hampshire Solent Devolution Consultation 2025, section 54",
+    "Hampshire Solent Devolution Consultation 2025, section 55"
+   ]
+  }
+ ]
+}

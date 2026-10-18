@@ -1,0 +1,466 @@
+{
+ "run": "2026-10-18T12:03:03+0100",
+ "provider": "groq",
+ "chat_model": "qwen/qwen3.8-27b",
+ "search": "bm25-only",
+ "questions": 16,
+ "retrieval_top3_hits": 13,
+ "retrieval_cases": 14,
+ "answers_correct": 15,
+ "in_scope_correct": 13,
+ "out_of_scope_no_invention": 2,
+ "answers_with_invalid_citations": 0,
+ "errors": 0,
+ "rate_limited": 0,
+ "mean_seconds": 0.7,
+ "p90_seconds": 0.8,
+ "rows": [
+  {
+   "question": "What share of new Southampton businesses are still trading after three years, compared with England?",
+   "evidence": "35.2",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment 2025, p. 3",
+    "Southampton Business Opportunity Data, p. 2"
+   ],
+   "answer": "Southampton’s three-year business survival rate is 35.2%, which is significantly lower than the England average of 52.8% [Southampton Economic Assessment Summary Aug 2025, section 10].\n\n*   This figure represents a decrease from 50.8% the previous year, a trend attributed to multiple registrations in 2020 [Southampton Economic Assessment Summary Aug 2025, section 10].\n*   The assessment notes that the pandemic and recent economic uncertainty may continue to create obstacles for longer-term business survival [Southampton Economic Assessment Summary Aug 2025, section 10].",
+   "sources": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment 2025, p. 3",
+    "Southampton Business Opportunity Data, p. 2"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment Summary Aug 2025, section 10"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "What is the five-year business survival rate in Southampton?",
+   "evidence": "33.1",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment 2025, p. 8",
+    "Southampton Business Opportunity Data, p. 3"
+   ],
+   "answer": "The five-year business survival rate in Southampton is 33.1% [Southampton Economic Assessment 2025, p. 8].\n\n*   This figure applies to the 2018 birth cohort, measured through 2023 [Southampton Business Opportunity Data, p. 3].\n*   It is lower than the national average of 39.4% [Southampton Economic Assessment 2025, p. 8].\n*   The rate reflects challenges from Brexit, the pandemic, and economic uncertainty [Southampton Economic Assessment 2025, p. 8].",
+   "sources": [
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment 2025, p. 8",
+    "Southampton Business Opportunity Data, p. 3"
+   ],
+   "error": null,
+   "seconds": 0.6,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment 2025, p. 8",
+    "Southampton Business Opportunity Data, p. 3",
+    "Southampton Economic Assessment 2025, p. 8",
+    "Southampton Economic Assessment 2025, p. 8"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "How many businesses does Southampton have per 10,000 working-age residents, and how does England compare?",
+   "evidence": "653",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 4",
+    "Southampton Economic Assessment 2025, p. 9",
+    "Southampton Business Opportunity Data, p. 3"
+   ],
+   "answer": "Southampton has 421 registered enterprises per 10,000 working-age residents, which is lower than the England average of 653 [Southampton Business Opportunity Data, p. 3].\n\n*   This metric measures registered VAT and/or PAYE businesses, not total job roles [Southampton Business Opportunity Data, p. 3].\n*   For context, Southampton’s job density is 0.66 jobs per working-age resident, also below the national average of 0.76 [Southampton Economic Assessment 2025, p. 9].",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 4",
+    "Southampton Economic Assessment 2025, p. 9",
+    "Southampton Business Opportunity Data, p. 3"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 3",
+    "Southampton Business Opportunity Data, p. 3",
+    "Southampton Economic Assessment 2025, p. 9"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "By how much did new business registrations in Southampton fall in 2023?",
+   "evidence": "29.5",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ],
+   "answer": "New business registrations in Southampton fell by 420 in 2023, representing a 29.5% decline from the previous year [Southampton Economic Assessment Summary Aug 2025, section 9].\n\n*   The total number of business start-ups (births) in 2023 was 1,005 [Southampton Economic Assessment Summary Aug 2025, section 9].\n*   This birth rate was significantly lower than the national average [Southampton Economic Assessment Summary Aug 2025, section 9].",
+   "sources": [
+    "Southampton Economic Assessment Summary Aug 2025, section 10",
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ],
+   "error": null,
+   "seconds": 0.6,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment Summary Aug 2025, section 9",
+    "Southampton Economic Assessment Summary Aug 2025, section 9"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "Which sector lost the most enterprises in Southampton last year?",
+   "evidence": "155",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ],
+   "answer": "The retail sector lost the most enterprises in Southampton last year, with a decline of 155 businesses [Southampton Economic Assessment 2025, p. 7]. This was followed by construction, which lost 35 enterprises, and the professional, scientific, and technical sector, which lost 30 [Southampton Economic Assessment 2025, p. 7]. Overall, the city saw a total decrease of 215 businesses, driven almost entirely by micro-enterprises [Southampton Economic Assessment Summary Aug 2025, section 8].",
+   "sources": [
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment 2025, p. 7",
+    "Southampton Economic Assessment Summary Aug 2025, section 8"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "What proportion of working-age people in Southampton were claiming out-of-work benefits in February 2025?",
+   "evidence": "7,910",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Business Opportunity Data, p. 4"
+   ],
+   "answer": "In February 2025, 4.5% of Southampton’s working-age population were claiming out-of-work benefits [Southampton Economic Assessment 2025, p. 12].\n\n*   This represented 7,910 claimants, an increase of 640 people (+8.8%) compared to February 2024 [Southampton Economic Assessment 2025, p. 12].\n*   The figure remains above the pre-pandemic baseline, which was below 3.5% in early 2020 [Southampton Economic Assessment 2025, p. 12].",
+   "sources": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Business Opportunity Data, p. 4"
+   ],
+   "error": null,
+   "seconds": 0.6,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment 2025, p. 12"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "Is Southampton's claimant rate back to where it was before the pandemic?",
+   "evidence": "3.5%",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Economic Assessment Summary Aug 2025, section 5"
+   ],
+   "answer": "No, Southampton’s claimant rate has not returned to pre-pandemic levels. As of February 2025, 4.5% of the working-age population were claiming out-of-work benefits, which remains above the pre-pandemic baseline of less than 3.5% recorded in early 2020 [Southampton Economic Assessment 2025, p. 12]. This figure represents an increase of 8.8% compared to February 2024, indicating that the recovery is still incomplete [Southampton Economic Assessment Summary Aug 2025, section 13]. The report suggests this persistent gap may be linked to the cost of living crisis and economic uncertainty [Southampton Economic Assessment 2025, p. 12].",
+   "sources": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Economic Assessment Summary Aug 2025, section 5"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment 2025, p. 12",
+    "Southampton Economic Assessment Summary Aug 2025, section 13",
+    "Southampton Economic Assessment 2025, p. 12"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "What share of economically active adults in Southampton hold only Level 3 qualifications?",
+   "evidence": "23.5",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Economic Assessment 2025, p. 14",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Economic Assessment Summary Aug 2025, section 14"
+   ],
+   "answer": "In 2024, 23.5% of economically active adults in Southampton held only RQF Level 3 qualifications [Southampton Economic Assessment 2025, p. 14]. This figure represents 31,100 individuals and is slightly higher than the national average of 20.2% [Southampton Business Opportunity Data, p. 5]. The proportion has declined from 25.3% in 2023, a trend likely influenced by the city’s large student population requiring these qualifications for university entry [Southampton Economic Assessment 2025, p. 14].",
+   "sources": [
+    "Southampton Economic Assessment 2025, p. 14",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Economic Assessment Summary Aug 2025, section 14"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Economic Assessment 2025, p. 14",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Economic Assessment 2025, p. 14"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "How did footfall in Shirley change between 2023 and 2024?",
+   "evidence": "5,337",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Business Opportunity Data, p. 6"
+   ],
+   "answer": "Footfall in Shirley decreased by 24.0% between 2023 and 2024.\n\n*   Average daily visits fell from 7,020 in 2023 to 5,337 in 2024 [Southampton Business Opportunity Data, p. 9].\n*   These figures represent recorded device activity, not unique shoppers or total centre population [Southampton Business Opportunity Data, p. 9].",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Business Opportunity Data, p. 6"
+   ],
+   "error": null,
+   "seconds": 0.6,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 9"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "Which of Southampton's centres saw footfall rise in 2024?",
+   "evidence": "4,268",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Southampton Business Opportunity Data, p. 9"
+   ],
+   "answer": "Only Lordshill saw a rise in footfall in 2024, with average daily visits increasing by 4.0% to 4,268 [Southampton Business Opportunity Data, p. 9].\n\n*   All other centres with comparable full-year data (City Centre, Shirley, and Portswood) recorded declines in 2024 [Southampton Business Opportunity Data, p. 9].\n*   Bitterne and Woolston also showed declines, but their 2024 figures are not like-for-like comparisons due to sensor outages from December 2023 to May 2024 [Southampton Business Opportunity Data, p. 9].",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 18",
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Southampton Business Opportunity Data, p. 9"
+   ],
+   "error": null,
+   "seconds": 0.9,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 9",
+    "Southampton Business Opportunity Data, p. 9"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "What is the commercial vacancy rate in Portswood?",
+   "evidence": "6.45",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Business Opportunity Data, p. 14"
+   ],
+   "answer": "The commercial vacancy rate in the Portswood District Centre was 6.45% in 2024 [Southampton Business Opportunity Data, p. 6].\n\n*   This represents a decrease of 1.61 percentage points from the 2023 rate of 4.84% [Southampton Business Opportunity Data, p. 6].\n*   The figure is based on a survey of 124 units, of which 6 were vacant [Southampton Business Opportunity Data, p. 6].\n*   Note that this refers specifically to the Portswood District Centre, which is distinct from the Portswood Road Local Centre [Southampton Business Opportunity Data, p. 6].",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 5",
+    "Southampton Business Opportunity Data, p. 14"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 6"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "How many commercial units are there in Southampton city centre?",
+   "evidence": "458",
+   "retrieval_hit": true,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 7"
+   ],
+   "answer": "There are 458 commercial units in the Southampton City Centre Primary Shopping Area (PSA).\n\n*   This figure represents the total unit count recorded in the October–December 2024 unit survey [Southampton Business Opportunity Data, p. 6].\n*   The breakdown includes 154 comparison goods, 128 leisure, 52 retail services, 34 convenience goods, 21 financial/business services, 5 commercial, 3 community, and 61 vacant units [Southampton Business Opportunity Data, p. 7].\n*   This count is specific to the designated City Centre PSA and does not represent a city-wide inventory of all commercial properties [Southampton Business Opportunity Data, p. 6].",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 7"
+   ],
+   "error": null,
+   "seconds": 0.8,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 6",
+    "Southampton Business Opportunity Data, p. 7",
+    "Southampton Business Opportunity Data, p. 6"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "Which councils would make up the proposed Hampshire and the Solent mayoral combined county authority?",
+   "evidence": "Isle of Wight Council",
+   "retrieval_hit": true,
+   "top3": [
+    "Hampshire Solent Devolution Consultation 2025, section 36",
+    "Hampshire Solent Devolution Consultation 2025, section 2",
+    "Hampshire Solent Devolution Consultation 2025, section 10"
+   ],
+   "answer": "The proposed Hampshire and the Solent Combined County Authority would comprise four constituent councils: Hampshire County Council, Isle of Wight Council, Portsmouth City Council, and Southampton City Council [Hampshire Solent Devolution Consultation 2025, section 10].\n\n*   Hampshire County Council would appoint two representatives, while Isle of Wight, Portsmouth, and Southampton City Councils would each appoint one representative [Hampshire Solent Devolution Consultation 2025, section 10].\n*   A directly elected Mayor, serving as a constituent member, would also be part of the authority [Hampshire Solent Devolution Consultation 2025, section 10].",
+   "sources": [
+    "Hampshire Solent Devolution Consultation 2025, section 36",
+    "Hampshire Solent Devolution Consultation 2025, section 2",
+    "Hampshire Solent Devolution Consultation 2025, section 10"
+   ],
+   "error": null,
+   "seconds": 0.8,
+   "facts_ok": true,
+   "citations": [
+    "Hampshire Solent Devolution Consultation 2025, section 10",
+    "Hampshire Solent Devolution Consultation 2025, section 10",
+    "Hampshire Solent Devolution Consultation 2025, section 10"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "How did Southampton City Council publicise the devolution consultation?",
+   "evidence": "16,300",
+   "retrieval_hit": false,
+   "top3": [
+    "Hampshire Solent Devolution Consultation 2025, section 3",
+    "Southampton Business Opportunity Data, p. 9",
+    "Hampshire Solent Devolution Consultation 2025, section 1"
+   ],
+   "answer": "The provided sources do not specify how Southampton City Council publicised the devolution consultation.\n\n*   The documents confirm that Southampton City Council is a partner in the proposal to form a Mayoral Combined County Authority [Hampshire Solent Devolution Consultation 2025, section 1].\n*   They state that the government is seeking views from interested parties, including those who live and work in the area [Hampshire Solent Devolution Consultation 2025, section 1].\n*   They describe how to respond via an online form, email, or post [Hampshire Solent Devolution Consultation 2025, section 3], but do not detail the specific marketing or publicity campaigns used by the council to inform the public.",
+   "sources": [
+    "Hampshire Solent Devolution Consultation 2025, section 3",
+    "Southampton Business Opportunity Data, p. 9",
+    "Hampshire Solent Devolution Consultation 2025, section 1"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": false,
+   "citations": [
+    "Hampshire Solent Devolution Consultation 2025, section 1",
+    "Hampshire Solent Devolution Consultation 2025, section 1",
+    "Hampshire Solent Devolution Consultation 2025, section 3"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": false
+  },
+  {
+   "question": "How much does it cost to rent a shop on Above Bar Street?",
+   "evidence": null,
+   "retrieval_hit": null,
+   "top3": [
+    "Southampton Business Opportunity Data, p. 14",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 5"
+   ],
+   "answer": "The provided sources do not contain specific rental costs for shops on Above Bar Street.\n\n*   The documents discuss Above Bar Street only in the context of transport improvements, specifically a proposed 290 m bus-priority section with a target date of March 2027 [Southampton Business Opportunity Data, p. 14].\n*   They also mention \"Northern Above Bar\" as part of the \"Heart of the City\" regeneration priority, but no commercial rent figures are listed [Southampton Business Opportunity Data, p. 15].\n*   General guidance (not from Southampton evidence): To find current rental prices, you should consult local commercial real estate agents or property listing websites that track live market data for specific street addresses.",
+   "sources": [
+    "Southampton Business Opportunity Data, p. 14",
+    "Southampton Business Opportunity Data, p. 15",
+    "Southampton Business Opportunity Data, p. 5"
+   ],
+   "error": null,
+   "seconds": 0.7,
+   "facts_ok": true,
+   "citations": [
+    "Southampton Business Opportunity Data, p. 14",
+    "Southampton Business Opportunity Data, p. 15"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  },
+  {
+   "question": "What will Southampton's population be in 2040?",
+   "evidence": null,
+   "retrieval_hit": null,
+   "top3": [
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Hampshire Solent Devolution Consultation 2025, section 54",
+    "Hampshire Solent Devolution Consultation 2025, section 55"
+   ],
+   "answer": "The provided sources do not contain a specific population projection for Southampton in 2040.\n\n*   The sources reference \"Estimates of the population for England and Wales\" from the Office for National Statistics, but they do not provide the specific 2040 figure for Southampton [Hampshire Solent Devolution Consultation 2025, section 54].\n*   The economic assessment focuses on GVA and productivity metrics, not demographic projections [Southampton Economic Assessment Summary Aug 2025, section 5].\n\nGeneral guidance (not from Southampton evidence): You should consult the latest ONS subnational population projections for the specific 2040 estimate.",
+   "sources": [
+    "Southampton Economic Assessment Summary Aug 2025, section 5",
+    "Hampshire Solent Devolution Consultation 2025, section 54",
+    "Hampshire Solent Devolution Consultation 2025, section 55"
+   ],
+   "error": null,
+   "seconds": 0.6,
+   "facts_ok": true,
+   "citations": [
+    "Hampshire Solent Devolution Consultation 2025, section 54",
+    "Southampton Economic Assessment Summary Aug 2025, section 5"
+   ],
+   "invalid_citations": [],
+   "cited": true,
+   "invented": false,
+   "correct": true
+  }
+ ]
+}

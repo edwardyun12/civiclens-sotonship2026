@@ -6,8 +6,8 @@
 
 <p align="center">
   <img alt="SotonShip 2026" src="https://img.shields.io/badge/SotonShip%202026-Southampton%20City%20track-0b332b">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-59-2f7a4f">
-  <img alt="Classifier benchmark" src="https://img.shields.io/badge/AI%20classifier-21%2F22%20vs%20baseline%2010%2F22-7a5cc4">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-57%20passing-2f7a4f">
+  <img alt="Classifier benchmark" src="https://img.shields.io/badge/AI%20classifier%20(Groq)-21%2F22%20vs%20baseline%209%2F22-7a5cc4">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776ab">
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb">
   <img alt="LLM" src="https://img.shields.io/badge/LLM-Groq%20free%20API%20(website)%20%7C%20Qwen3%208B%20(local)-d7ff3f">
@@ -279,25 +279,43 @@ All results are reproducible from the repo. Run date: **18 Oct 2026**.
 22 business ideas, each hand-labelled with the business types that are true like-for-like competitors in the data (or none, for a gap). A hit means the method's like-for-like types include an accepted one.
 
 ```text
-Keyword matcher (no AI)  ██████████            10 / 22  (45%)
-LLM (Qwen3 8B, local)    █████████████████████ 21 / 22  (95%)
+Keyword matcher (no AI)               █████████             9 / 22  (41%)
+LLM, website: Qwen3.8 27B on Groq     █████████████████████ 21 / 22  (95%)   ~1 s per idea
+LLM, local: Qwen3 8B on Ollama        █████████████████████ 21 / 22  (95%)   ~21.5 s per idea
 ```
 
-| Idea | Keyword matcher | LLM |
+| Idea | Keyword matcher | LLM (Groq, website) |
 |---|---|---|
-| sushi bar | Hairdresser or barber ❌ | Japanese, Noodle bar ✅ |
+| sushi bar | Hairdresser or barber ❌ | Japanese ✅ |
 | curry house | Hotel/bed & breakfast ❌ | Indian ✅ |
 | vietnamese pho place | Mobile phone shop ❌ | Vietnamese ✅ |
-| craft beer bar | all pubs and bars ❌ | Bar, Pub ✅ |
+| barber shop | Café ❌ | Barber, Hairdresser or barber ✅ |
+| craft beer bar | all pubs and bars ❌ | Bar, Pub or bar ✅ |
 | nail bar | Hairdresser or barber ❌ | Nail salon ✅ |
 | dog grooming salon | Beauty salon ❌ | none in the data (a gap) ✅ |
 | yoga studio | Tattoo studio ❌ | none ❌ (expected Gym or fitness centre) |
 
-Mean **21.5 s per idea** on a laptop. Results file: `evaluation/results/classify_benchmark.json`.
+Website run: **`qwen/qwen3.8-27b` on Groq**, 18 Oct 2026, 0 errors, mean **1 s per idea** (with 20 s pauses between ideas for the free plan). Results: `evaluation/results/classify_benchmark_groq.json`. Local run: `evaluation/results/classify_benchmark.json`. Same prompt, validation rules and 22 ideas on both; both models miss only "yoga studio". The keyword matcher fell from 10 to 9 after coffee shops were merged into cafés: "barber shop" now matches "Café" through the word *shop*.
 
-> ℹ️ **Which model.** The website runs the classifier on **Qwen3.8 27B through Groq's free API**. The recorded run above used the local path (Qwen3 8B, a smaller model of the same family) because it was free to repeat while we fixed bugs. The prompt, validation rules and 22 labelled ideas are identical on both; to reproduce on Groq, start the API with `GROQ_API_KEY` set (it then uses Groq by default) and run `node evaluation/classify_benchmark.mjs`. Allow for the free plan's limit of 30 requests a minute.
+> ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run per model, temperature 0. The first Groq run failed on every request (HTTP 403, Cloudflare error 1010) because the client sent urllib's default User-Agent; this would also have broken the website, and is fixed with a test. The benchmark also found and fixed two real bugs before the local run: the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
 
-> ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run, temperature 0. The benchmark also found and fixed two real bugs before this run: the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
+### 💬 Assistant: right passage, right answer, valid citations ([evaluation/assistant_eval.py](evaluation/assistant_eval.py))
+
+16 hand-labelled questions: 14 answerable from the indexed documents (each labelled with a figure only the right passage contains and the facts a correct answer must state) and 2 out of scope (shop rents, population in 2040), where a correct answer must say the evidence doesn't cover it instead of inventing a number. The built-in common questions are excluded because fixed templates answer them, not the LLM.
+
+| Measure | Website (Qwen3.8 27B on Groq, keyword search) |
+|---|---|
+| Right passage in the top 3 search results | **13 / 14** |
+| Answers correct | **15 / 16** (13 / 14 in scope, 2 / 2 out of scope with no invented figure) |
+| Answers citing a source that wasn't retrieved | **0** |
+| Errors / rate-limited requests | 0 / 0 |
+| Time per answer | mean **0.7 s**, 90th percentile 0.8 s |
+
+Run 18 Oct 2026 with 25 s pauses for the free plan. Results: `evaluation/results/assistant_eval_groq.json`. The one miss (*"How did Southampton City Council publicise the devolution consultation?"*) failed at search: the right passage wasn't in the top 3, so the answer couldn't state it.
+
+**Keyword-only vs hybrid search.** The website uses keyword search only (BM25) because Groq has no embeddings API. On the same 14 answerable questions, keyword-only found the right passage in the top 3 for **13**, hybrid keyword + vector search (local, nomic-embed-text) for **10** (`retrieval_eval_bm25-only.json`, `retrieval_eval_nomic-embed-text.json`). Dropping vector search cost nothing on this set; the questions quote exact figures and names, which favours keyword search.
+
+> ⚠️ **Caveats.** 16 questions written by us, one run, mostly about one document (the Economic Assessment). Timings were measured from this laptop to Groq with no other users; the deployed site's latency and free-plan headroom under load are still to be measured.
 
 ### 🏛️ Planning engine vs the spreadsheet answer ([evaluation/run_evaluation.py](evaluation/run_evaluation.py))
 
@@ -337,14 +355,11 @@ Headless Chrome driving the live app (scripts not shipped):
 
 ### ⏳ Not yet measured
 
-These are the measurements we still owe; none of them has been run yet.
+Measured since the first draft: the classifier on the website model, the assistant answers and keyword-only search (above). Still owed:
 
 | What | Why it matters | How we will measure it |
 |---|---|---|
-| **Classifier accuracy on the website model** (Qwen3.8 27B on Groq) | The 21/22 above was measured on the local Qwen3 8B, not the model the website uses | Same 22 labelled ideas: start the API with `GROQ_API_KEY` set and run `node evaluation/classify_benchmark.mjs` |
-| **Assistant answer accuracy** | Judges and users rely on cited answers being right | A labelled set of 20–30 questions; score each answer for correct figures, valid citations and no invented sources |
-| **Keyword-only document search** | The website dropped vector search; it may miss passages worded differently from the question | Same question set: does the right document page appear in the top 3, keyword-only vs hybrid (local) |
-| **Response time and free-plan headroom** | Groq's free plan allows about two or three chat answers a minute across all users | Log latency and rate-limit (429) errors on the deployed site during the pitch session |
+| **Free-plan headroom on the deployed site** | One answer takes 0.7 s from a laptop, but Groq's free plan allows about two or three chat answers a minute across all users | Log latency and rate-limit (429) errors on the deployed site during the pitch session |
 | **Live audit of the AI planning brief** (Module C, Claude Haiku) | `logs/briefs.jsonl` contains only test-run records | `python run.py live-briefs` with `ANTHROPIC_API_KEY` set: share of briefs that pass the number audit first time |
 | **Whether the site scores predict success** | The weights are design choices, not validated | Back-test against business openings and closures (Companies House, FSA register changes) |
 | **Real users** | No business owner or council officer has used it yet | Short sessions with Southampton business owners and business-support officers: task completion and usefulness |
@@ -421,8 +436,8 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 | Criterion | Our case | Evidence |
 |---|---|---|
 | 👤 **C1 Problem and user** (20%) | A named user (a person opening a small business; the council team advising them) facing a costly, frequent decision with no affordable tool | 35.2% 3-year survival vs 52.8% in England; business births down 29.5% ([Economic Assessment 2025](https://data.southampton.gov.uk/media/iqgh14rf/economic-assessment-august-2025.pdf)); [what people do today](#what-people-do-today) |
-| 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 10/22** against the keyword baseline; validation rules; grounded RAG with allowed, linked citations |
-| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 59 tests; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
+| 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 9/22** against the keyword baseline, on the website model (Groq); validation rules; grounded RAG with allowed, linked citations |
+| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 57 tests; assistant answers 15/16 correct with 0 invalid citations on the website model; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
 | 💼 **C4 Business and scale** (20%) | Council licence, paid site reports; near-zero inference cost; any English council with a data rebuild | [Business and scale](#-business-and-scale) |
 | 🛡️ **C5 Responsibility and trust** (15%) | No personal data, only public data, dated sources, refusal and gap behaviour, labelled AI suggestions | [Responsibility and trust](#️-responsibility-and-trust), [Known limits](#-known-limits) |
 
@@ -495,7 +510,7 @@ All processed data is committed, so the app runs from a clean clone with no down
 
 | Command | What it does |
 |---|---|
-| `python run.py test` | Run the 59 tests |
+| `python run.py test` | Run the 57 tests |
 | `python run.py eval` | Planning engine vs baseline → `evaluation/results/` |
 | `node evaluation/classify_benchmark.mjs` | AI classifier vs keyword baseline (needs the API running) |
 | `python run.py app` | Streamlit planning engine (Module C) |
@@ -517,7 +532,7 @@ Standalone pages, no install: open `viewer/site_simulator.html` or `viewer/place
 - 🍜 **Cuisine is missing for about 130 food places** (hygiene-register-only entries whose names don't say it, e.g. "Golden Leaf"). They count as restaurants or takeaways, not as a specific cuisine.
 - 🕰️ **Data ages.** OpenStreetMap can lag closures; the hygiene register updates at each inspection. Each source's date is shown above.
 - 🧠 **The classifier can miss.** It returned no like-for-like type for "yoga studio" in the benchmark, and a local run takes about 20 seconds.
-- 💬 **The 8B model sometimes mis-attributes a citation**, e.g. tagging general licensing rules as `[App analysis]` when no licensing document is indexed. Adding Southampton's Statement of Licensing Policy to `data/raw/official/` would give it a real source.
+- 💬 **Citations can be mis-attributed on questions the documents don't cover.** The website model gave 0 invalid citations on our 16-question set, but in earlier local testing the 8B model tagged general licensing rules as `[App analysis]` when no licensing document is indexed. Adding Southampton's Statement of Licensing Policy to `data/raw/official/` would give it a real source.
 - 🗺️ **The city boundary** cuts off customers just outside it (Eastleigh, Totton).
 - ⚖️ **Weights are design choices, not validated** against real business outcomes. Jobs figures are assumptions. This is decision support, not a decision.
 - 👥 **Not yet tested with real business owners or council officers.**
