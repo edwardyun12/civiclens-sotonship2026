@@ -13,7 +13,6 @@ import { FitCity, KeepInView } from '../lib/MapFit.jsx'
 import { businessWords, findPlace, setAssistantContext } from '../lib/assistantContext.js'
 import { AGE_GROUPS, analyse, businessTypes, feasibilityBrief, matchBusiness, siteAt, suggest, targetFromAI, verdict } from './opportunity.js'
 
-const SimEngine = window.SimEngine
 // quick picks: these when the data has them, topped up with the most common types
 const QUICK = ['Café', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
@@ -75,7 +74,7 @@ export default function SimulatorView() {
   const places = useMemo(() => (cols ? placeRows(cols).filter(p => p.inside) : []), [cols])
   const types = useMemo(() => businessTypes(places), [places])
   const quick = useMemo(() => { const have = new Set(types.map(t => t.label)); const q = QUICK.filter(x => have.has(x)); for (const t of types) if (q.length < 6 && !q.includes(t.label)) q.push(t.label); return q.slice(0, 6) }, [types])
-  const E = useMemo(() => (city ? SimEngine.create(city) : null), [city])
+  const E = useMemo(() => (city ? window.SimEngine.create(city) : null), [city])
 
   const [text, setText] = useState('')
   const [typed, setQuery] = useState('')               // what is analysed (typing settles first)

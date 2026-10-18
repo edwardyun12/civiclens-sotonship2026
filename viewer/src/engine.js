@@ -393,6 +393,8 @@
   }
 
   const api = { create, CATEGORIES, CFG, EngineError, toBNG, pyRound };
+  // Always set the global: the production build (Vite/Rolldown) wraps this file as CommonJS, so `module` exists there
+  // too, and setting only module.exports left window.SimEngine undefined on the deployed site.
+  root.SimEngine = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  else root.SimEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
