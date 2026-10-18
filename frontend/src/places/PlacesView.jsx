@@ -117,6 +117,7 @@ export default function PlacesView() {
   const outlines = useMemo(() => (city ? Object.entries(city.ward_outlines).map(([w, rings]) => ({ w, rings, pos: rings.map(r => r.map(([x, y]) => [y, x])) })) : []), [city])
   const people = useMemo(() => peoplePoints(city, age), [city, age])
   const wardPop = useMemo(() => { const o = {}; if (city) city.oa.ward.forEach((w, i) => (o[w] = (o[w] || 0) + city.oa.pop[i])); return o }, [city])
+  const placeCounts = useMemo(() => { const o = {}; for (const p of all) if (!p.ro && p.ward) o[p.ward] = (o[p.ward] || 0) + 1; return o }, [all])
   const target = useMemo(() => (ward && city ? bounds(city.ward_outlines[ward]) : null), [ward, city])
 
   const toggle = k => setSpec(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
@@ -126,6 +127,8 @@ export default function PlacesView() {
   // tell the assistant what is on screen
   useEffect(() => {
     const lines = [`Page: Places map, ${VIEW_TEXT[view][0]} view.`]
+    lines.push(`Mapped trading places by ward: ${Object.entries(placeCounts).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${n}`).join(', ')}.`)
+    lines.push(`Age-group leaders by resident count: ${people.ages.slice(1).map(([k, label]) => `${label}: ${Object.entries(people.mix).map(([w, mix]) => [w, mix[k] || 0]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([w, n]) => `${w} ${Math.round(n)}`).join(', ')}`).join('; ')}.`)
     if (view === 'popular') lines.push(sector ? `Sector: ${sector}. Share of each area's places in it: ${Object.entries(focus?.by || {}).sort((a, b) => b[1].share - a[1].share).map(([w, f]) => `${w} ${Math.round(100 * f.share)}%`).join(', ')}. City average ${Math.round(100 * (focus?.cityShare || 0))}%.`
       : `All sectors. Leading ${bySector ? 'sector' : 'type'} per area: ${Object.entries(pop.win).map(([w, b]) => `${w}: ${b.k}`).join('; ')}.`)
     if (view === 'heat') lines.push(`Heat map of ${sector || 'all sectors'}: ${shown.length} places.`)
@@ -134,7 +137,7 @@ export default function PlacesView() {
     if (ward) { const st = pop.by[ward], mix = people.mix[ward] || {}, n = Object.values(mix).reduce((a, b) => a + b, 0) || 1
       lines.push(`Selected area: ${ward}, ${Math.round(wardPop[ward] || 0)} residents, ${st ? st.n : 0} places. Age mix: ${people.ages.slice(1).map(([k, l]) => `${l} ${Math.round(100 * (mix[k] || 0) / n)}%`).join(', ')}. Top: ${st ? Object.entries(st.top).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, c]) => `${k} ${c}`).join(', ') : 'none'}.`) }
     setAssistantContext(lines.join('\n'))
-  }, [view, sector, focus, pop, bySector, shown, people, ward, wardPop, q, grp, spec])
+  }, [view, sector, focus, pop, bySector, shown, people, ward, wardPop, placeCounts, q, grp, spec])
 
   if (error) return <div className="tool-error">{error.message}</div>
   const [eyebrow, title, intro] = VIEW_TEXT[view]

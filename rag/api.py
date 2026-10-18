@@ -5,18 +5,22 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Iterator
+from pathlib import Path
+from urllib.parse import quote
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from rag.classify import classify_business
-from rag.config import CHAT_MODEL, CORS_ORIGINS, FRONTEND_DIST, LLM_PROVIDER
+from rag.citations import extract_pdf_pages
+from rag.config import CHAT_MODEL, CORS_ORIGINS, FRONTEND_DIST, LLM_PROVIDER, PROJECT_ROOT, RAW_DATA_DIR
 from rag.generator import prepare_answer, stream_generated_answer
 from rag.routing import direct_response
+from rag.templates import answer_template
 
 
 class ChatMessage(BaseModel):
@@ -55,6 +59,33 @@ app.add_middleware(
 )
 
 
+def evidence_url(source: str, text: str) -> str:
+    """Return a browser URL for a local source, including its PDF page."""
+    url = f"/api/evidence/{quote(source)}"
+    pages = extract_pdf_pages(text)
+    if Path(source).suffix.lower() == ".pdf" and pages:
+        url += f"#page={pages[0]}"
+    return url
+
+
+@app.get("/api/evidence/{source:path}")
+def evidence(source: str) -> FileResponse:
+    """Open an indexed source document without exposing arbitrary files."""
+    path = (PROJECT_ROOT / source).resolve()
+    try:
+        path.relative_to(RAW_DATA_DIR.resolve())
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Evidence document not found") from exc
+    if not path.is_file() or path.suffix.lower() not in {".pdf", ".md", ".txt"}:
+        raise HTTPException(status_code=404, detail="Evidence document not found")
+    media_type = {
+        ".pdf": "application/pdf",
+        ".md": "text/markdown; charset=utf-8",
+        ".txt": "text/plain; charset=utf-8",
+    }[path.suffix.lower()]
+    return FileResponse(path, media_type=media_type)
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "provider": LLM_PROVIDER, "model": CHAT_MODEL}
@@ -81,6 +112,14 @@ def chat(payload: ChatRequest) -> StreamingResponse:
             yield json.dumps({"type": "done"}) + "\n"
             return
 
+        templated = answer_template(payload.question, payload.context)
+        if templated is not None:
+            answer, sources = templated
+            yield json.dumps({"type": "sources", "sources": sources}) + "\n"
+            yield json.dumps({"type": "token", "content": answer}) + "\n"
+            yield json.dumps({"type": "done"}) + "\n"
+            return
+
         try:
             sources, prompt = prepare_answer(
                 payload.question,
@@ -94,6 +133,7 @@ def chat(payload: ChatRequest) -> StreamingResponse:
                     "source": source["source"],
                     "chunk": source["chunk"],
                     "preview": source["text"][:360],
+                    "url": evidence_url(source["source"], source["text"]),
                     "vectorScore": source["vector_score"],
                     "bm25Score": source["bm25_score"],
                     "hybridScore": source["rrf_score"],

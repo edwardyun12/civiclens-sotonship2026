@@ -23,3 +23,13 @@
 .brand.centre{height:auto;gap:12px;transform:scale(1.45);filter:drop-shadow(0 10px 18px #001d1770)}
 .brand.centre .logo-mark{width:32px;height:32px}
 .brand.centre .brand-wordmark{font-size:20px}
+
+/* Linked, inspectable evidence in assistant answers */
+.inline-citation{color:#416f13;text-decoration:underline;text-decoration-color:#8ebc4e;text-underline-offset:2px;font-weight:700}
+.message details summary{cursor:pointer;font-weight:700}
+.message details>a{display:flex;align-items:center;gap:8px;margin-top:6px;padding:8px;border:1px solid #dce4dc;border-radius:7px;background:#fff;color:#28463e;text-decoration:none}
+.message details>a:hover{border-color:#9dbf65;background:#fafff2}
+.message details>a>span{display:block;min-width:0;flex:1}
+.message details b{display:block;font-size:9px}
+.message details small{display:-webkit-box;margin-top:3px;color:#71817c;font-size:8px;line-height:1.35;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.message>div>p{margin:0 0 9px}.message>div>p:last-child{margin-bottom:0}.message>div>ul{margin:8px 0 0;padding-left:18px}.message>div>ul li{margin:5px 0;white-space:normal}

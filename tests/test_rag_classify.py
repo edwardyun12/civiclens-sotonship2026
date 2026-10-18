@@ -2,6 +2,8 @@
 import json
 
 from rag import classify as K
+from rag.generator import build_retrieval_query
+from rag.templates import answer_template
 
 TYPES = [{"label": "Café", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 35},
          {"label": "Restaurant (cuisine not known)", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 40},
@@ -51,3 +53,30 @@ def test_types_win_over_a_wrong_sector_and_direct_stays_narrow(monkeypatch):
                                             "direct_types": ["Japanese", "Noodle bar", "Korean"]}))
     out = K.classify_business("sushi bar", types, ["Retail", "Food and drink"])
     assert out["direct_types"] == ["Japanese", "Noodle bar"] and out["similar_types"] == ["Korean"]
+
+
+def test_explicit_question_does_not_mix_in_previous_topic():
+    history = [{"role": "user", "content": "Where is commercial vacancy highest?"}]
+    question = "Compare Shirley and Portswood."
+    assert build_retrieval_query(question, history) == question
+
+
+def test_referential_follow_up_uses_previous_question():
+    history = [{"role": "user", "content": "Compare Shirley and Portswood."}]
+    query = build_retrieval_query("Which one has more shops?", history)
+    assert "Compare Shirley and Portswood." in query
+    assert "Which one has more shops?" in query
+
+
+def test_builtin_place_question_is_deterministic():
+    context = "Mapped trading places by ward: Bargate 1,060, Bevois 386, Millbrook 304."
+    answer, sources = answer_template("Which areas have the most businesses?", context)
+    assert "Bargate" in answer and "1,060" in answer and not sources
+
+
+def test_builtin_competitor_question_uses_both_distances():
+    context = "14,683 target customers; 7 direct competitors within 800 m (2 within 400 m); 10 related businesses."
+    answer, sources = answer_template("How many competitors are near this site?", context)
+    assert "7 direct competitors within 800 m" in answer
+    assert "2 within 400 m" in answer
+    assert not sources
