@@ -118,6 +118,9 @@
 .leaflet-tooltip.rank-label { background: none; border: 0; box-shadow: none; font: 800 14px Manrope; color: var(--deep); padding: 0 }
 .leaflet-tooltip.rank-label:before { display: none }
 .heat-canvas { pointer-events: none }
+.sector-ring { background: none; border: 0 }
+.sector-ring i { display: block; width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 2px 8px #0b2d2540;
+  -webkit-mask: radial-gradient(circle, transparent 7px, #000 7.5px); mask: radial-gradient(circle, transparent 7px, #000 7.5px) }
 
 /* right-hand cards: place details, area profile, simulator result */
 .place-card.tool-card { top: 20px; bottom: auto; right: 20px; width: 340px }

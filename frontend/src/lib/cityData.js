@@ -26,6 +26,16 @@ export function placeRows(cols) {
 export const CATEGORICAL = ['#0f7a5c', '#e0782f', '#3d78b8', '#c2416f', '#7a5cc4', '#b8911f']
 export const OTHER = '#8f9c96'
 
+// One fixed colour per sector (industry group from pipeline/places/business_types.py INDUSTRY_GROUP), used on
+// every map and list so a sector always looks the same
+export const SECTOR_COLOR = {
+  'Food and drink': '#e0782f', Retail: '#c2416f', Health: '#0f7a5c', 'Childcare, education and care': '#3d78b8',
+  'Community and culture': '#7a5cc4', 'Leisure and hospitality': '#d4a514', 'Personal services': '#2bb3b1',
+  'Business and professional': '#475569', 'Industry, construction and transport': '#8a5a2b',
+  'Dormant or non-trading': '#b7c0bb', Other: OTHER,
+}
+export const sectorColor = g => SECTOR_COLOR[g] || OTHER
+
 export const fmt = n => Number(n).toLocaleString('en-GB')
 
 // metres between two lat/lon points (fine at city scale)
