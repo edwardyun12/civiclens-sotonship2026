@@ -43,7 +43,7 @@ function pinIcon(label, color, on) {
 function PlaceTip({ p, kind, site }) {
   const comp = kind === 'Competitor', d = site ? metres(site.lat, site.lon, p.lat, p.lon) : null
   return <div className="biz-card">
-    <span className={`biz-chip ${comp ? 'comp' : 'rel'}`}>{comp ? 'Competitor' : 'Related business'}</span>
+    <span className={`biz-chip ${comp ? 'comp' : 'rel'}`}>{kind}</span>
     <b>{p.name || 'Unnamed business'}</b>
     <span className="biz-type">{p.spec || 'Type not known'}</span>
     {d != null && <span className="biz-meta"><Footprints size={12} /> {distText(d)} from your site</span>}
@@ -149,9 +149,10 @@ export default function SimulatorView() {
     return [
       `The question is about ${place.name}${place.kind === 'neighbourhood' ? ` (a neighbourhood in ${place.ward} ward)` : ' ward'}. Answer about ${place.name}, not about the site selected on screen.`,
       t.level === 'ai' && t !== target ? `AI classification of "${words}": ${t.label}; sector ${t.grp}; niche ${t.niche}; like-for-like types ${[...t.directSpecs].join(', ') || 'none in the data'}; name keywords ${t.keywords.join(', ')}.` : '',
-      `Business analysed: ${t.label}${t === target ? ' (the business on screen)' : ` (read from the question "${words}")`}${t.level === 'category' ? `; no exact type in the data, so compared with all ${t.n} similar businesses` : ''}${t.matched ? '' : '; no businesses like it in the data, so competitors could not be counted'}.`,
+      `Business analysed: ${t.label}${t === target ? ' (the business on screen)' : ` (read from the question "${words}")`}${t.level === 'category' ? `; no exact type in the data, so compared with all ${t.n} similar businesses` : ''}${t.matched ? '' : '; none like it in the data'}.`,
+      c.gap ? `No ${t.label} exists in the data: a possible gap in the market. ${c.similar.length} similar businesses (other niches of the same kind${t.similarSpecs?.size ? `: ${[...t.similarSpecs].slice(0, 5).join(', ')}` : ''}) are used instead to judge competition and demand.` : '',
       `App analysis for ${place.name} (${place.kind === 'ward' ? 'best site in the ward' : 'at the neighbourhood centre'}): feasibility ${s.score}/100 (${verdict(s.score)[1]}). Factors (percentile vs all sites in Southampton): customers ${f.demand}, room in the market ${f.room}, passing trade ${f.footfall}, growth ${f.growth}.`,
-      `${Math.round(s.customers)} target customers and ${Math.round(s.residents)} residents within ${radius} m; ${s.compR} direct competitors within ${radius} m${s.nearest != null ? `, nearest ${Math.round(s.nearest)} m away` : ''}; ${s.relR} related businesses; ${s.footfall} shops/services within 400 m; population change since 2021 ${s.growth.toFixed(1)}%;${s.flood ? ' in flood zone 3;' : ''}`,
+      `${Math.round(s.customers)} target customers and ${Math.round(s.residents)} residents within ${radius} m; ${s.compR} direct competitors within ${radius} m${s.nearest != null ? `, nearest ${Math.round(s.nearest)} m away` : ''}; ${s.simR} similar businesses${s.nearSim.length ? ` (${[...new Set(s.nearSim.map(p => p.spec))].join(', ')})` : ''}; ${s.relR} related businesses; ${s.footfall} shops/services within 400 m; population change since 2021 ${s.growth.toFixed(1)}%;${s.flood ? ' in flood zone 3;' : ''}`,
       b.strengths.length ? `Strengths in ${place.name}: ${b.strengths.join(' ')}` : '', b.risks.length ? `Risks in ${place.name}: ${b.risks.join(' ')}` : '',
       best.length ? `For comparison, the best sites in Southampton for ${t.label}: ${best.map((p, i) => `${i + 1}. ${p.ward} ${p.score}/100`).join('; ')}.` : '',
     ].filter(Boolean).join('\n')
@@ -163,10 +164,10 @@ export default function SimulatorView() {
     const [, v] = verdict(site.score), f = site.factors
     setAssistantContext([
       target.level === 'ai' ? `AI classification of "${target.text}": ${target.label}; sector ${target.grp}; niche ${target.niche}; like-for-like types ${[...target.directSpecs].join(', ') || 'none in the data'}; name keywords ${target.keywords.join(', ')}; related ${[...target.relatedSpecs].join(', ')}; passing trade ${target.passing}. ${target.reasoning}` : '',
-      `Page: Business simulator. Business: ${target.label}${target.matched ? '' : ' (not matched to a type in the data)'}. Customers: ${customers.map(k => AGE_GROUPS.find(a => a[0] === k)[1]).join(', ')}. Walking distance ${radius} m.`,
+      `Page: Business simulator. Business: ${target.label}${ctx.gap ? ' (none in the data: a possible gap in the market)' : ''}. Customers: ${customers.map(k => AGE_GROUPS.find(a => a[0] === k)[1]).join(', ')}. Walking distance ${radius} m.`,
       `Search: ${scope === 'area' ? `area ${area || 'not chosen'}` : scope === 'map' ? 'site picked on the map' : 'whole Southampton'}.`,
       `Selected site in ${site.ward}: feasibility ${site.score}/100 (${v}). Factors (percentile vs all sites): customers ${f.demand}, room in the market ${f.room}, passing trade ${f.footfall}, growth ${f.growth}.`,
-      `${Math.round(site.customers)} target customers and ${Math.round(site.residents)} residents within walking distance; ${site.compR} direct competitors within ${radius} m (${site.comp400} within 400 m); ${site.relR} related businesses; ${site.footfall} shops/services within 400 m; population change since 2021 ${site.growth.toFixed(1)}%;${site.flood ? ' in flood zone 3;' : ''}`,
+      `${Math.round(site.customers)} target customers and ${Math.round(site.residents)} residents within walking distance; ${site.compR} direct competitors within ${radius} m (${site.comp400} within 400 m); ${site.simR} similar businesses (other niches of the same kind); ${site.relR} related businesses; ${site.footfall} shops/services within 400 m; population change since 2021 ${site.growth.toFixed(1)}%;${site.flood ? ' in flood zone 3;' : ''}`,
       brief.strengths.length ? `Strengths: ${brief.strengths.join(' ')}` : '', brief.risks.length ? `Risks: ${brief.risks.join(' ')}` : '',
       brief.changes.length ? `Suggested changes: ${brief.changes.map(c => c.text).join(' ')}` : '',
       picks.length ? `Top suggested sites: ${picks.map((p, i) => `${i + 1}. ${p.ward} ${p.score}/100`).join('; ')}.` : '',
@@ -190,6 +191,8 @@ export default function SimulatorView() {
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
       {ctx && ctx.related.map((p, i) => <Marker key={'r' + i} position={[p.lat, p.lon]} icon={bizIcon('rel')} zIndexOffset={-200}>
         <Tooltip direction="top" className="biz-tip"><PlaceTip p={p} kind="Related business" site={site} /></Tooltip></Marker>)}
+      {ctx && ctx.similar.map((p, i) => <Marker key={'s' + i} position={[p.lat, p.lon]} icon={bizIcon('rel')} zIndexOffset={-100}>
+        <Tooltip direction="top" className="biz-tip"><PlaceTip p={p} kind="Similar business" site={site} /></Tooltip></Marker>)}
       {ctx && ctx.direct.map((p, i) => <Marker key={'d' + i} position={[p.lat, p.lon]} icon={bizIcon('comp')} zIndexOffset={0}>
         <Tooltip direction="top" className="biz-tip"><PlaceTip p={p} kind="Competitor" site={site} /></Tooltip></Marker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
@@ -210,10 +213,10 @@ export default function SimulatorView() {
       </form>
       <datalist id="biz-types">{types.slice(0, 200).map(t => <option key={t.label} value={t.label} />)}</datalist>
       <div className="chips small">{quick.map(q => <button key={q} className={query === q ? 'on' : ''} onClick={() => askAI(q)}>{q.replace(' or childcare', '').replace(' or fitness centre', '')}</button>)}</div>
-      {target && target.level !== 'ai' && <p className={`match ${target.matched ? '' : 'warn'}`}>{target.matched
+      {target && target.level !== 'ai' && ai.status !== 'loading' && <p className={`match ${target.matched ? '' : 'gap'}`}>{target.matched
         ? target.level === 'category' ? <>No exact match, so compared with all <b>{fmt(target.n)} {catText(target.cat)}</b> in the data.</>
           : <>Compared with <b>{fmt(target.n)} {target.label.toLowerCase()}</b> in the data; related: other {catText(target.cat)}.</>
-        : <>No places like “{target.text}” in the current data, so competitors can’t be counted.</>}</p>}
+        : <>No “{target.text}” in the data yet: a possible gap in the market. Check the area on the ground for competitors.</>}</p>}
 
       <label className="field-label">Your customers</label>
       <div className="chips small age-chips">{AGE_GROUPS.map(([k, l]) => <button key={k} className={customers.includes(k) ? 'on' : ''}
@@ -244,7 +247,7 @@ export default function SimulatorView() {
     <div className="legend tool-legend">
       <span className="key"><i style={{ background: TONE.good, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)' }} />Suggested site (colour = feasibility)</span>
       <span className="key"><i className="biz-dot comp key-dot" />Competitor</span>
-      <span className="key"><i className="biz-dot rel key-dot" />Related business</span>
+      <span className="key"><i className="biz-dot rel key-dot" />Similar or related business</span>
       {flood && <span className="key"><i style={{ background: '#3d78b8' }} />Flood zone 3</span>}
     </div>
   </div>
@@ -272,7 +275,8 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
 
     <div className="factors">
       <Factor label="Customers nearby" value={f.demand} hint={`${fmt(Math.round(s.customers))} within ${minutes} min walk`} />
-      <Factor label="Room in the market" value={f.room} hint={target.matched ? `${s.compR} competitor${s.compR === 1 ? '' : 's'} within ${radius} m` : 'competitors not counted'} />
+      {ctx.gap ? <Factor label="Stands out" value={f.room} hint={`none like it nearby · ${s.simR} similar within ${radius} m`} />
+        : <Factor label="Room in the market" value={f.room} hint={`${s.compR} competitor${s.compR === 1 ? '' : 's'} within ${radius} m`} />}
       <Factor label="Passing trade" value={f.footfall} hint={`${s.footfall} shops and services within 400 m`} />
       <Factor label="Growth" value={f.growth} hint={`population ${s.growth >= 0 ? '+' : ''}${s.growth.toFixed(1)}% since 2021`} />
     </div>
@@ -280,8 +284,13 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
 
     <h3><TrendingUp size={14} /> Market and trends</h3>
     <div className="facts-grid">
-      <div><Users size={14} /><b>{perComp ? fmt(Math.round(perComp)) : '–'}</b><span>customers per existing {target.label.toLowerCase()} here{ctx.cityPerCompetitor ? <em>City average <b>{fmt(Math.round(ctx.cityPerCompetitor))}</b></em> : null}</span></div>
-      <div><Footprints size={14} /><b>{s.nearest != null ? `${fmt(Math.round(s.nearest))} m` : '–'}</b><span>to the nearest competitor</span></div>
+      {ctx.gap ? <>
+        <div><Users size={14} /><b>{s.simR}</b><span>similar businesses within {radius}&nbsp;m{s.nearSim.length ? <em>{[...new Set(s.nearSim.map(p => p.spec))].slice(0, 3).join(', ')}</em> : null}</span></div>
+        <div><Footprints size={14} /><b>{s.nearSim.length ? `${fmt(Math.round(s.nearSim[0].d))} m` : 'None'}</b><span>to the nearest similar business</span></div>
+      </> : <>
+        <div><Users size={14} /><b>{perComp ? fmt(Math.round(perComp)) : '–'}</b><span>customers per existing {target.label.toLowerCase()} here{ctx.cityPerCompetitor ? <em>City average <b>{fmt(Math.round(ctx.cityPerCompetitor))}</b></em> : null}</span></div>
+        <div><Footprints size={14} /><b>{s.nearest != null ? `${fmt(Math.round(s.nearest))} m` : '–'}</b><span>to the nearest competitor</span></div>
+      </>}
       <div><TrendingUp size={14} /><b>{s.growth >= 0 ? '+' : ''}{s.growth.toFixed(1)}%</b><span>residents since 2021{s.u5Growth != null ? <em>Under-5s <b>{s.u5Growth >= 0 ? '+' : ''}{s.u5Growth.toFixed(1)}%</b></em> : null}</span></div>
       <div><Droplets size={14} /><b>{s.flood ? 'Yes' : 'No'}</b><span>in flood zone 3</span></div>
     </div>

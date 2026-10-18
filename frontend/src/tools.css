@@ -356,3 +356,5 @@ details.brief summary { cursor: pointer; font: 700 13px Manrope; color: #3c544c;
 .facts-grid b, .factor b, .pill, .site-nav { white-space: nowrap; font-variant-numeric: tabular-nums }
 .facts-grid span em { display: block; font-style: normal; margin-top: 2px; white-space: nowrap }
 .facts-grid span em b { font: 700 12px 'DM Sans', system-ui, sans-serif; color: var(--deep) }
+
+.match.gap { color: #5b3fb0; background: #f3f0ff; border: 1px solid #ddd4fb; border-radius: 8px; padding: 6px 9px }

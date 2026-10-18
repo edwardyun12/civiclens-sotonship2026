@@ -304,14 +304,18 @@ better site within 1.5 km) and limitations. For nursery / GP / pharmacy / café 
 coverage and the audited planning brief. Place-type helpers shared with the Places page are in
 `lib/placeTypes.js`.
 
-**AI classification:** pressing Enter / *Analyse with AI* (or `?idea=thai%20restaurant#simulator`) sends the idea
+**AI classification:** pressing Enter in the idea box or clicking a quick pick (or `?idea=thai%20restaurant#simulator`) sends the idea
 plus the data's own sectors and detailed types to `POST /api/classify` (`rag/classify.py`). The local LLM (same
-model as the assistant, `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, related
-types, name keywords, customers, passing trade, reasoning and setup tips. The server keeps only types and sectors
-that exist (vague "cuisine not known" types can only be related; related must share the sector; generic name words
-are dropped). `targetFromAI` turns it into the model's target: direct competitors = the like-for-like types plus
-same-sector places whose name contains a keyword; passing trade sets the footfall weight. The AI never produces a
-score or count. If Ollama is off, the page falls back to `matchBusiness` and says so. Tests:
+model as the assistant, `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, similar
+types (another niche of the same kind, e.g. other cuisines), related types, name keywords, customers, passing trade,
+reasoning and setup tips. The server keeps only types and sectors that exist (vague "cuisine not known" types can
+only be related; similar and related must share the sector; generic name words are dropped). `targetFromAI` turns it
+into the model's target: direct competitors = the like-for-like types plus same-sector places whose name contains a
+keyword; passing trade sets the footfall weight. In `analyse`, room in the market = demand ÷ (1 + 2·direct +
+0.6·similar + 0.3·related). If no like-for-like place exists (`ctx.gap`), the business is a possible gap in the
+market: the factor is shown as "Stands out", the brief says it would be the first of its kind, and nearby similar
+businesses count as proven demand (1–4) or crowding (5+). Places flagged "may have closed" are left out. The AI never
+produces a score or count. If Ollama is off, the page falls back to `matchBusiness`. Tests:
 `tests/test_rag_classify.py`.
 
 **Assistant context:** `lib/assistantContext.js` holds a plain-text summary of what is on screen (set by the

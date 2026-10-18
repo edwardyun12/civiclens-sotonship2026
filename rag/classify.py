@@ -39,7 +39,8 @@ Reply with JSON only, in this exact shape:
   "sector": "one sector from the list",
   "niche": "what makes it specific, e.g. Thai cuisine, sit-down dining",
   "direct_types": ["types from the list that are the SAME niche (true like-for-like competitors); [] if none fit"],
-  "related_types": ["types from the list in the same sector that compete for the same customers or spending, at most 6"],
+  "similar_types": ["types from the list that are the same kind of business but a different niche, e.g. for a Japanese restaurant: Chinese, Thai or Korean restaurants; at most 8; [] if none"],
+  "related_types": ["other types from the list in the same sector that compete for the same customers or spending, at most 6"],
   "name_keywords": ["lowercase words specific to this niche that appear in competitors' names, e.g. thai, siam, bangkok; at most 6"],
   "customers": ["age groups who are the main customers"],
   "passing_trade": "high, medium or low: how much the business depends on people walking past",
@@ -51,7 +52,8 @@ Rules:
 - Only use type names exactly as written in the list. Do not invent statistics or numbers.
 - Direct competitors must be the same niche: for a Thai restaurant a "Thai" type is direct, but a café, bakery or
   restaurant with unknown cuisine is only related. If no listed type is the same niche, direct_types is [].
-- Related types must be in the same sector as the business (a pharmacy is never related to a restaurant).
+- Similar types are other niches of the same kind (other cuisines for a restaurant, other sports for a gym), never the same niche.
+- Related and similar types must be in the same sector as the business (a pharmacy is never related to a restaurant).
 - Name keywords must be specific (thai, sushi, barber, yoga), not generic words like care, club, food, style."""
 
 
@@ -80,7 +82,7 @@ def classify_business(idea: str, types: list[dict], sectors: list[str]) -> dict:
         "format": "json",
         "think": False,
         "stream": False,
-        "options": {"temperature": 0, "num_predict": 450},
+        "options": {"temperature": 0, "num_predict": 550},
     })
     text = reply.get("message", {}).get("content", "")
     try:
@@ -95,16 +97,19 @@ def classify_business(idea: str, types: list[dict], sectors: list[str]) -> dict:
     # direct = same niche only (never a vague "cuisine not known" type); related = same sector as the business
     picked = _clean_list(data.get("direct_types"), type_names, 12)
     direct = [t for t in picked if not VAGUE.search(t) and (not sector or grp.get(t) == sector)][:6]
+    # similar = a different niche of the same kind (other cuisines); it shows demand for this kind of business
+    similar = [t for t in _clean_list(data.get("similar_types"), type_names, 12)
+               if t not in direct and not VAGUE.search(t) and (not sector or grp.get(t) == sector)][:8]
     related = [t for t in _clean_list(data.get("related_types"), type_names, 12) + picked
-               if t not in direct and (not sector or grp.get(t) == sector)]
+               if t not in direct and t not in similar and (not sector or grp.get(t) == sector)]
     related = list(dict.fromkeys(related))[:6]
     keywords = []
     for word in _clean_list(data.get("name_keywords"), None, 12):
         for w in re.findall(r"[a-z]{3,}", word.lower()):
             if w not in GENERIC and w not in keywords:
                 keywords.append(w)
-    if not sector and (direct or related):  # fall back to the sector of the chosen types
-        first = next(t for t in types if t["label"] in (direct or related))
+    if not sector and (direct or similar or related):  # fall back to the sector of the chosen types
+        first = next(t for t in types if t["label"] in (direct or similar or related))
         sector = first.get("grp")
     customers = [k for k in AGE_KEYS if k in (data.get("customers") or [])] or AGE_KEYS
     passing = str(data.get("passing_trade", "")).strip().lower()
@@ -113,6 +118,7 @@ def classify_business(idea: str, types: list[dict], sectors: list[str]) -> dict:
         "sector": sector,
         "niche": str(data.get("niche") or "").strip()[:160],
         "direct_types": direct,
+        "similar_types": similar,
         "related_types": related,
         "name_keywords": keywords[:6],
         "customers": customers,

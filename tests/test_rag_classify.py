@@ -5,6 +5,7 @@ from rag import classify as K
 
 TYPES = [{"label": "Café", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 35},
          {"label": "Restaurant (cuisine not known)", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 40},
+         {"label": "Chinese", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 12},
          {"label": "Pharmacy", "cat": "pharmacy", "grp": "Health", "n": 42}]
 SECTORS = ["Food and drink", "Health"]
 
@@ -16,12 +17,13 @@ def fake(reply):
 def test_classifier_keeps_only_real_types_and_same_sector(monkeypatch):
     monkeypatch.setattr(K, "request", fake({
         "business": "Thai restaurant", "sector": "food and drink", "niche": "Thai cuisine",
-        "direct_types": ["Restaurant (cuisine not known)", "Thai", "café"], "related_types": ["Pharmacy", "Made up type"],
+        "direct_types": ["Restaurant (cuisine not known)", "Thai", "café"], "related_types": ["Pharmacy", "Made up type"], "similar_types": ["Chinese", "Pharmacy", "Restaurant (cuisine not known)"],
         "name_keywords": ["Thai", "food", "Siam Kitchen"], "customers": ["25_44", "99"], "passing_trade": "very high",
         "reasoning": "ok", "setup_tips": ["Register as a food business"]}))
     out = K.classify_business("thai restaurant", TYPES, SECTORS)
     assert out["sector"] == "Food and drink"
     assert out["direct_types"] == ["Café"]                                   # vague and invented types dropped
+    assert out["similar_types"] == ["Chinese"]                               # other cuisines; not vague, same sector
     assert out["related_types"] == ["Restaurant (cuisine not known)"]        # pharmacy is another sector
     assert out["name_keywords"] == ["thai", "siam"]                          # generic words dropped
     assert out["customers"] == ["25_44"] and out["passing_trade"] == "medium"

@@ -73,12 +73,12 @@ export function matchBusiness(text, types) {
 
 // The local LLM's classification (rag/classify.py, checked against the data's own types) -> a target for analyse().
 // Direct competitors = the chosen like-for-like types plus places in the same sector whose name contains a niche
-// keyword ("Thai Orchid"); related = the chosen same-sector types.
+// keyword ("Thai Orchid"); similar = other niches of the same kind (other cuisines); related = other same-sector types.
 export function targetFromAI(c, text, types) {
   const q = norm(text), byLabel = Object.fromEntries(types.map(t => [t.label, t]))
   const first = byLabel[c.direct_types[0]] || byLabel[c.related_types[0]]
-  return { text, label: c.business || text, niche: c.niche, grp: c.sector || first?.grp || null, cat: first?.cat || null,
-    directSpecs: new Set(c.direct_types), relatedSpecs: new Set(c.related_types), keywords: c.name_keywords || [],
+  return { text, label: (c.business || text).replace(/^./, ch => ch.toUpperCase()), niche: c.niche, grp: c.sector || first?.grp || null, cat: first?.cat || null,
+    directSpecs: new Set(c.direct_types), similarSpecs: new Set(c.similar_types || []), relatedSpecs: new Set(c.related_types), keywords: c.name_keywords || [],
     ages: c.customers?.length ? c.customers : ALL_AGES, passing: c.passing_trade, reasoning: c.reasoning, tips: c.setup_tips || [],
     matched: c.direct_types.length > 0 || (c.name_keywords || []).length > 0, level: 'ai', source: 'ai', model: c.model,
     engineUse: (ENGINE_USES.find(([re]) => re.test(q) || re.test(norm(c.business))) || [])[1] || null,
@@ -97,23 +97,28 @@ export function analyse(city, places, target, { ages, radius = 800 }) {
   for (const [, , c] of groups) { const a = ageCol(o, c); for (let i = 0; i < N; i++) w[i] += a[i] }
   if (!groups.length) for (let i = 0; i < N; i++) w[i] = o.pop[i]
   const pop21 = o.pop21 || o.pop
-  // places: direct competitors (same type), related (same category), customer-facing (footfall stand-in)
-  const direct = [], related = [], facing = []
+  // places: direct competitors (same niche), similar (another niche of the same kind, e.g. another cuisine),
+  // related (same sector), customer-facing (footfall stand-in)
+  const direct = [], similar = [], related = [], facing = []
   for (const p of places) {
     if (p.ro || !Number.isFinite(p.lat)) continue
     const [x, y] = toXY(p.lat, p.lon), q = { x, y, lat: p.lat, lon: p.lon, name: p.name, spec: specOf(p), ward: p.ward }
-    let isDirect, isRelated
+    let isDirect, isRelated, isSimilar = false
     if (target?.level === 'ai') {
       const name = norm(p.name), sameSector = !target.grp || p.grp === target.grp
       isDirect = target.directSpecs.has(q.spec) || (sameSector && target.keywords.some(k => name.split(' ').some(w => w.startsWith(k))))
+      isSimilar = target.similarSpecs.has(q.spec)
       isRelated = target.relatedSpecs.has(q.spec)
     } else if (target?.level === 'category') { isDirect = p.cat === target.cat; isRelated = p.grp === target.grp }
     else { isDirect = target?.spec && q.spec === target.spec; isRelated = target?.cat && p.cat === target.cat }
     if (isDirect) direct.push(q)
+    else if (isSimilar) similar.push(q)
     else if (isRelated) related.push(q)
     if (p.cf) facing.push(q)
   }
-  const ctx = { city, o, N, R, ox, oy, w, pop21, groups, direct, related, facing, target, ages }
+  // nothing like it in the data: a possible gap in the market, judged against similar businesses instead
+  const gap = !direct.length && (target?.level === 'ai' || !target?.matched)
+  const ctx = { city, o, N, R, ox, oy, w, pop21, groups, direct, similar, related, facing, target, ages, gap }
   const m = []
   for (let i = 0; i < N; i++) m.push(metricsAt(ctx, ox[i], oy[i]))
   // distributions for percentiles
@@ -138,7 +143,7 @@ function weightsFor(target) {
 
 // raw measures for a site at BNG-like metres (x, y)
 function metricsAt(ctx, x, y) {
-  const { o, N, R, ox, oy, w, pop21, direct, related, facing } = ctx
+  const { o, N, R, ox, oy, w, pop21, direct, similar, related, facing } = ctx
   let demand = 0, customers = 0, residents = 0, base = 0, cur = 0, dep = 0, u5 = 0, u521 = 0
   const ageMix = {}
   for (let j = 0; j < N; j++) {
@@ -158,16 +163,19 @@ function metricsAt(ctx, x, y) {
     if (d <= R) { comp += 1 - (0.5 * d) / R; compR++; near.push({ ...p, d }) }
     if (d <= 400) comp400++
   }
-  let rel = 0, relR = 0
+  let rel = 0, relR = 0, sim = 0, simR = 0
   for (const p of related) { const d = Math.hypot(p.x - x, p.y - y); if (d <= R) { rel += 1 - (0.5 * d) / R; relR++ } }
+  const nearSim = []
+  for (const p of similar) { const d = Math.hypot(p.x - x, p.y - y); if (d <= R) { sim += 1 - (0.5 * d) / R; simR++; nearSim.push({ ...p, d }) } }
+  nearSim.sort((a, b) => a.d - b.d)
   let footfall = 0
   for (const p of facing) if (Math.hypot(p.x - x, p.y - y) <= 400) footfall++
-  // room in the market: customers per competitor, related businesses counting a little (they share the trade)
-  const room = demand / (1 + 2 * comp + 0.3 * rel)
+  // room in the market: customers per competitor; a similar niche (another cuisine) competes partly, related a little
+  const room = demand / (1 + 2 * comp + 0.6 * sim + 0.3 * rel)
   const growth = base ? (100 * (cur - base)) / base : 0
   near.sort((a, b) => a.d - b.d)
   return { x, y, demand, customers, residents, dep, room, footfall, growth, u5Growth: u521 ? (100 * (u5 - u521)) / u521 : null,
-    comp400, compR, nearest, near: near.slice(0, 6), relR, ageMix }
+    comp400, compR, nearest, near: near.slice(0, 6), relR, simR, nearSim: nearSim.slice(0, 4), ageMix }
 }
 
 function pct(sorted, v) {
@@ -223,7 +231,7 @@ export function feasibilityBrief(ctx, s, nPlaces) {
   const gap = perComp && ctx.cityPerCompetitor ? perComp / ctx.cityPerCompetitor : null
   if (f.demand >= 65) strengths.push(`${round(s.customers)} ${custNoun(ctx)} live within a ${minutes}-minute walk, more than at ${f.demand}% of sites in the city.`)
   else if (f.demand < 35) risks.push(`Fewer potential customers than most of the city: ${round(s.customers)} ${custNoun(ctx)} within a ${minutes}-minute walk.`)
-  if (t?.matched) {
+  if (t?.matched && !ctx.gap) {
     if (!s.compR) strengths.push(`No other ${label.toLowerCase()} within ${ctx.R} m${s.nearest != null ? ` (nearest ${round(s.nearest)} m away)` : ''}.`)
     else if (s.comp400 >= 3) risks.push(`${s.comp400} ${label.toLowerCase()} already within 400 m: a crowded spot.`)
     if (gap != null && gap >= 1.5) strengths.push(`Each ${label.toLowerCase()} nearby has about ${round(perComp)} potential customers, ${gap.toFixed(1)}× the city average: likely under-served.`)
@@ -232,6 +240,13 @@ export function feasibilityBrief(ctx, s, nPlaces) {
   if (ctx.weights.footfall >= 0.2) {
     if (f.footfall >= 65) strengths.push(`Busy spot: ${s.footfall} shops and services within 400 m bring passing trade.`)
     else if (f.footfall < 30) risks.push(`Quiet spot: ${s.footfall} shops and services within 400 m, so it relies on people coming on purpose.`)
+  }
+  if (ctx.gap) {
+    const kinds = [...new Set(s.nearSim.map(p => p.spec))].slice(0, 3).join(', ')
+    strengths.push(`Nothing like a ${label.toLowerCase()} is in the data${t?.keywords?.length ? ` (names searched for ${t.keywords.slice(0, 3).join(', ')})` : ''}: it would stand out as the first of its kind.`)
+    if (s.simR >= 1 && s.simR <= 4) strengths.push(`${s.simR} similar business${s.simR === 1 ? '' : 'es'} within ${ctx.R} m (${kinds}) show people here already spend on this kind of thing.`)
+    else if (s.simR > 4) risks.push(`${s.simR} similar businesses within ${ctx.R} m (${kinds}) compete for the same spending; the offer needs to be clearly different.`)
+    else if (!s.relR) risks.push('Nothing similar nearby, so demand for this kind of business here is unproven.')
   }
   if (s.growth >= 3) strengths.push(`The population within walking distance grew ${s.growth.toFixed(1)}% since 2021.`)
   else if (s.growth <= -1) risks.push(`The population within walking distance fell ${Math.abs(s.growth).toFixed(1)}% since 2021.`)
@@ -243,8 +258,7 @@ export function feasibilityBrief(ctx, s, nPlaces) {
   if (t?.matched && s.comp400 >= 2) changes.push({ text: `Stand out from the ${s.comp400} nearby ${label.toLowerCase()}: a different offer, opening hours or price point.` })
   if (f.demand < 40) changes.push({ text: 'Reach beyond walking distance: delivery, online booking or a site near a bus route.' })
   if (ctx.weights.footfall >= 0.2 && f.footfall < 30) changes.push({ text: 'Look for a unit on a local high street or next to a supermarket for passing trade.' })
-  if (t?.level === 'ai' && !ctx.direct.length) changes.push({ text: `No like-for-like ${label.toLowerCase()} found in the data${t.keywords.length ? ` (also searched names for ${t.keywords.join(', ')})` : ''}: a gap in the market, or a sign the data is incomplete. Check on the ground.` })
-  if (!t?.matched && t?.level !== 'ai') changes.push({ text: `There are no places like “${t?.text}” in the current data, so competitors aren’t counted. Check nearby competitors yourself before deciding.` })
+  if (ctx.gap) changes.push({ text: `Possible gap in the market: check on the ground that no ${label.toLowerCase()} has opened recently, then lead with what makes it different from the similar businesses nearby.` })
   if (t?.level === 'category') changes.push({ text: `No exact match for “${t.text}” in the data, so it is compared with all ${t.n} similar businesses. A distinctive offer may face less competition than shown.` })
   const limits = [
     'Straight-line walking distance; rivers, railways and main roads aren’t taken into account.',
