@@ -7,7 +7,7 @@ import json
 from rank_bm25 import BM25Okapi
 
 from rag.citations import extract_pdf_pages, format_citation
-from rag.config import INDEX_FILE, PROJECT_ROOT
+from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT
 from rag.embeddings import cosine_similarity, embed
 from rag.hybrid import reciprocal_rank_fusion, tokenize
 
@@ -17,6 +17,11 @@ def retrieve(question: str, top_k: int = 3) -> list[dict]:
         raise RuntimeError("Index not found. Run `sotonship-rag index` first.")
 
     index = json.loads(INDEX_FILE.read_text(encoding="utf-8"))
+    if index.get("embedding_model") != EMBED_MODEL:
+        raise RuntimeError(
+            f"The index was built with {index.get('embedding_model')}, but the server uses {EMBED_MODEL}. "
+            "Run `python run.py rag index` again."
+        )
     records = [
         record
         for record in index["records"]
@@ -27,7 +32,7 @@ def retrieve(question: str, top_k: int = 3) -> list[dict]:
             "The index contains no records backed by current source files. "
             "Ask the data team to rebuild the document index."
         )
-    query_vector = embed([question])[0]
+    query_vector = embed([question], query=True)[0]
     vector_scores = [
         cosine_similarity(query_vector, record["embedding"])
         for record in records

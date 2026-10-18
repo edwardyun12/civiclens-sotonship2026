@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from rag.citations import format_citation
-from rag.config import CHAT_MODEL, MAX_OUTPUT_TOKENS
-from rag.ollama import stream
+from rag.config import MAX_OUTPUT_TOKENS
+from rag.llm import stream
 from rag.retriever import retrieve
 from rag.routing import direct_response
 
@@ -89,24 +89,8 @@ Sources:
 
 
 def stream_generated_answer(prompt: str):
-    """Yield answer text as Ollama produces it."""
-    events = stream(
-        "/api/chat",
-        {
-            "model": CHAT_MODEL,
-            "messages": [{"role": "user", "content": prompt}],
-            "think": False,
-            "options": {
-                "temperature": 0.1,
-                "num_predict": MAX_OUTPUT_TOKENS,
-                "repeat_penalty": 1.1,
-            },
-        },
-    )
-    for event in events:
-        content = event.get("message", {}).get("content", "")
-        if content:
-            yield content
+    """Yield answer text as the model (Gemini or Ollama) produces it."""
+    yield from stream(prompt, MAX_OUTPUT_TOKENS, temperature=0.1)
 
 
 def generate_answer(

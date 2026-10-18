@@ -8,7 +8,7 @@ import time
 import streamlit as st
 
 from rag.citations import linkify_citations
-from rag.config import CHAT_MODEL, EMBED_MODEL, INDEX_FILE, PROJECT_ROOT
+from rag.config import CHAT_MODEL, EMBED_MODEL, INDEX_FILE, LLM_PROVIDER, PROJECT_ROOT
 from rag.generator import prepare_answer, stream_generated_answer
 from rag.indexer import build_index
 from rag.routing import direct_response
@@ -65,7 +65,7 @@ def render_sources(sources: list[dict], anchor_prefix: str) -> None:
 
 with st.sidebar:
     st.header("System")
-    st.caption("Runs locally through Ollama")
+    st.caption("Runs on Gemini" if LLM_PROVIDER == "gemini" else "Runs locally through Ollama")
     st.text(f"Chat: {CHAT_MODEL}")
     st.text(f"Embeddings: {EMBED_MODEL}")
 

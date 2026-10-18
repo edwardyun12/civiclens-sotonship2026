@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 from collections.abc import Iterator
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from rag.classify import classify_business
+from rag.config import CHAT_MODEL, CORS_ORIGINS, FRONTEND_DIST, LLM_PROVIDER
 from rag.generator import prepare_answer, stream_generated_answer
 from rag.routing import direct_response
 
@@ -45,7 +48,7 @@ class ClassifyRequest(BaseModel):
 app = FastAPI(title="Southampton Opportunity Engine API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
@@ -54,12 +57,12 @@ app.add_middleware(
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "provider": LLM_PROVIDER, "model": CHAT_MODEL}
 
 
 @app.post("/api/classify")
 def classify(payload: ClassifyRequest) -> dict:
-    """Business simulator: let the local LLM classify a business idea into sector, niche and competitor types."""
+    """Business simulator: let the LLM classify a business idea into sector, niche and competitor types."""
     try:
         return {"ok": True, **classify_business(payload.text, [t.model_dump() for t in payload.types], payload.sectors)}
     except Exception as exc:  # the page falls back to its own matching
@@ -107,8 +110,16 @@ def chat(payload: ChatRequest) -> StreamingResponse:
     return StreamingResponse(events(), media_type="application/x-ndjson")
 
 
+# the built React app (npm run build -> frontend/dist), so one server hosts the whole website (Render)
+if FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
+
+
 def main() -> None:
-    uvicorn.run("rag.api:app", host="127.0.0.1", port=8000, reload=False)
+    # Render sets PORT and needs 0.0.0.0; locally it stays on 127.0.0.1:8000
+    port = os.getenv("PORT")
+    host = "0.0.0.0" if port else "127.0.0.1"
+    uvicorn.run("rag.api:app", host=host, port=int(port or 8000), reload=False)
 
 
 if __name__ == "__main__":

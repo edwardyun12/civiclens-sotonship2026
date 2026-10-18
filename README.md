@@ -41,14 +41,16 @@ Output: a decision brief, evidence trail and recommendations for human review.
 │   ├── city_data.py        #   ONS geography, Census 2021, IMD, OSM/NHS sites, flood zones
 │   ├── population.py       #   ONS mid-2024 small area population estimates
 │   └── places/             #   places database: sources, names, business_types, merge, companies, build
-├── rag/                    # Module D local RAG assistant (Ollama)
+├── rag/                    # Module D RAG assistant (Gemini when GEMINI_API_KEY is set, else local Ollama)
 │   ├── api.py              #   FastAPI bridge for the React experience
 │   ├── cli.py              #   command-line entry point
-│   ├── config.py           #   models, Ollama URL, and paths
+│   ├── config.py           #   provider (gemini / ollama), models, and paths
 │   ├── documents.py        #   PDF/text loading and chunking
 │   ├── embeddings.py       #   embeddings and vector similarity
+│   ├── gemini.py           #   Gemini REST client (chat, streaming, embeddings)
 │   ├── generator.py        #   grounded answer generation
 │   ├── indexer.py          #   document indexing pipeline
+│   ├── llm.py              #   one interface over Gemini and Ollama
 │   ├── ollama.py           #   local Ollama client
 │   ├── retriever.py        #   relevant-chunk retrieval
 │   └── web.py              #   Streamlit chat interface
@@ -62,6 +64,8 @@ Output: a decision brief, evidence trail and recommendations for human review.
 ├── evaluation/             # Evidence scripts and results/ (baseline comparison, live AI briefs)
 ├── docs/                   # CODEBASE.md (where to change what), SIMULATOR.md, DATA_PLAN.md, SUBMISSION.md
 ├── pyproject.toml          # Package metadata and CLI definition
+├── render.yaml             # Render deployment (website = rag/api.py + built frontend)
+├── requirements-web.txt    # Dependencies for the deployed website only
 └── requirements.txt        # Runtime dependencies
 ```
 
@@ -78,9 +82,26 @@ python run.py app
 
 Browser pages, no install needed: open `viewer/site_simulator.html` or `viewer/places_register.html`.
 
+## Deploy on Render (Gemini)
+
+The website is one Render web service: `rag/api.py` serves the API and the built React app (`frontend/dist`).
+The assistant and the business classifier use Google Gemini (`gemini-3.8-flash`, embeddings
+`gemini-embedding-001`).
+
+1. Get a key at https://aistudio.google.com/apikey.
+2. Render dashboard → **New → Blueprint** → pick this repo (branch `feature/simulator`). It reads `render.yaml`
+   and asks for `GEMINI_API_KEY`.
+3. The build installs `requirements-web.txt`, builds the frontend, and indexes the documents with Gemini
+   (`python -m rag index`). Check `https://<service>.onrender.com/api/health`.
+
+Optional env vars: `GEMINI_CHAT_MODEL`, `GEMINI_EMBED_MODEL`, `GEMINI_THINKING_LEVEL` (`low`; `""` for models
+without thinking levels), `CORS_ORIGINS` (if the frontend is hosted elsewhere). Changing the embedding model
+needs a rebuild of the index. Run locally with Gemini: set `GEMINI_API_KEY`, then `python run.py rag index` and
+`python run.py api`.
+
 ## Local RAG setup
 
-The first prototype uses Ollama locally. `qwen3:8b` generates answers and
+Without `GEMINI_API_KEY` (or with `LLM_PROVIDER=ollama`) the assistant uses Ollama locally. `qwen3:8b` generates answers and
 `nomic-embed-text` creates retrieval embeddings.
 
 ```bash

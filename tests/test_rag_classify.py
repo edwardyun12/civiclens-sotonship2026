@@ -1,4 +1,4 @@
-"""The LLM business classifier only returns types, sectors and age groups that exist in the data (no Ollama needed)."""
+"""The LLM business classifier only returns types, sectors and age groups that exist in the data (no model needed)."""
 import json
 
 from rag import classify as K
@@ -11,11 +11,11 @@ SECTORS = ["Food and drink", "Health"]
 
 
 def fake(reply):
-    return lambda path, payload: {"message": {"content": json.dumps(reply)}}
+    return lambda prompt, *a, **k: json.dumps(reply)
 
 
 def test_classifier_keeps_only_real_types_and_same_sector(monkeypatch):
-    monkeypatch.setattr(K, "request", fake({
+    monkeypatch.setattr(K, "complete", fake({
         "business": "Thai restaurant", "sector": "food and drink", "niche": "Thai cuisine",
         "direct_types": ["Restaurant (cuisine not known)", "Thai", "café"], "related_types": ["Pharmacy", "Made up type"], "similar_types": ["Chinese | restaurant_cafe | 12", "Pharmacy", "Restaurant (cuisine not known)"],
         "name_keywords": ["Thai", "food", "Siam Kitchen"], "customers": ["25_44", "99"], "passing_trade": "very high",
@@ -30,9 +30,24 @@ def test_classifier_keeps_only_real_types_and_same_sector(monkeypatch):
 
 
 def test_classifier_rejects_bad_json(monkeypatch):
-    monkeypatch.setattr(K, "request", lambda path, payload: {"message": {"content": "not json"}})
+    monkeypatch.setattr(K, "complete", lambda prompt, *a, **k: "not json")
     try:
         K.classify_business("x shop", TYPES, SECTORS)
     except RuntimeError:
         return
     raise AssertionError("expected RuntimeError")
+
+
+def test_types_win_over_a_wrong_sector_and_direct_stays_narrow(monkeypatch):
+    types = [{"label": "Barber", "cat": "hair_beauty", "grp": "Retail", "n": 38},
+             {"label": "Japanese", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 12},
+             {"label": "Noodle bar", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 6},
+             {"label": "Korean", "cat": "restaurant_cafe", "grp": "Food and drink", "n": 5}]
+    monkeypatch.setattr(K, "complete", fake({"business": "Barber shop", "sector": "Leisure and hospitality",
+                                            "direct_types": ["Barber"], "customers": ["25_44"]}))
+    out = K.classify_business("barber shop", types, ["Retail", "Food and drink", "Leisure and hospitality"])
+    assert out["direct_types"] == ["Barber"] and out["sector"] == "Retail"   # not dropped for the sector label
+    monkeypatch.setattr(K, "complete", fake({"business": "Sushi bar", "sector": "Food and drink",
+                                            "direct_types": ["Japanese", "Noodle bar", "Korean"]}))
+    out = K.classify_business("sushi bar", types, ["Retail", "Food and drink"])
+    assert out["direct_types"] == ["Japanese", "Noodle bar"] and out["similar_types"] == ["Korean"]

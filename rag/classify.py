@@ -1,4 +1,4 @@
-"""Classify a business idea with the local LLM, for the business simulator.
+"""Classify a business idea with the LLM (Gemini or local Ollama), for the business simulator.
 
 The model is given the idea plus the sectors and detailed business types that actually exist in the places data,
 and must answer in JSON. Everything it returns is checked against those lists, so it can only pick real types; it
@@ -8,10 +8,13 @@ never produces numbers. The simulator's own model (frontend/src/simulator/opport
 from __future__ import annotations
 
 import json
+from collections import Counter
 import re
 
-from rag.config import CHAT_MODEL
-from rag.ollama import request
+from rag.config import CHAT_MODEL, LLM_PROVIDER
+from rag.llm import complete
+
+CLASSIFY_TOKENS = 2500 if LLM_PROVIDER == "gemini" else 550  # Gemini counts thinking tokens in the limit
 
 AGE_KEYS = ["0_4", "5_15", "16_24", "25_44", "45_64", "65"]
 PASSING = {"high", "medium", "low"}
@@ -77,15 +80,7 @@ def classify_business(idea: str, types: list[dict], sectors: list[str]) -> dict:
     shown = sorted(types, key=lambda t: -int(t.get("n", 0)))[:180]
     type_lines = "\n".join(f"{t['label']} | {t.get('cat', '')} | {t.get('n', 0)}" for t in shown)
     prompt = PROMPT.format(idea=idea.strip()[:200], sectors=", ".join(sectors), types=type_lines)
-    reply = request("/api/chat", {
-        "model": CHAT_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "format": "json",
-        "think": False,
-        "stream": False,
-        "options": {"temperature": 0, "num_predict": 550},
-    })
-    text = reply.get("message", {}).get("content", "")
+    text = complete(prompt, CLASSIFY_TOKENS, temperature=0, json_mode=True)
     try:
         data = json.loads(text)
     except json.JSONDecodeError as exc:
@@ -97,10 +92,19 @@ def classify_business(idea: str, types: list[dict], sectors: list[str]) -> dict:
     grp = {t["label"]: t.get("grp") for t in types}
     # direct = same niche only (never a vague "cuisine not known" type); related = same sector as the business
     picked = _clean_list(data.get("direct_types"), type_names, 12)
-    direct = [t for t in picked if not VAGUE.search(t) and (not sector or grp.get(t) == sector)][:6]
+    concrete = [t for t in picked if not VAGUE.search(t)]
+    # the chosen types are more concrete than the sector label: if they disagree ("Barber" is filed under Retail,
+    # the model said Leisure), the sector follows the types instead of the types being dropped
+    if concrete and not any(grp.get(t) == sector for t in concrete):
+        sector = Counter(grp.get(t) for t in concrete).most_common(1)[0][0] or sector
+    same = [t for t in concrete if not sector or grp.get(t) == sector]
+    # like-for-like is the closest niche only: the model lists the closest first, so the first two stay direct and
+    # any further ones ("sushi bar" -> Japanese, Noodle bar, Korean, Thai...) become similar
+    direct, overflow = same[:2], same[2:]
     # similar = a different niche of the same kind (other cuisines); it shows demand for this kind of business
-    similar = [t for t in _clean_list(data.get("similar_types"), type_names, 12)
-               if t not in direct and not VAGUE.search(t) and (not sector or grp.get(t) == sector)][:8]
+    similar = [t for t in overflow + _clean_list(data.get("similar_types"), type_names, 12)
+               if t not in direct and not VAGUE.search(t) and (not sector or grp.get(t) == sector)]
+    similar = list(dict.fromkeys(similar))[:8]
     related = [t for t in _clean_list(data.get("related_types"), type_names, 12) + picked
                if t not in direct and t not in similar and (not sector or grp.get(t) == sector)]
     related = list(dict.fromkeys(related))[:6]

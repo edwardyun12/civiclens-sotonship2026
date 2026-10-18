@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import math
 
-from rag.config import EMBED_MODEL
-from rag.ollama import request
+from rag import llm
 
 
-def embed(texts: list[str]) -> list[list[float]]:
-    result = request("/api/embed", {"model": EMBED_MODEL, "input": texts})
-    return result["embeddings"]
+def embed(texts: list[str], query: bool = False) -> list[list[float]]:
+    return llm.embed(texts, query=query)
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:

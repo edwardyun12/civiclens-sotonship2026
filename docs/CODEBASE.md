@@ -55,7 +55,8 @@ All commands go through `run.py` (`python run.py` lists them). All folders are d
 | Change Companies House linking | `pipeline/places/companies.py` | `python run.py places --ch-key KEY` |
 | Change the browser pages | `viewer/src/*.template.html` (never the built `viewer/*.html`) | `python run.py viewers` |
 | Change the React app | `frontend/src/` (Places map: `places/PlacesView.jsx`, heat maps: `lib/HeatLayer.jsx`) | `python run.py frontend` |
-| Change the RAG assistant | `rag/` (models and paths in `rag/config.py`) | `python run.py rag index`, `python run.py api` |
+| Change the RAG assistant | `rag/` (provider, models and paths in `rag/config.py`) | `python run.py rag index`, `python run.py api` |
+| Change the deployment | `render.yaml` (env vars in the Render dashboard) | push to `feature/simulator` |
 | Move a data folder | `simulator/paths.py` only | `python run.py test` |
 
 **Golden rule:** `engine.py` has no AI and no UI. Every number shown anywhere comes from it (or its verified JS
@@ -69,7 +70,8 @@ audit rejects any number not in the data.
 | `run.py` | One entry point for every command | Yes |
 | `simulator/` | The model: `config.py`, `engine.py`, `brief.py`, `app.py`, `paths.py` | Yes |
 | `pipeline/` | Builds `data/`: `city_data.py`, `population.py`, `places/` | Yes |
-| `rag/` | Local RAG assistant (Ollama): indexing, retrieval, answers, API, Streamlit chat | Yes |
+| `rag/` | RAG assistant (Gemini via `gemini.py`, or local Ollama; `llm.py` picks by `LLM_PROVIDER`): indexing, retrieval, answers, API (also serves `frontend/dist`), Streamlit chat | Yes |
+| `render.yaml`, `requirements-web.txt` | Render deployment of the website (API + built React app, Gemini) | Yes |
 | `frontend/` | React app (Vite): welcome, places map, simulator, RAG chat | `src/` yes, `public/data/` no (written by `run.py viewers`) |
 | `tests/` | pytest tests only | Yes |
 | `evaluation/` | Evidence scripts + `results/` (baseline comparison, live briefs) | Scripts yes, results no (regenerate) |
@@ -305,8 +307,8 @@ coverage and the audited planning brief. Place-type helpers shared with the Plac
 `lib/placeTypes.js`.
 
 **AI classification:** pressing Enter in the idea box or clicking a quick pick (or `?idea=thai%20restaurant#simulator`) sends the idea
-plus the data's own sectors and detailed types to `POST /api/classify` (`rag/classify.py`). The local LLM (same
-model as the assistant, `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, similar
+plus the data's own sectors and detailed types to `POST /api/classify` (`rag/classify.py`). The LLM (same
+model as the assistant: Gemini `GEMINI_CHAT_MODEL` on Render, else `OLLAMA_CHAT_MODEL`) returns JSON: business, sector, niche, like-for-like types, similar
 types (another niche of the same kind, e.g. other cuisines), related types, name keywords, customers, passing trade,
 reasoning and setup tips. The server keeps only types and sectors that exist (vague "cuisine not known" types can
 only be related; similar and related must share the sector; generic name words are dropped). `targetFromAI` turns it
@@ -315,7 +317,7 @@ keyword; passing trade sets the footfall weight. In `analyse`, room in the marke
 0.6·similar + 0.3·related). If no like-for-like place exists (`ctx.gap`), the business is a possible gap in the
 market: the factor is shown as "Stands out", the brief says it would be the first of its kind, and nearby similar
 businesses count as proven demand (1–4) or crowding (5+). Places flagged "may have closed" are left out. The AI never
-produces a score or count. If Ollama is off, the page falls back to `matchBusiness`. Tests:
+produces a score or count. If the model is unavailable, the page falls back to `matchBusiness`. Tests:
 `tests/test_rag_classify.py`.
 
 **Assistant context:** `lib/assistantContext.js` holds a plain-text summary of what is on screen (set by the
@@ -325,7 +327,7 @@ A page can also register `about(question)`: the simulator's `aboutQuestion` find
 names (`findPlace`, using `public/data/neighbourhoods.json` from `python -m pipeline.neighbourhoods`, OpenStreetMap),
 reads the business from the question (exact type match, else the LLM classification), and adds the model's analysis
 of that place, so "a Japanese store in Weston" is answered for Weston rather than the site on screen.
-The prompt lets Qwen add a final "General guidance (not from Southampton evidence)" sentence when the sources do not
+The prompt lets the model add a final "General guidance (not from Southampton evidence)" sentence when the sources do not
 cover a question, and lists the only citation labels it may use.
 
 ## 11. `tests/` and `evaluation/`

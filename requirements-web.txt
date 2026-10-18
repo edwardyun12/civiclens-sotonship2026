@@ -1,0 +1,5 @@
+# What the deployed website (rag/api.py + the built React app) needs. Full dev setup: requirements.txt
+fastapi>=0.115,<1
+uvicorn>=0.34,<1
+pypdf>=5,<7
+rank-bm25>=0.2.2,<1
