@@ -102,7 +102,7 @@ Sources:
 
 
 def stream_generated_answer(prompt: str):
-    """Yield answer text as the model (Gemini or Ollama) produces it."""
+    """Yield answer text as the model (Groq or Ollama) produces it."""
     yield from stream(prompt, MAX_OUTPUT_TOKENS, temperature=0.1)
 
 

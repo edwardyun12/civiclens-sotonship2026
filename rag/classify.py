@@ -1,4 +1,4 @@
-"""Classify a business idea with the LLM (Gemini or local Ollama), for the business simulator.
+"""Classify a business idea with the LLM (Groq or local Ollama), for the business simulator.
 
 The model is given the idea plus the sectors and detailed business types that actually exist in the places data,
 and must answer in JSON. Everything it returns is checked against those lists, so it can only pick real types; it
@@ -14,7 +14,7 @@ import re
 from rag.config import CHAT_MODEL, LLM_PROVIDER
 from rag.llm import complete
 
-CLASSIFY_TOKENS = {"gemini": 2500, "groq": 800}.get(LLM_PROVIDER, 550)  # Gemini counts thinking tokens in the limit
+CLASSIFY_TOKENS = 800 if LLM_PROVIDER == "groq" else 550
 
 AGE_KEYS = ["0_4", "5_15", "16_24", "25_44", "45_64", "65"]
 PASSING = {"high", "medium", "low"}

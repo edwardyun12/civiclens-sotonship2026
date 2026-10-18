@@ -70,7 +70,7 @@ audit rejects any number not in the data.
 | `run.py` | One entry point for every command | Yes |
 | `simulator/` | The model: `config.py`, `engine.py`, `brief.py`, `app.py`, `paths.py` | Yes |
 | `pipeline/` | Builds `data/`: `city_data.py`, `population.py`, `places/` | Yes |
-| `rag/` | RAG assistant (Groq via `groq.py` with keyword-only search on the website, or local Ollama with hybrid search; `gemini.py` is an unused option; `llm.py` picks by `LLM_PROVIDER`): indexing, retrieval, answers, API (also serves `frontend/dist`), Streamlit chat | Yes |
+| `rag/` | RAG assistant (Groq via `groq.py` with keyword-only search on the website, or local Ollama with hybrid search; `llm.py` picks by `LLM_PROVIDER`): indexing, retrieval, answers, API (also serves `frontend/dist`), Streamlit chat | Yes |
 | `render.yaml`, `requirements-web.txt` | Render deployment of the website (API + built React app, Groq free API, keyword search) | Yes |
 | `frontend/` | React app (Vite): welcome, places map, simulator, RAG chat | `src/` yes, `public/data/` no (written by `run.py viewers`) |
 | `tests/` | pytest tests only | Yes |

@@ -10,7 +10,7 @@ from rag.indexer import build_index
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Southampton RAG assistant (Gemini or local Ollama)")
+    parser = argparse.ArgumentParser(description="Southampton RAG assistant (Groq or local Ollama)")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("index", help="Index documents in data/raw")
     query_parser = subparsers.add_parser("query", help="Ask a question")

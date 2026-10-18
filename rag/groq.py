@@ -1,6 +1,6 @@
 """Minimal client for the Groq chat API (OpenAI-compatible), used when LLM_PROVIDER=groq, e.g. on Render.
 
-Groq has no embeddings API, so document search keeps using Gemini embeddings (see rag/llm.py).
+Groq has no embeddings API, so with this provider document search is keyword-only (BM25; see rag/llm.py).
 """
 
 from __future__ import annotations
