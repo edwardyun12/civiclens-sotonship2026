@@ -6,11 +6,11 @@
 
 <p align="center">
   <img alt="SotonShip 2026" src="https://img.shields.io/badge/SotonShip%202026-Southampton%20City%20track-0b332b">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-50%20passing-2f7a4f">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-54-2f7a4f">
   <img alt="Classifier benchmark" src="https://img.shields.io/badge/AI%20classifier-21%2F22%20vs%20baseline%2010%2F22-7a5cc4">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776ab">
   <img alt="React" src="https://img.shields.io/badge/React-19-61dafb">
-  <img alt="LLM" src="https://img.shields.io/badge/LLM-Qwen3%208B%20(local)%20%7C%20Gemini%20(hosted)-d7ff3f">
+  <img alt="LLM" src="https://img.shields.io/badge/LLM-Gemini%203.8%20Flash%20(hosted)%20%7C%20Qwen3%208B%20(local)-d7ff3f">
   <img alt="Data" src="https://img.shields.io/badge/data-real%20%26%20dated%2C%20open%20licences-e0782f">
 </p>
 
@@ -20,11 +20,11 @@
 
 | 🧠 Understands any idea | 🗺️ Scores every street | 💬 Explains with evidence |
 |---|---|---|
-| "Korean BBQ", "dog grooming", "craft beer bar": an LLM maps free text onto the real business types in Southampton's data, including its niche, competitors and customers | 792 small areas scored on customers by age, room in the market, passing trade and population growth, from real ONS, FSA, NHS and OpenStreetMap data | An assistant that sees what is on screen, answers about the area you name, and cites Southampton's own reports |
+| "Korean BBQ", "dog grooming", "craft beer bar": an LLM maps free text onto the real business types in Southampton's data, including its niche, competitors and customers | 792 small areas scored on customers by age, room in the market, passing trade and population growth, from real ONS, FSA, NHS and OpenStreetMap data | An assistant that sees what is on screen, answers about the area you name, and links every citation to the page of Southampton's own report it came from |
 
 # 🔍 CivicLens: _see what Southampton needs, and where_
 
-> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and an AI brief whose every number is automatically checked.
+> **CivicLens helps people starting a small business in Southampton, and the council teams who advise them, decide where to open.** You type the business in your own words. A language model (Gemini 3.8 Flash on the hosted site, or Qwen3 8B running locally) classifies it against the 83 business types that actually exist in the city's data (e.g. "sushi bar" → Japanese, with Chinese and Thai as similar cuisines). A deterministic model then scores every one of Southampton's 792 Output Areas on target customers by age (ONS mid-2024), competitors and similar businesses (3,718 real places from the Food Standards Agency register, OpenStreetMap and the NHS), passing trade and growth, and proposes the best sites with a plain-language feasibility brief. An assistant grounded in Southampton's Economic Assessment answers follow-up questions and cites its sources. For public services (nursery, GP, pharmacy, café, library) a planning engine adds walking-distance coverage, deprivation reach, flood risk and an AI brief whose every number is automatically checked.
 
 <details open>
 <summary><b>📑 Contents</b> (click to collapse)</summary>
@@ -41,7 +41,7 @@
 - [🛡️ Responsibility and trust](#️-responsibility-and-trust)
 - [🎯 How CivicLens meets each judging criterion](#-how-civiclens-meets-each-judging-criterion)
 - [✅ Submission checklist](#-submission-checklist)
-- [🙏 Team, credits and AI use](#-team-credits-and-ai-use)
+- [🙏 Credits and AI use](#-credits-and-ai-use)
 - [🛠️ Run it yourself](#️-run-it-yourself)
 - [🚧 Known limits](#-known-limits)
 - [❓ Questions and answers](#-questions-and-answers)
@@ -103,11 +103,11 @@ The Assessment flags multiple-registration effects on some of these figures; the
 | # | Do this | What you'll see |
 |---|---|---|
 | 1 | Open the site → **Business simulator** | Café is analysed at first load: five ranked pins coloured by feasibility, competitors as coral dots |
-| 2 | Type **`korean bbq`** in "What do you want to open?" and press **Enter** | After ~20 s: sites re-ranked for Korean BBQ, the 5 real Korean restaurants as competitors, similar cuisines on the map |
+| 2 | Type **`korean bbq`** in "What do you want to open?" and press **Enter** | After a few seconds (about 20 s on the local model): sites re-ranked for Korean BBQ, the 5 real Korean restaurants as competitors, similar cuisines on the map |
 | 3 | Click pin **1**, hover any dot | Feasibility score, four factor bars, market trends, who benefits by age group, strengths, risks, suggested changes, limitations; hover card with name, type and walking distance |
-| 4 | Open **Ask the assistant** → pick a common question, or ask *"I want to open a Japanese store in Weston"* | An answer about **Weston** (not the site on screen), citing `[App analysis]` and the Economic Assessment, with labelled general guidance where the evidence stops |
+| 4 | Open **Ask the assistant** → pick a common question, or ask *"I want to open a Japanese store in Weston"* | Common questions answer instantly from the figures on screen. Free questions get an answer about **Weston** (not the site on screen), citing `[App analysis]` and the Economic Assessment; click a citation to open the source document at that page |
 | 5 | Go to **Places** → **Popular** → click **Food and drink**, then **People** | Every sector has its colour; areas shade by how popular a sector is; residents by age group on a heat map |
-| 6 | Failure cases: type **`kids coding club`**; stop Ollama and type an idea | "Possible gap in the market" instead of invented competitors; with the AI off, the page falls back to keyword matching and keeps working |
+| 6 | Failure cases: type **`kids coding club`**; switch the AI off (no Gemini key and no Ollama) and type an idea | "Possible gap in the market" instead of invented competitors; with the AI off, the page falls back to keyword matching and keeps working |
 
 ---
 
@@ -172,16 +172,22 @@ Each factor becomes a percentile against every site in the city, weighted by how
 
 ### 3. The assistant explains what is on screen, for the place you ask about
 
-The chat ([rag/](rag/)) is a retrieval-augmented assistant: hybrid BM25 and vector search over Southampton documents, then grounded generation. With every question the page sends a summary of what is on screen. If the question names one of 16 wards or 75 neighbourhoods (from OpenStreetMap), the page first runs the model for **that** place and business. The prompt limits citations to the retrieved documents and `[App analysis]`, and allows one final sentence of labelled *"General guidance (not from Southampton evidence)"* where the documents stop.
+The chat ([rag/](rag/)) is a retrieval-augmented assistant: hybrid BM25 and vector search over Southampton documents, then grounded generation. With every question the page sends a summary of what is on screen. If the question names one of 16 wards or 75 neighbourhoods (from OpenStreetMap), the page first runs the model for **that** place and business.
+
+- **Built-in common questions are answered deterministically** ([rag/templates.py](rag/templates.py)): "how many competitors are near this site?", "which areas have the most businesses?" and the rest are filled straight from the on-screen figures or a fixed page of the evidence PDF, with no LLM call, so the same screen always gives the same answer.
+- **Free questions go to the LLM** with a prompt that limits citations to the retrieved documents and `[App analysis]`, asks for a one-sentence conclusion plus at most three bullets, checks that increases and decreases are described the right way round, and allows labelled *"General guidance (not from Southampton evidence)"* only where the documents stop.
+- **Every citation is a link**: `GET /api/evidence/…` opens the source document at the cited PDF page, and only files inside `data/raw/` can be served.
+- **History is used only for real follow-ups** ("what about there?", "which one…"); a new, self-contained question is not mixed with the previous topic.
 
 <details>
 <summary><b>🧠 Model choices and why</b></summary>
 
 | Job | Model | Why |
 |---|---|---|
-| Classify ideas, answer questions (local) | **Qwen3 8B** via Ollama | Free, runs on a laptop, no data leaves the machine; JSON mode for structured output |
+| Classify ideas, answer questions (hosted, default when `GEMINI_API_KEY` is set) | **Gemini 3.8 Flash** (thinking level *low*) | Fast and cheap for a public website; JSON mode for structured output |
+| Embeddings (hosted) | **gemini-embedding-001** (768 dimensions) | Same provider, one API key |
+| Classify and answer (local alternative) | **Qwen3 8B** via Ollama | Free, runs on a laptop, no data leaves the machine; used when no Gemini key is set |
 | Embeddings (local) | **nomic-embed-text** | Small, good retrieval quality, runs in Ollama |
-| Hosted deployment | **Gemini 3.8 Flash** + **gemini-embedding-001** | Fast and cheap for a public website; set `LLM_PROVIDER=gemini` |
 | Planning brief (Module C, optional) | **Claude Haiku 5.5** | Writes a 150–250 word brief from engine JSON; every number audited |
 | Site scoring, coverage, optimiser | **No AI** | Numbers must be reproducible and testable |
 
@@ -212,11 +218,12 @@ flowchart TB
   subgraph API["⚡ FastAPI (rag/api.py)"]
     CL["/api/classify"]
     CH["/api/chat (streaming)"]
+    EV["/api/evidence (cited pages)"]
     ST["serves built React app"]
   end
   subgraph LLM["🧠 rag/llm.py"]
-    OL["Ollama: Qwen3 8B,<br/>nomic-embed-text"]
-    GE["Gemini 3.8 Flash,<br/>gemini-embedding-001"]
+    GE["Gemini 3.8 Flash,<br/>gemini-embedding-001 (hosted)"]
+    OL["Ollama: Qwen3 8B,<br/>nomic-embed-text (local)"]
   end
   subgraph Data["🗂️ Built offline (pipeline/)"]
     CD["city_data.py: ONS, Census,<br/>IMD, flood"]
@@ -238,7 +245,7 @@ flowchart TB
 | Data build | `pipeline/` → `python run.py places`, `population`, `city-data`, then `viewers` | Downloads, cleans, merges, flags and dates every source; writes JSON for the app | A failed source is skipped and the others still build; `--osm-file` / `--fsa-file` / `--offline` reuse saved copies |
 | Classify | `rag/classify.py` | LLM → JSON → validated against real types | Page falls back to keyword matching and keeps working |
 | Score | `frontend/src/simulator/opportunity.js` | Percentile scores, ranked sites ≥1 km apart, feasibility brief | Pure functions; no network |
-| Explain | `rag/generator.py`, `rag/retriever.py` | Hybrid retrieval, grounded prompt with allowed citations | Error message in the chat; the rest of the app is unaffected |
+| Explain | `rag/templates.py`, `rag/generator.py`, `rag/retriever.py` | Common questions: fixed answers from on-screen figures. Free questions: hybrid retrieval, grounded prompt with allowed citations, linked sources | Error message in the chat; the rest of the app is unaffected |
 | Plan (public services) | `simulator/engine.py`, `simulator/brief.py` | Coverage, equity, optimiser; audited brief | Template brief if the audit fails twice or no key |
 
 <details>
@@ -248,15 +255,15 @@ flowchart TB
 |---|---|
 | `run.py` | One entry point: `python run.py` lists every command |
 | `frontend/` | React 19 + Vite + react-leaflet app: Places, Business simulator, assistant |
-| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator), Ollama and Gemini clients |
+| `rag/` | FastAPI API, classifier, RAG (documents, embeddings, retriever, generator, deterministic answer templates), Gemini and Ollama clients |
 | `simulator/` | Planning engine (no AI), audited brief, Streamlit app, config, paths |
 | `pipeline/` | Data builders: `city_data.py`, `population.py`, `neighbourhoods.py`, `places/` |
 | `viewer/` | Self-contained HTML pages (simulator, places register) and the data packer for the React app |
 | `data/` | `raw/` (sources + `SOURCES.json` + RAG documents), `processed/`, `db/` (places database) |
-| `tests/` | pytest: engine, places merge, classifier, Gemini client |
+| `tests/` | pytest: engine, places merge, classifier, assistant templates and follow-ups, Gemini client |
 | `evaluation/` | Baseline comparison, classifier benchmark, live-brief runner, `results/` |
-| `docs/` | [CODEBASE.md](docs/CODEBASE.md) (every file, "where to change what"), [SIMULATOR.md](docs/SIMULATOR.md), [DATA_PLAN.md](docs/DATA_PLAN.md), [SUBMISSION.md](docs/SUBMISSION.md) |
-| `render.yaml` | One-service Render deployment (API + built frontend, Gemini) |
+| `docs/` | [CODEBASE.md](docs/CODEBASE.md) (every file, "where to change what"), [SIMULATOR.md](docs/SIMULATOR.md), [DATA_PLAN.md](docs/DATA_PLAN.md) |
+| `render.yaml` | One-service Render deployment (API + built frontend, on Gemini) |
 
 </details>
 
@@ -285,7 +292,9 @@ LLM (Qwen3 8B, local)    ██████████████████�
 | dog grooming salon | Beauty salon ❌ | none in the data (a gap) ✅ |
 | yoga studio | Tattoo studio ❌ | none ❌ (expected Gym or fitness centre) |
 
-Mean **21.5 s per idea** on a laptop (local Qwen3 8B). Results file: `evaluation/results/classify_benchmark.json`.
+Mean **21.5 s per idea** on a laptop. Results file: `evaluation/results/classify_benchmark.json`.
+
+> ℹ️ **Which model.** The live site runs the classifier on **Gemini 3.8 Flash**. The recorded run above used the local path (Qwen3 8B) because it was free to repeat while we fixed bugs. The prompt, validation rules and 22 labelled ideas are identical on both; to reproduce on Gemini, start the API with `GEMINI_API_KEY` set (it then uses Gemini by default) and run `node evaluation/classify_benchmark.mjs`.
 
 > ⚠️ **Honest caveats.** The 22 ideas and their labels were written by us, so the set is small and may favour the cases we thought of. One run, temperature 0. The benchmark also found and fixed two real bugs before this run: the model copied whole prompt lines ("Japanese | restaurant_cafe | 12"), and correct types were dropped when the model's sector label disagreed.
 
@@ -312,7 +321,7 @@ The optimiser runs in under 0.01 s per use and equals exhaustive search over all
 
 ### ✅ Tests
 
-`python run.py test` → **50 passed** (18 Oct 2026). They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON) and the Gemini client.
+`python run.py test` → **54 tests**. They cover hand-checked toy examples, outside-city and empty input, the flood flag, the thin-data refusal, an injected wrong number caught by the brief audit, audit retry then fallback, optimiser equal to exhaustive search, places merging and de-duplication, postcode checks, cuisine from names (*"Phoenix Fish Bar"* is not Vietnamese), classifier validation (invented types, wrong sector, over-wide like-for-like lists, bad JSON), the assistant's deterministic answers and follow-up handling, and the Gemini client (mocked, so no API key is needed to run them).
 
 <details>
 <summary><b>🔎 End-to-end checks run in a real browser</b></summary>
@@ -328,7 +337,7 @@ Headless Chrome driving the live app (scripts not shipped):
 ### ⏳ Not yet measured
 
 - **Live audit of the AI planning brief** (Module C, Claude Haiku). `logs/briefs.jsonl` contains only test-run records. Run `python run.py live-briefs` with `ANTHROPIC_API_KEY` set.
-- **Gemini cost and latency in production**: the hosted path is built and tested with mocks; real token counts come from the first deployed runs.
+- **Gemini cost and latency in production**: real token counts and response times come from the first deployed runs.
 
 ---
 
@@ -387,7 +396,7 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 | Risk | What CivicLens does |
 |---|---|
 | **AI invents numbers** | The LLM never produces a score or count. Classifier output is checked against real types. Module C briefs are audited number by number, with fallback. |
-| **AI invents sources** | The assistant may cite only the retrieved documents and `[App analysis]`; anything else must go in a sentence labelled *"General guidance (not from Southampton evidence)"*. |
+| **AI invents sources** | The assistant may cite only the retrieved documents and `[App analysis]`; anything else must go in a sentence labelled *"General guidance (not from Southampton evidence)"*. Each citation links to the source page so a user can check it, and the built-in questions skip the LLM entirely. |
 | **Missing or stale data** | Every source is dated; places flagged *"may have closed"* are left out of competition; a niche with no businesses is shown as a *possible gap, check on the ground*, never as invented competitors. |
 | **Personal data** | None collected. Places are organisations; population data is aggregated ONS counts. No accounts, no tracking. Companies House personal data is never stored. |
 | **Council information** | Only public data. No non-public council information is sent to any AI service. Locally, everything runs on the user's machine (Ollama). On the hosted site, questions are sent to Google's Gemini API, so users are told not to enter personal details. |
@@ -402,8 +411,8 @@ Every number in the app comes from these. Raw download log with URLs and row cou
 | Criterion | Our case | Evidence |
 |---|---|---|
 | 👤 **C1 Problem and user** (20%) | A named user (a person opening a small business; the council team advising them) facing a costly, frequent decision with no affordable tool | 35.2% 3-year survival vs 52.8% in England; business births down 29.5% ([Economic Assessment 2025](https://data.southampton.gov.uk/media/iqgh14rf/economic-assessment-august-2025.pdf)); [what people do today](#what-people-do-today) |
-| 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 10/22** against the keyword baseline; validation rules; grounded RAG with allowed citations |
-| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 50 tests; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
+| 🧠 **C2 AI at the core** (20%) | Without the LLM, free-text ideas map to the wrong businesses and the assistant can't explain; with it, any idea works | **21/22 vs 10/22** against the keyword baseline; validation rules; grounded RAG with allowed, linked citations |
+| 🛠️ **C3 Working product** (25%) | Live end to end on real, dated Southampton data; failure cases shown; tests | 3,718 real places, 792 areas; 54 tests; browser end-to-end checks; [judge tour](#-judges-a-2-minute-tour) step 6 shows failures |
 | 💼 **C4 Business and scale** (20%) | Council licence, paid site reports; near-zero inference cost; any English council with a data rebuild | [Business and scale](#-business-and-scale) |
 | 🛡️ **C5 Responsibility and trust** (15%) | No personal data, only public data, dated sources, refusal and gap behaviour, labelled AI suggestions | [Responsibility and trust](#️-responsibility-and-trust), [Known limits](#-known-limits) |
 
@@ -431,21 +440,13 @@ Starting a business in Southampton is risky: only 35% of new businesses survive 
 
 ---
 
-## 🙏 Team, credits and AI use
-
-**Team** (from the commit history; roles to be confirmed by the team):
-
-| Member | GitHub | Main contributions |
-|---|---|---|
-| Chanyeong Yun | [@edwardyun12](https://github.com/edwardyun12) | Repository, local RAG assistant (`rag/`), React app foundations |
-| TYK3 | [@TYK3](https://github.com/TYK3) | Data pipeline, places database, planning engine, business simulator, deployment |
-| rjrowell | rjrowell | Project objectives and early README |
+## 🙏 Credits and AI use
 
 **What existed before the event.** Nothing from earlier projects. The repository was created at 19:26 on Friday 16 Oct with a one-line README; all code was written after hacking opened at 20:00. Open-source libraries and pre-trained models are listed below.
 
-**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. Runtime AI: Qwen3 8B and nomic-embed-text (Ollama), Gemini 3.8 Flash and gemini-embedding-001 (Google), Claude Haiku 5.5 (optional planning brief).
+**What was AI-generated.** Large parts of the code (`simulator/`, `pipeline/`, `viewer/`, `frontend/`, `rag/` additions, `tests/`, `evaluation/`) and the documentation, including this README, were written with an AI coding assistant (**Claude Code**, Anthropic) directed, tested and reviewed by the team. **Runtime AI** (what the product itself uses): Gemini 3.8 Flash and gemini-embedding-001 (Google) on the hosted site; Qwen3 8B and nomic-embed-text (Ollama) for local use; Claude Haiku 5.5 for the optional planning brief.
 
-**Who helped.** SotonShip mentors and organisers; no outside code contributions. _(Team: add anyone else who helped.)_
+**Who helped.** SotonShip mentors and organisers; no outside code contributions.
 
 **Open-source libraries.** Python: pandas, numpy, shapely, pyproj, FastAPI, uvicorn, pypdf, rank-bm25, requests, streamlit, folium, pytest. Web: React, Vite, Leaflet, react-leaflet, lucide-react. Tools: Ollama.
 
@@ -456,16 +457,16 @@ Starting a business in Southampton is risky: only 35% of new businesses survive 
 ## 🛠️ Run it yourself
 
 <details open>
-<summary><b>⚡ Quick start (local, free, no API keys)</b></summary>
+<summary><b>⚡ Quick start (Gemini, as on the live site)</b></summary>
 
-Needs Python 3.12, Node.js 20+ and [Ollama](https://ollama.com).
+Needs Python 3.12, Node.js 20+ and a free [Gemini API key](https://aistudio.google.com/apikey).
 
 ```bash
-git clone https://github.com/edwardyun12/sotonship2026 && cd sotonship2026
+git clone https://github.com/edwardyun12/civiclens-sotonship2026 && cd civiclens-sotonship2026
 python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt && pip install -e .
 
-ollama pull qwen3:8b && ollama pull nomic-embed-text      # once
+export GEMINI_API_KEY=your-key                            # Windows: set GEMINI_API_KEY=your-key
 python run.py rag index                                   # index the Southampton documents
 
 python run.py api                                         # terminal 1: API on http://127.0.0.1:8000
@@ -476,13 +477,15 @@ All processed data is committed, so the app runs from a clean clone with no down
 
 </details>
 
-**Hosted (Gemini).** Set `GEMINI_API_KEY` (and optionally `LLM_PROVIDER=gemini`), then `python run.py rag index` and `python run.py api`. Deploy on **Render**: New → Blueprint → this repo (branch `feature/simulator`); it reads [render.yaml](render.yaml), asks for `GEMINI_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GEMINI_CHAT_MODEL`, `GEMINI_EMBED_MODEL`, `GEMINI_THINKING_LEVEL`, `CORS_ORIGINS`.
+**Local and free (no API key).** Install [Ollama](https://ollama.com), run `ollama pull qwen3:8b && ollama pull nomic-embed-text` once, leave `GEMINI_API_KEY` unset (or set `LLM_PROVIDER=ollama`), then the same `rag index`, `api` and `npm run dev` steps. Re-run `python run.py rag index` when you switch provider, because the two use different embeddings.
+
+**Deploy on Render.** New → Blueprint → this repo (branch `feature/simulator`); it reads [render.yaml](render.yaml), asks for `GEMINI_API_KEY`, builds the frontend, indexes the documents and serves everything from one service (`/api/health` for checks). Optional: `GEMINI_CHAT_MODEL`, `GEMINI_EMBED_MODEL`, `GEMINI_THINKING_LEVEL`, `CORS_ORIGINS`.
 
 **Every command** (`python run.py` lists them):
 
 | Command | What it does |
 |---|---|
-| `python run.py test` | Run the 50 tests |
+| `python run.py test` | Run the 54 tests |
 | `python run.py eval` | Planning engine vs baseline → `evaluation/results/` |
 | `node evaluation/classify_benchmark.mjs` | AI classifier vs keyword baseline (needs the API running) |
 | `python run.py app` | Streamlit planning engine (Module C) |
@@ -513,17 +516,84 @@ Standalone pages, no install: open `viewer/site_simulator.html` or `viewer/place
 
 ## ❓ Questions and answers
 
-**Isn't this just a map with a chatbot?** No. The AI converts any idea into the data's own categories (which a map can't do: see the [baseline](#-measured-results)), and the assistant answers for the place you name using the model's own figures, not generic text.
+Click a question to see the answer.
 
-**Why not let the LLM pick the site?** Because it would invent numbers. Every number comes from deterministic code that is tested; the LLM only classifies and explains. See [How it works](#️-how-it-works-ai-at-the-core).
+<details>
+<summary><b>Isn't this just a map with a chatbot?</b></summary>
 
-**What happens when the data has nothing like my business?** It says so: *possible gap in the market*, judged against similar businesses nearby, with a reminder to check on the ground.
+No. The AI turns any idea, in any wording, into the business types that actually exist in Southampton's data, which a map or a keyword search can't do: the keyword matcher gets 10 of 22 test ideas right, the LLM 21 ([results](#-measured-results)). The assistant then answers for the place you name using the model's own figures for that place, not generic text.
 
-**Does it work offline / without paying for AI?** Yes. Locally it runs on Ollama with Qwen3 8B at no cost. Without any LLM at all, the simulator falls back to keyword matching and still ranks sites.
+</details>
 
-**Could another council use it?** Yes. All inputs are national open data; it needs a data rebuild with the council's code and its own reports for the assistant. See [Business and scale](#-business-and-scale).
+<details>
+<summary><b>Why not let the AI pick the site?</b></summary>
 
-**Where are the details?** Method, data and results for the planning engine: [docs/SIMULATOR.md](docs/SIMULATOR.md). Every file and function: [docs/CODEBASE.md](docs/CODEBASE.md). Data decisions: [docs/DATA_PLAN.md](docs/DATA_PLAN.md).
+Because it would invent numbers. Every score, count and percentage comes from deterministic, tested code built on dated open data. The LLM only classifies the idea and explains the results. See [How it works](#️-how-it-works-ai-at-the-core).
+
+</details>
+
+<details>
+<summary><b>Which AI model does it use?</b></summary>
+
+The live site uses **Google Gemini 3.8 Flash** to classify ideas and answer questions, and **gemini-embedding-001** to search the documents. Run locally without a key, it uses **Qwen3 8B** through Ollama instead. The optional planning brief for public services uses Claude Haiku 5.5. Site scoring uses no AI at all.
+
+</details>
+
+<details>
+<summary><b>How do I know the assistant isn't making things up?</b></summary>
+
+Every citation in an answer is a link that opens the source document at the cited page. The assistant may only cite the documents it retrieved or `[App analysis]` (the model's figures on screen); anything beyond that has to be labelled *General guidance (not from Southampton evidence)*. The built-in common questions don't use the LLM at all: they are filled straight from the figures on screen.
+
+</details>
+
+<details>
+<summary><b>What happens when the data has nothing like my business?</b></summary>
+
+It says so: *possible gap in the market*, judged against similar businesses nearby (a few suggest proven demand, many suggest crowding), with a reminder to check on the ground. It never invents competitors.
+
+</details>
+
+<details>
+<summary><b>What if the AI is down or there is no API key?</b></summary>
+
+The simulator falls back to keyword matching and still ranks sites; the rest of the app keeps working and the chat shows an error message instead of an answer. Without a Gemini key, it can run fully offline on Ollama at no cost.
+
+</details>
+
+<details>
+<summary><b>Is the data live?</b></summary>
+
+No, and the app doesn't pretend it is. It uses dated snapshots (FSA extract of 16 Oct 2026, OpenStreetMap and NHS of 18 Oct 2026, ONS mid-2024 population), each listed with its date and licence in [Data sources](#️-data-sources-with-dates-and-licences). Rebuilding takes a few commands.
+
+</details>
+
+<details>
+<summary><b>Does it collect personal data?</b></summary>
+
+No. There are no accounts and no tracking; places are organisations, and population figures are aggregated ONS counts. On the hosted site, questions are sent to Google's Gemini API, so users are asked not to type personal details.
+
+</details>
+
+<details>
+<summary><b>How much does it cost to run?</b></summary>
+
+Very little per user: one classification is about 1,700 input tokens and one chat answer about 3,000, on a Flash-class model; locally it costs nothing. Keeping the data fresh, not inference, is the main cost. See [Business and scale](#-business-and-scale).
+
+</details>
+
+<details>
+<summary><b>Could another council use it?</b></summary>
+
+Yes. Every input is national open data. A new English city needs its local authority code, a data rebuild and its own reports added to the assistant; no model training. See [Business and scale](#-business-and-scale).
+
+</details>
+
+<details>
+<summary><b>Where are the details?</b></summary>
+
+Planning engine method, data and results: [docs/SIMULATOR.md](docs/SIMULATOR.md). Every file and function: [docs/CODEBASE.md](docs/CODEBASE.md). Data decisions: [docs/DATA_PLAN.md](docs/DATA_PLAN.md).
+
+</details>
 
 ---
 

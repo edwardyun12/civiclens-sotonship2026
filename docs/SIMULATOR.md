@@ -9,8 +9,7 @@ automatically checked against the computed data.
 ## Run it
 
 ```bash
-git clone https://github.com/edwardyun12/sotonship2026 && cd sotonship2026
-git checkout feature/simulator
+git clone https://github.com/edwardyun12/civiclens-sotonship2026 && cd civiclens-sotonship2026
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...                     # optional; Windows: set ANTHROPIC_API_KEY=...

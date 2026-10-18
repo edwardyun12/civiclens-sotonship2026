@@ -1,7 +1,7 @@
 # Codebase guide
 
 What every file and function is for, how the pieces connect, and the rules that keep the numbers honest.
-Read this with `HANDOVER.md` (status, deadline, to-do) before changing anything.
+Read this before changing anything; the project overview is in the root `README.md`.
 
 ## 1. What the product is
 
@@ -81,9 +81,7 @@ audit rejects any number not in the data.
 | `data/db/sample/` | Small real build (17 Oct OSM + NHS + 5,000-row Companies House download) | No |
 | `data/cache/` | Distance matrix `.npy` (gitignored), demo-mode briefs, postcode cache | No |
 | `viewer/` | Two self-contained browser pages + their sources in `viewer/src/` | Sources yes, HTML no |
-| `docs/` | `SIMULATOR.md` (method, results, limits), `DATA_PLAN.md` (sources, flags, names), `SUBMISSION.md`, this file | Yes |
-| `HANDOVER.md` | Status, deadline, priorities | Yes |
-| `CLAUDE.md` | Rules for AI assistants (git identity, branch) | Yes |
+| `docs/` | `SIMULATOR.md` (method, results, limits), `DATA_PLAN.md` (sources, flags, names), this file | Yes |
 | `logs/` | `briefs.jsonl` cost/audit log (gitignored) | No |
 
 ## 4. `simulator/config.py`: every design choice in one place
@@ -350,4 +348,4 @@ cover a question, and lists the only citation labels it may use.
   if relevant, call `note()` with URL and licence, add a test.
 - Never store personal data (company officers, childminders' addresses). Don't use the VOA rating list (licence)
   or store Google content in the repo.
-- Git: commit as TYK3, no AI attribution lines, push only to `feature/simulator` (see `CLAUDE.md`).
+- Git: no force-push; Render deploys from `feature/simulator` (see `render.yaml`).
