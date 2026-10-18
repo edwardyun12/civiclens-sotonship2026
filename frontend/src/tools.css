@@ -48,26 +48,45 @@
 .count { margin: 4px 0 0; font-size: 13px; color: var(--muted) }
 .count b { color: var(--ink) }
 
-/* map toolbar (top left of the map, beside the panel): view switch, options, legend, one-line note */
-.map-toolbar { position: absolute; z-index: 600; top: 20px; left: 366px; width: min(520px, calc(100% - 386px)); display: flex; flex-direction: column; gap: 10px;
-  background: var(--card); backdrop-filter: blur(18px); border: 1px solid #fff9; border-radius: 14px; padding: 12px; box-shadow: 0 16px 44px #13352b24; color: var(--ink) }
-.view-switch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #e8ede6; padding: 4px; border-radius: 10px }
-.view-switch button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; background: none; color: #4f655e; border-radius: 7px;
-  padding: 8px 6px; font-size: 13px; font-weight: 600; white-space: nowrap }
+/* Places: view switch at the top of the control panel; each view's controls below it */
+.view-switch { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; background: #e8ede6; padding: 4px; border-radius: 11px; flex: none }
+.view-switch button { display: flex; flex-direction: column; align-items: center; gap: 3px; border: 0; background: none; color: #4f655e; border-radius: 8px;
+  padding: 8px 2px 7px; font-size: 11.5px; font-weight: 700; white-space: nowrap }
 .view-switch button:hover { color: var(--ink); background: #ffffff90 }
 .view-switch button.active { background: var(--deep); color: #fff }
 .view-switch button.active svg { color: var(--lime) }
-.view-switch button:focus-visible, .seg-small button:focus-visible { outline: 2px solid #80a925; outline-offset: 1px }
-.view-options { display: flex; flex-wrap: wrap; gap: 8px }
-.seg-small { display: inline-flex; border: 1px solid #d2dbd3; border-radius: 8px; overflow: hidden; background: #fff }
-.seg-small button { border: 0; background: none; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #4f655e }
+.view-switch button:focus-visible, .seg-small button:focus-visible, .choice-list button:focus-visible { outline: 2px solid #80a925; outline-offset: 1px }
+.panel-head { display: flex; flex-direction: column; gap: 2px; margin-top: 8px }
+.panel-head h2 { margin: 4px 0 2px !important }
+.panel-head .muted { margin: 0 0 4px }
+.seg-small { display: inline-flex; align-self: flex-start; border: 1px solid #d2dbd3; border-radius: 8px; overflow: hidden; background: #fff; flex: none }
+.seg-small button { border: 0; background: none; padding: 7px 12px; font-size: 12.5px; font-weight: 600; color: #4f655e }
 .seg-small button + button { border-left: 1px solid #d2dbd3 }
 .seg-small button.active { background: var(--lime); color: var(--deep) }
+.choice-list { display: flex; flex-direction: column; gap: 2px; border: 1px solid var(--hair); border-radius: 10px; background: #fff; padding: 4px; overflow: auto; min-height: 120px }
+.choice-list button { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 0; background: none; text-align: left;
+  padding: 9px 10px; border-radius: 7px; font-size: 13.5px; color: #24423a }
+.choice-list button:hover { background: #eef3ea }
+.choice-list button.on { background: var(--deep); color: #fff }
+.choice-list button.on .n, .choice-list button.on small { color: #cfe3dc }
+.choice-list i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid transparent }
+.choice-list i.none { visibility: hidden }
+.choice-list .n { color: #7a8c86; font-variant-numeric: tabular-nums; font-size: 12.5px }
+.choice-list small { font-size: 11.5px; color: #7a8c86 }
+.choice-list[aria-label="Age group"] button { grid-template-columns: 4.2rem minmax(0, 1fr) auto }
+.choice-list .share { display: block; height: 7px; background: #e5ebe3; border-radius: 3px; overflow: hidden }
+.choice-list .share i { display: block; height: 100%; width: auto; border: 0; border-radius: 0; background: #c2416f }
+.choice-list button.on .share { background: #ffffff2e }
+.choice-list button.on .share i { background: var(--lime) }
+
+/* legend: small card at the bottom of the map, beside the panel */
+.map-legend { position: absolute; z-index: 600; left: 366px; bottom: 20px; max-width: min(620px, calc(100% - 386px)); background: var(--card); backdrop-filter: blur(18px);
+  border: 1px solid #fff9; border-radius: 12px; padding: 9px 14px; box-shadow: 0 12px 34px #13352b22 }
+.map-legend:empty { display: none }
 .map-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 12px; color: #43584f }
 .map-key .key { display: inline-flex; align-items: center; gap: 6px }
 .map-key i { width: 11px; height: 11px; border-radius: 3px; flex: none }
 .map-key i.ramp { width: 140px; height: 10px; border-radius: 3px }
-.view-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted) }
 
 /* simulator legend (top of the map, beside the panel) */
 .legend.tool-legend { top: 20px; bottom: auto; left: 366px; right: auto; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; padding: 9px 14px; max-width: calc(100% - 800px); border-radius: 12px; color: #43584f }
@@ -184,8 +203,7 @@
 @media (max-width: 1100px) {
   .tabs a { padding: 8px 10px }
   .tool-panel { width: 300px }
-  .map-toolbar { left: 336px; width: min(460px, calc(100% - 356px)) }
-  .view-switch button { font-size: 12px; padding: 8px 4px }
+  .map-legend { left: 336px; max-width: calc(100% - 356px) }
   .ward-card, .result-card { width: 330px }
 }
 @media (max-width: 760px) {
@@ -197,11 +215,10 @@
   .map-stage { overflow: hidden }
   .tool-panel { max-height: 42vh; padding: 16px; box-shadow: 0 -10px 30px #13352b22 }
   .tool-panel h2 { font-size: 20px }
-  .map-toolbar { left: 10px; right: 10px; top: 10px; width: auto; padding: 8px; gap: 6px; border-radius: 12px }
-  .view-switch button { font-size: 12px; padding: 7px 2px; gap: 4px }
-  .view-note { display: none }
-  .view-options { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none }
-  .seg-small { flex: none }
+  .tool-panel { padding-top: 10px }
+  .tool-panel .view-switch { position: sticky; top: -10px; z-index: 2 }
+  .panel-head .muted { display: none }
+  .map-legend { left: 10px; right: 10px; top: 10px; bottom: auto; max-width: none; padding: 7px 10px }
   .map-key { font-size: 11px; gap: 4px 10px }
   .map-key i.ramp { width: 90px }
   .leaflet-tooltip.ward-label { display: none }

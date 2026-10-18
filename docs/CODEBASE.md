@@ -280,7 +280,11 @@ Open `viewer/places_register.html` or `viewer/site_simulator.html` by double-cli
 | `src/places_register.template.html` | Register page: table + map, advanced search (industry group → tickable, searchable detailed types grouped by business type; everyday words like "boba" or "sushi" also match), flags filter, map views: Places, **Heatmap** (density of the filtered places, one-hue ramp), **People** (where residents live: ONS mid-2024 residents at the 792 OA centres, weighted heat map), **Popular** (each ward coloured by its leading detailed type: most common, or stands out vs its city-wide share with ≥3 places; marker + label per ward; hover tooltip with the ward's top 6), Per 1,000 (wards shaded per 1,000 residents); click a ward (in any area view, or the ward links) to focus it: zoom, outline, rest faded, table filtered, and a ward profile (places, per 1,000 vs city, residents, % most deprived fifth, top 10 types as bars with "× city" share ratio, types it has less of than the city); `#view=heat|pop|area&ward=Portswood` opens a view and ward, **Suggest spots to open** (ranks OA centres: residents within 800 m × footfall stand-in ÷ (1 + 2 × same-type within 800 m); 5 picks ≥1 km apart) |
 | `build_viewers.py` | Fills the templates' `__PLACEHOLDERS__` with data and writes the two HTML files, plus `frontend/public/data/{places,city}.json` |
 
-The React app (`frontend/`) has the same map views on its Places page (`places/PlacesView.jsx`): Popular,
+The React app (`frontend/`) has the same map views on its Places page (`places/PlacesView.jsx`). The view switch
+sits at the top of the left panel and the panel shows only what that view needs: **Popular** = sector list (all
+sectors → wards coloured by leading sector; one sector → leading business type in it) + most common / stands out;
+**Heatmap** = sector list; **People** = age groups with city totals; **Places** = full search (text, industry,
+detailed types). A type clicked in an area profile opens the Places search for it. Views: Popular,
 Heatmap (places), **People** (where residents live, by age group: all, 0–4, 5–15, 16–24, 25–44, 45–64, 65+;
 ward tooltip and area profile show each area's age mix against the city) and Places. `?view=people&ward=Bargate#places`
 opens a view and ward. Age groups come from `AGE_BANDS` in `pipeline/population.py` (each OA takes its LSOA's age mix). Both heat maps use `lib/HeatLayer.jsx` (points may carry a weight `w`).

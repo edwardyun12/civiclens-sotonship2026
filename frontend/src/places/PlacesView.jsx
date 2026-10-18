@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { Building2, Flame, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
+import { Flame, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
 import HeatLayer, { HEAT_GRADIENT, PEOPLE_GRADIENT, PEOPLE_RAMP } from '../lib/HeatLayer.jsx'
 import { CATEGORICAL, OTHER, bounds, fmt, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, pad } from '../lib/MapFit.jsx'
@@ -31,15 +31,16 @@ const SPECIFIC = new Set(['gp', 'pharmacy', 'dentist', 'hospital', 'nursery', 'l
 const SAME_AS = { gp: 'GP practice', dentist: 'Dental practice', nursery: 'Day nursery or childcare', supermarket: 'Supermarket or convenience store', pub_bar: 'Pub or bar' }
 const specOf = p => p.spec || SAME_AS[p.cat] || (SPECIFIC.has(p.cat) ? catLabel(p.cat) : `${catLabel(p.cat)} (no detail)`)
 
-// leading type per ward: most common, or the type furthest above its city-wide share (at least 3 places)
-function popular(rows, lq) {
+// leading key per ward: by default the detailed type; keyOf = sector when no sector is chosen on the Popular view.
+// Most common, or (lq) the key furthest above its city-wide share with at least 3 places.
+function popular(rows, lq, keyOf = specOf) {
   const by = {}, city = {}; let N = 0
-  for (const p of rows) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = specOf(p); b.top[k] = (b.top[k] || 0) + 1; city[k] = (city[k] || 0) + 1; N++ }
+  for (const p of rows) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = keyOf(p); b.top[k] = (b.top[k] || 0) + 1; city[k] = (city[k] || 0) + 1; N++ }
   const win = {}
   for (const [w, b] of Object.entries(by)) {
     let best = null
     for (const [k, n] of Object.entries(b.top)) {
-      if (vague(k)) continue
+      if (vague(k) || k === 'Other') continue
       const share = n / b.n, ratio = share / (city[k] / N)
       if (lq ? n >= 3 && ratio > 1 && (!best || ratio > best.ratio) : !best || n > best.n) best = { k, n, share, ratio }
     }
@@ -57,32 +58,49 @@ function FitTo({ target }) {
   return null
 }
 
+// what each view is for: [eyebrow, title, intro]
+const VIEW_TEXT = {
+  popular: ['Popular', 'What each area is known for', 'Pick a sector to see its leading type of business in each area, or keep all sectors to see which sector leads.'],
+  heat: ['Heatmap', 'Where businesses cluster', 'Darker = more places within about 250 m. Pick a sector to compare, say, food with health.'],
+  people: ['People', 'Where people live', 'Darker = more people within about 300 m. Pick an age group; hover an area for its age mix.'],
+  points: ['Places', 'Find any business in the city', 'Search by name or street, then narrow by industry and detailed type.'],
+}
+
 export default function PlacesView() {
   const [cols, error] = useData('places')
   const [city] = useData('city')
   const all = useMemo(() => (cols ? placeRows(cols).filter(p => p.inside) : []), [cols])
+  const [view, setView] = useState(() => { const v = new URLSearchParams(window.location.search).get('view'); return VIEWS.some(([id]) => id === v) ? v : 'popular' })  // e.g. ?view=people#places
+  const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
+  const [place, setPlace] = useState(null)
+  // Popular and Heatmap: one sector (industry group) or all
+  const [sector, setSector] = useState('')
+  const [lq, setLq] = useState(false)
+  // People: age group
+  const [age, setAge] = useState('all')
+  // Places: full search
   const [q, setQ] = useState('')
   const [grp, setGrp] = useState('')
   const [spec, setSpec] = useState(() => new Set())
   const [specQ, setSpecQ] = useState('')
   const [hideRO, setHideRO] = useState(true)
-  const [view, setView] = useState(() => { const v = new URLSearchParams(window.location.search).get('view'); return VIEWS.some(([id]) => id === v) ? v : 'popular' })  // e.g. ?view=people#places
-  const [lq, setLq] = useState(false)
-  const [age, setAge] = useState('all')      // People view: age group (AGES)
-  const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
-  const [place, setPlace] = useState(null)
 
-  // filtered places, before the type and ward filters (used for counts and for comparing wards with the city)
+  // Places view: search -> industry -> detailed types
   const base = useMemo(() => {
     const s = q.trim().toLowerCase()
     return all.filter(p => (!hideRO || !p.ro) && (!grp || p.grp === grp) &&
       (!s || `${p.name} ${p.pc} ${p.addr} ${p.spec}`.toLowerCase().includes(s)))
   }, [all, q, grp, hideRO])
   const typed = useMemo(() => (spec.size ? base.filter(p => spec.has(specOf(p))) : base), [base, spec])
-  const shown = useMemo(() => (ward ? typed.filter(p => p.ward === ward) : typed), [typed, ward])
-  const pop = useMemo(() => popular(typed, lq), [typed, lq])
+  // Popular and Heatmap: trading places in the chosen sector (companies known only by their registered office left out)
+  const inSector = useMemo(() => all.filter(p => !p.ro && (!sector || p.grp === sector)), [all, sector])
+  const active = view === 'points' ? typed : inSector
+  const shown = useMemo(() => (ward ? active.filter(p => p.ward === ward) : active), [active, ward])
+  const bySector = view === 'popular' && !sector
+  const pop = useMemo(() => popular(active, lq, bySector ? p => p.grp : specOf), [active, lq, bySector])
 
   const groups = useMemo(() => { const o = {}; for (const p of all) if (!hideRO || !p.ro) o[p.grp] = (o[p.grp] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]) }, [all, hideRO])
+  const sectors = useMemo(() => { const o = {}; for (const p of all) if (!p.ro) o[p.grp] = (o[p.grp] || 0) + 1; return Object.entries(o).sort((a, b) => b[1] - a[1]) }, [all])
   const specGroups = useMemo(() => {
     const g = {}, s = specQ.trim().toLowerCase()
     for (const p of ward ? base.filter(x => x.ward === ward) : base) {
@@ -101,11 +119,15 @@ export default function PlacesView() {
 
   const toggle = k => setSpec(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const pickWard = w => { setWard(cur => (cur === w ? null : w)); setPlace(null) }
+  // a type clicked in an area profile opens the Places search for it
+  const searchType = k => { setGrp(view === 'points' ? grp : sector); setSpec(new Set([k])); setQ(''); setView('points') }
   if (error) return <div className="tool-error">{error.message}</div>
+  const [eyebrow, title, intro] = VIEW_TEXT[view]
+  const ViewIcon = VIEWS.find(([id]) => id === view)[2]
 
   return <div className="map-stage">
     <MapContainer center={[50.92, -1.40]} zoom={13} minZoom={11} zoomSnap={0.25} scrollWheelZoom className="map-canvas" zoomControl={false} preferCanvas renderer={L.canvas({ padding: 0.3 })}>
-      <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer attribution='&copy; OpenStreetMap contributors · Population: ONS' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <FitCity city={city} />
       <FitTo target={target} />
       {outlines.map(({ w, pos }) => {
@@ -130,43 +152,72 @@ export default function PlacesView() {
     </MapContainer>
 
     <aside className="tool-panel">
-      <span className="eyebrow dark"><Building2 size={13} /> Places register</span>
-      <h2>Find any business in the city</h2>
-      <label className="search"><Search size={15} /><input value={q} onChange={e => setQ(e.target.value)} placeholder="Name, postcode, street…" /></label>
-      <label className="field-label" htmlFor="grp">Industry</label>
-      <select id="grp" value={grp} onChange={e => { setGrp(e.target.value); setSpec(new Set()) }}>
-        <option value="">All industries ({fmt(groups.reduce((a, [, n]) => a + n, 0))})</option>
-        {groups.map(([g, n]) => <option key={g} value={g}>{g} ({fmt(n)})</option>)}
-      </select>
-      <div className="field-row"><label className="field-label" htmlFor="specq">Detailed type</label>{spec.size > 0 && <button className="link-button" onClick={() => setSpec(new Set())}>Clear {spec.size}</button>}</div>
-      <input id="specq" className="plain-input" value={specQ} onChange={e => setSpecQ(e.target.value)} placeholder="Bubble tea, Korean, barber…" />
-      <div className="type-list">
-        {specGroups.map(([head, n, items]) => <div key={head}>
-          <button className="type-head" onClick={() => setSpec(s => { const all = items.every(([k]) => s.has(k)), x = new Set(s); items.forEach(([k]) => (all ? x.delete(k) : x.add(k))); return x })}><span>{head}</span><span>{fmt(n)}</span></button>
-          {items.map(([k, c]) => <label key={k} className={`type-row ${spec.has(k) ? 'on' : ''}`}><input type="checkbox" checked={spec.has(k)} onChange={() => toggle(k)} /><span>{k}</span><span>{fmt(c)}</span></label>)}
-        </div>)}
-        {!specGroups.length && <p className="muted">No type matches “{specQ}”.</p>}
+      <div className="view-switch" role="tablist" aria-label="Map view">
+        {VIEWS.map(([id, label, Icon]) => <button key={id} role="tab" aria-selected={view === id} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon size={15} /><span>{label}</span></button>)}
       </div>
-      <label className="check"><input type="checkbox" checked={hideRO} onChange={e => setHideRO(e.target.checked)} /> Hide companies known only by their registered office</label>
-      <p className="count"><b>{fmt(shown.length)}</b> places{ward ? <> in <b>{ward}</b> <button className="link-button" onClick={() => setWard(null)}>whole city</button></> : ''}</p>
+      <div className="panel-head">
+        <span className="eyebrow dark"><ViewIcon size={13} /> {eyebrow}</span>
+        <h2>{title}</h2>
+        <p className="muted">{intro}</p>
+      </div>
+
+      {view === 'popular' && <>
+        <Seg value={lq} onChange={setLq} options={[[false, 'Most common'], [true, 'Stands out vs city']]} />
+        <SectorList sectors={sectors} value={sector} onChange={setSector} colors={bySector ? pop.color : null} />
+      </>}
+
+      {view === 'heat' && <SectorList sectors={sectors} value={sector} onChange={setSector} />}
+
+      {view === 'people' && <AgeList people={people} value={age} onChange={setAge} />}
+
+      {view === 'points' && <>
+        <label className="search"><Search size={15} /><input value={q} onChange={e => setQ(e.target.value)} placeholder="Name, postcode, street…" /></label>
+        <label className="field-label" htmlFor="grp">Industry</label>
+        <select id="grp" value={grp} onChange={e => { setGrp(e.target.value); setSpec(new Set()) }}>
+          <option value="">All industries ({fmt(groups.reduce((a, [, n]) => a + n, 0))})</option>
+          {groups.map(([g, n]) => <option key={g} value={g}>{g} ({fmt(n)})</option>)}
+        </select>
+        <div className="field-row"><label className="field-label" htmlFor="specq">Detailed type</label>{spec.size > 0 && <button className="link-button" onClick={() => setSpec(new Set())}>Clear {spec.size}</button>}</div>
+        <input id="specq" className="plain-input" value={specQ} onChange={e => setSpecQ(e.target.value)} placeholder="Bubble tea, Korean, barber…" />
+        <div className="type-list">
+          {specGroups.map(([head, n, items]) => <div key={head}>
+            <button className="type-head" onClick={() => setSpec(s => { const all = items.every(([k]) => s.has(k)), x = new Set(s); items.forEach(([k]) => (all ? x.delete(k) : x.add(k))); return x })}><span>{head}</span><span>{fmt(n)}</span></button>
+            {items.map(([k, c]) => <label key={k} className={`type-row ${spec.has(k) ? 'on' : ''}`}><input type="checkbox" checked={spec.has(k)} onChange={() => toggle(k)} /><span>{k}</span><span>{fmt(c)}</span></label>)}
+          </div>)}
+          {!specGroups.length && <p className="muted">No type matches “{specQ}”.</p>}
+        </div>
+        <label className="check"><input type="checkbox" checked={hideRO} onChange={e => setHideRO(e.target.checked)} /> Hide companies known only by their registered office</label>
+      </>}
+
+      <p className="count">{view === 'people' ? <><b>{fmt(Math.round(ward ? people.byWard[ward] || 0 : people.total))}</b> {people.noun}</> : <><b>{fmt(shown.length)}</b> places</>}
+        {ward ? <> in <b>{ward}</b> <button className="link-button" onClick={() => setWard(null)}>whole city</button></> : ' · click an area to explore it'}</p>
     </aside>
 
-    <section className="map-toolbar" aria-label="Map view">
-      <div className="view-switch" role="tablist" aria-label="Map view">
-        {VIEWS.map(([id, label, Icon]) => <button key={id} role="tab" aria-selected={view === id} className={view === id ? 'active' : ''} onClick={() => setView(id)}><Icon size={14} /> {label}</button>)}
-      </div>
-      {(view === 'popular' || view === 'people') && <div className="view-options">
-        {view === 'popular' && <Seg value={lq} onChange={setLq} options={[[false, 'Most common'], [true, 'Stands out vs city']]} />}
-        {view === 'people' && <Seg value={age} onChange={setAge} options={people.ages.map(([k, label]) => [k, label])} />}
-      </div>}
-      <Legend view={view} pop={pop} people={people} />
-      <p className="view-note">{view === 'popular' ? (lq ? 'Each area shows the type most over-represented there compared with the whole city (at least 3 places).' : 'Each area shows its most common type. Stronger colour = bigger share of its places.')
-        : view === 'heat' ? 'Where the filtered places cluster. Darker = more places within about 250 m.'
-        : view === 'people' ? `Where ${fmt(people.total)} ${people.noun} live. Darker = more people within about 300 m. Hover an area for its age mix.`
-        : 'Every filtered place. Faded dots are companies known only by their registered office.'} Click an area to explore it.</p>
-    </section>
+    <div className="map-legend"><Legend view={view} pop={pop} people={people} /></div>
     {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
-    {ward && !place && city && <WardProfile ward={ward} typed={typed} pop={pop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={k => setSpec(new Set([k]))} onWard={pickWard} />}
+    {ward && !place && city && <WardProfile ward={ward} typed={active} pop={pop} wardPop={wardPop} city={city} people={people} onClose={() => setWard(null)} onPick={searchType} onWard={pickWard} />}
+  </div>
+}
+
+// Sectors (industry groups) as one-tap rows; colours match the map when it is coloured by sector
+function SectorList({ sectors, value, onChange, colors }) {
+  const total = sectors.reduce((a, [, n]) => a + n, 0)
+  return <div className="choice-list" role="radiogroup" aria-label="Sector">
+    {[['', total], ...sectors].map(([g, n]) => <button key={g || 'all'} role="radio" aria-checked={value === g} className={value === g ? 'on' : ''} onClick={() => onChange(g)}>
+      {colors && g ? <i style={{ background: colors[g] || 'transparent', borderColor: colors[g] ? 'transparent' : '#c9d3cb' }} /> : <i className="none" />}
+      <span>{g || 'All sectors'}</span><span className="n">{fmt(n)}</span></button>)}
+  </div>
+}
+
+// Age groups as rows with the city total and share
+function AgeList({ people, value, onChange }) {
+  const all = people.totals.all || 1
+  return <div className="choice-list" role="radiogroup" aria-label="Age group">
+    {people.ages.map(([k, label]) => { const n = people.totals[k] || 0
+      return <button key={k} role="radio" aria-checked={value === k} className={value === k ? 'on' : ''} onClick={() => onChange(k)}>
+        <span>{k === 'all' ? 'All ages' : label}</span>
+        {k !== 'all' ? <span className="share"><i style={{ width: `${Math.min(100, 250 * n / all)}%` }} /></span> : <span />}
+        <span className="n">{fmt(Math.round(n))}{k !== 'all' && <small> · {Math.round(100 * n / all)}%</small>}</span></button> })}
   </div>
 }
 
@@ -188,7 +239,7 @@ const ageColumn = (o, col) => (col === 'pop' || col === 'pop04' ? o[col] : o.age
 
 // Residents at each Output Area centre (city.json, from data/processed/oa.csv, latest population estimate)
 function peoplePoints(city, age) {
-  const empty = { points: [], byWard: {}, mix: {}, total: 0, noun: 'residents', ages: AGES.slice(0, 2) }
+  const empty = { points: [], byWard: {}, mix: {}, total: 0, noun: 'residents', ages: AGES.slice(0, 2), totals: {} }
   if (!city) return empty
   const o = city.oa, ages = AGES.filter(([, , , col]) => ageColumn(o, col))
   const [, , noun, col] = ages.find(a => a[0] === age) || ages[0], v = ageColumn(o, col)
@@ -204,7 +255,8 @@ function peoplePoints(city, age) {
     const a = ageColumn(o, c)
     o.ward.forEach((w, i) => { const m = (mix[w] ||= {}); m[k] = (m[k] || 0) + a[i] })
   }
-  return { points, byWard, mix, total, noun, ages }
+  const totals = Object.fromEntries(ages.map(([k, , , c]) => [k, ageColumn(o, c).reduce((s, x) => s + x, 0)]))
+  return { points, byWard, mix, total, noun, ages, totals }
 }
 
 // Bars of each age group's share of an area's residents, with the city share for comparison
