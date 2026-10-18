@@ -15,7 +15,16 @@
 </p>
 
 <p align="center">
-  🌐 <b>Live site:</b> <a href="https://civiclens-sotonship2026.onrender.com">civiclens-sotonship2026.onrender.com</a> · 🎬 <b>Demo video:</b> on our team page · 🛠️ <a href="#️-run-it-yourself">Run it yourself</a>
+  🌐 <b>Live site:</b> <a href="https://civiclens-sotonship2026.onrender.com">civiclens-sotonship2026.onrender.com</a> · 🎬 <b>Demo video:</b> <a href="https://youtu.be/139KMawz2Dw">youtu.be/139KMawz2Dw</a> · 🛠️ <a href="#️-run-it-yourself">Run it yourself</a>
+</p>
+
+## 🎬 Demo video
+
+<p align="center">
+  <a href="https://youtu.be/139KMawz2Dw" title="Watch the CivicLens demo on YouTube">
+    <img src="https://img.youtube.com/vi/139KMawz2Dw/hqdefault.jpg" alt="CivicLens demo video: click to play on YouTube" width="80%">
+  </a>
+  <br><sub>▶️ Click to play the demo on YouTube</sub>
 </p>
 
 | 🧠 Understands any idea | 🗺️ Scores every street | 💬 Explains with evidence |
@@ -29,6 +38,7 @@
 <details open>
 <summary><b>📑 Contents</b> (click to collapse)</summary>
 
+- [🎬 Demo video](#-demo-video)
 - [📖 The story](#-the-story)
 - [🎯 The problem](#-the-problem)
 - [🧭 Judges: a 2-minute tour](#-judges-a-2-minute-tour)
