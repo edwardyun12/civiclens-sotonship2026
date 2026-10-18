@@ -327,3 +327,32 @@ details.brief summary { cursor: pointer; font: 700 13px Manrope; color: #3c544c;
 .site-pin .pulse { position: absolute; left: 50%; bottom: -6px; width: 26px; height: 10px; margin-left: -13px; border-radius: 50%; background: var(--pin); opacity: .5; animation: pin-pulse 1.8s ease-out infinite }
 @keyframes pin-pulse { from { transform: scale(.6); opacity: .6 } to { transform: scale(2.4); opacity: 0 } }
 @media (prefers-reduced-motion: reduce) { .site-pin .pulse { animation: none } .site-pin { transition: none } }
+
+/* business markers (simulator) */
+.biz-dot-wrap { background: none; border: 0 }
+.biz-dot { display: block; width: 100%; height: 100%; border-radius: 50%; box-sizing: border-box; transition: transform .15s ease, box-shadow .15s ease }
+.biz-dot.comp { background: radial-gradient(circle at 50% 50%, #fff 0 22%, #f0544f 24%); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(120, 20, 20, .35), 0 0 0 3px rgba(240, 84, 79, .18) }
+.biz-dot.rel { background: #8a9bb0; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(6, 43, 37, .3); opacity: .9 }
+.biz-dot-wrap:hover .biz-dot { transform: scale(1.45); box-shadow: 0 4px 12px rgba(6, 43, 37, .35), 0 0 0 4px rgba(255, 255, 255, .6) }
+.biz-dot.key-dot { display: inline-block; width: 12px !important; height: 12px !important; transform: none !important }
+@media (prefers-reduced-motion: reduce) { .biz-dot { transition: none } }
+
+/* hover card used by every map dot */
+.leaflet-tooltip.biz-tip { padding: 0; border: 0; border-radius: 12px; background: #fff; box-shadow: 0 10px 28px rgba(6, 43, 37, .22), 0 0 0 1px rgba(6, 43, 37, .06); white-space: normal }
+.leaflet-tooltip.biz-tip:before { border-top-color: #fff }
+.biz-card { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px 11px; min-width: 170px; max-width: 250px; font-family: 'DM Sans', system-ui, sans-serif }
+.biz-card b { font: 800 14px/1.25 Manrope, system-ui, sans-serif; color: #062b25 }
+.biz-card .biz-type { font-size: 12.5px; color: #3c544c; line-height: 1.35 }
+.biz-card .biz-meta { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: #6b7f78; margin-top: 3px; white-space: nowrap }
+.biz-card .biz-meta.warn { color: #a5641a }
+.biz-chip { --chip: #2f7a4f; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--chip) 14%, #fff); color: color-mix(in srgb, var(--chip) 80%, #000); font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap }
+.biz-chip:before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--chip) }
+.biz-chip.comp { --chip: #f0544f } .biz-chip.rel { --chip: #8a9bb0 }
+.biz-chip.good { --chip: #2f7a4f } .biz-chip.ok { --chip: #6aa516 } .biz-chip.warn { --chip: #d38b1c } .biz-chip.bad { --chip: #c0392b }
+.nowrap { white-space: nowrap }
+
+/* figures never split across lines */
+.facts-grid b, .factor b, .pill, .site-nav { white-space: nowrap; font-variant-numeric: tabular-nums }
+.facts-grid span em { display: block; font-style: normal; margin-top: 2px; white-space: nowrap }
+.facts-grid span em b { font: 700 12px 'DM Sans', system-ui, sans-serif; color: var(--deep) }

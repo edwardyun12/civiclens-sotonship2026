@@ -16,6 +16,22 @@ const VIEWS = [['popular', 'Popular', Sparkles], ['heat', 'Heatmap', Flame], ['p
 
 // leading key per ward: by default the detailed type; keyOf = sector when no sector is chosen on the Popular view.
 // Most common, or (lq) the key furthest above its city-wide share with at least 3 places.
+// hover card for a place dot (built on hover, so thousands of dots stay light)
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+function hoverPlace(e, p, on) {
+  const m = e.target
+  if (!on) { m.setRadius(m.options.baseRadius ?? 4).setStyle({ weight: 1 }); m.closeTooltip(); return }
+  if (m.options.baseRadius == null) m.options.baseRadius = m.getRadius()
+  m.setRadius(m.options.baseRadius + 3).setStyle({ weight: 2 })
+  if (!m.getTooltip()) {
+    const c = sectorColor(p.grp), type = specOf(p)
+    m.bindTooltip(`<div class="biz-card"><span class="biz-chip" style="--chip:${c}">${esc(p.grp || 'Other')}</span><b>${esc(p.name || 'Unnamed place')}</b>`
+      + `${type ? `<span class="biz-type">${esc(type)}</span>` : ''}${p.ward ? `<span class="biz-meta">${esc(p.ward)}</span>` : ''}`
+      + `${p.ro ? '<span class="biz-meta warn">May have closed</span>' : ''}</div>`, { className: 'biz-tip', direction: 'top', offset: [0, -6] })
+  }
+  m.openTooltip()
+}
+
 function popular(rows, lq, keyOf = specOf, colorOf = null) {
   const by = {}, city = {}; let N = 0
   for (const p of rows) { if (!p.ward) continue; const b = (by[p.ward] ||= { n: 0, top: {} }); b.n++; const k = keyOf(p); b.top[k] = (b.top[k] || 0) + 1; city[k] = (city[k] || 0) + 1; N++ }
@@ -146,7 +162,7 @@ export default function PlacesView() {
       {view === 'people' && <HeatLayer points={people.points} radiusM={300} colors={PEOPLE_RAMP} />}
       {view === 'points' && shown.slice(0, 20000).map(p => <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={place?.id === p.id ? 8 : 4}
         pathOptions={{ color: '#fff', weight: 1, fillColor: sectorColor(p.grp), fillOpacity: p.ro ? 0.45 : 0.9 }}
-        eventHandlers={{ click: () => setPlace(p) }} />)}
+        eventHandlers={{ click: () => setPlace(p), mouseover: e => hoverPlace(e, p, true), mouseout: e => hoverPlace(e, p, false) }} />)}
       {view === 'popular' && !focus && Object.entries(pop.win).map(([w, b]) => { const oa = wardCentre(city, w); return oa && <CircleMarker key={'m' + w} center={oa} radius={7} interactive={false}
         pathOptions={{ color: '#fff', weight: 2.5, fillColor: pop.color[b.k], fillOpacity: ward && ward !== w ? 0.35 : 1 }}>
         <Tooltip permanent direction="bottom" offset={[0, 4]} className="ward-label"><b>{w}</b></Tooltip></CircleMarker> })}

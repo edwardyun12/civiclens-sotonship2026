@@ -18,11 +18,13 @@ const SimEngine = window.SimEngine
 const QUICK = ['Café', 'Coffee shop', 'Bubble tea', 'Barber', 'Day nursery or childcare', 'Pharmacy', 'Gym or fitness centre', 'Takeaway']
 const SCOPES = [['city', 'Whole Southampton', MapIcon], ['area', 'Choose an area', Search], ['map', 'Pick on map', Crosshair]]
 const TONE = { good: '#2f7a4f', ok: '#7bbf1f', warn: '#d38b1c', bad: '#c0392b' }
-const COMPETITOR = '#e8352a', RELATED = '#2f7fd8'
-// dots grow on hover so they are easy to find and point at
-const HOVER = { mouseover: e => e.target.setStyle({ weight: 3 }).setRadius(e.target.getRadius() + 2.5), mouseout: e => e.target.setStyle({ weight: e.target.options.fillColor === COMPETITOR ? 1.8 : 1.5 }).setRadius(e.target.getRadius() - 2.5) }
+const COMPETITOR = '#f0544f', RELATED = '#8a9bb0'
+// business markers: coral ring for competitors, small soft dot for related businesses; CSS makes them grow on hover
+const bizIcons = {}
+const bizIcon = kind => (bizIcons[kind] ||= L.divIcon({ className: 'biz-dot-wrap', iconSize: kind === 'comp' ? [18, 18] : [12, 12],
+  tooltipAnchor: [0, kind === 'comp' ? -9 : -6], html: `<span class="biz-dot ${kind}"></span>` }))
+const distText = m => (m < 1000 ? `${Math.round(m / 10) * 10}\u00a0m` : `${(m / 1000).toFixed(1)}\u00a0km`)
 
-// key details only: name, competitor or related, what it is, how far from the selected site
 // teardrop map pin coloured by feasibility, with the rank (or an icon) inside; the open site is larger with a pulse
 const pinIcons = new Map()
 function pinIcon(label, color, on) {
@@ -37,12 +39,14 @@ function pinIcon(label, color, on) {
   return pinIcons.get(key)
 }
 
+// hover card, key details only: competitor or related, name, what it is, walk from the selected site
 function PlaceTip({ p, kind, site }) {
-  const d = site ? Math.round(metres(site.lat, site.lon, p.lat, p.lon)) : null
-  return <div>
-    <span className="tip-kind" style={{ color: kind === 'Competitor' ? COMPETITOR : RELATED }}>{kind}</span>
+  const comp = kind === 'Competitor', d = site ? metres(site.lat, site.lon, p.lat, p.lon) : null
+  return <div className="biz-card">
+    <span className={`biz-chip ${comp ? 'comp' : 'rel'}`}>{comp ? 'Competitor' : 'Related business'}</span>
     <b>{p.name || 'Unnamed business'}</b>
-    <span>{p.spec || 'Type not known'}{d != null ? ` · ${d < 1000 ? `${d} m` : `${(d / 1000).toFixed(1)} km`} away` : ''}</span>
+    <span className="biz-type">{p.spec || 'Type not known'}</span>
+    {d != null && <span className="biz-meta"><Footprints size={12} /> {distText(d)} from your site</span>}
   </div>
 }
 
@@ -148,15 +152,15 @@ export default function SimulatorView() {
         pathOptions={{ stroke: false, fillColor: '#3d78b8', fillOpacity: 0.35, fillRule: 'evenodd' }} />)}
       {scope === 'area' && area && outlines[area] && <Polygon positions={outlines[area].map(r => r.map(([x, y]) => [y, x]))} interactive={false}
         pathOptions={{ color: '#062b25', weight: 3, fillColor: '#d7ff3f', fillOpacity: 0.06 }} />}
-      {ctx && ctx.related.map((p, i) => <CircleMarker key={'r' + i} center={[p.lat, p.lon]} radius={5.5} eventHandlers={HOVER}
-        pathOptions={{ color: '#fff', weight: 1.5, fillColor: RELATED, fillOpacity: 0.95 }}><Tooltip direction="top" offset={[0, -6]} className="place-tip"><PlaceTip p={p} kind="Related business" site={site} /></Tooltip></CircleMarker>)}
-      {ctx && ctx.direct.map((p, i) => <CircleMarker key={'d' + i} center={[p.lat, p.lon]} radius={6.5} eventHandlers={HOVER}
-        pathOptions={{ color: '#fff', weight: 1.8, fillColor: COMPETITOR, fillOpacity: 1 }}><Tooltip direction="top" offset={[0, -7]} className="place-tip"><PlaceTip p={p} kind="Competitor" site={site} /></Tooltip></CircleMarker>)}
+      {ctx && ctx.related.map((p, i) => <Marker key={'r' + i} position={[p.lat, p.lon]} icon={bizIcon('rel')} zIndexOffset={-200}>
+        <Tooltip direction="top" className="biz-tip"><PlaceTip p={p} kind="Related business" site={site} /></Tooltip></Marker>)}
+      {ctx && ctx.direct.map((p, i) => <Marker key={'d' + i} position={[p.lat, p.lon]} icon={bizIcon('comp')} zIndexOffset={0}>
+        <Tooltip direction="top" className="biz-tip"><PlaceTip p={p} kind="Competitor" site={site} /></Tooltip></Marker>)}
       {site && <Circle center={showSite} radius={radius} interactive={false} pathOptions={{ color: '#062b25', weight: 2, dashArray: '6 6', fillColor: '#d7ff3f', fillOpacity: 0.1 }} />}
       {scope !== 'map' && picks.map((p, i) => { const on = site === p
         return <Marker key={'p' + i + on} position={[p.lat, p.lon]} icon={pinIcon(i + 1, TONE[verdict(p.score)[0]], on)} zIndexOffset={on ? 1000 : 500 - i}
           eventHandlers={{ click: () => choosePick(i) }}>
-          <Tooltip direction="top" className="place-tip"><div><b>{i + 1}. {p.ward}</b><span>{verdict(p.score)[1]} · {p.score}/100</span></div></Tooltip></Marker> })}
+          <Tooltip direction="top" className="biz-tip"><div className="biz-card"><span className={`biz-chip ${verdict(p.score)[0]}`}>Suggested site {i + 1}</span><b>{p.ward}</b><span className="biz-type">{verdict(p.score)[1]} · <span className="nowrap">{p.score}/100</span></span></div></Tooltip></Marker> })}
       {scope === 'map' && site && <Marker position={showSite} icon={pinIcon('★', TONE[verdict(site.score)[0]], true)} zIndexOffset={1000}>
         <Tooltip permanent direction="top" className="site-label">Your site</Tooltip></Marker>}
     </MapContainer>
@@ -204,8 +208,8 @@ export default function SimulatorView() {
 
     <div className="legend tool-legend">
       <span className="key"><i style={{ background: TONE.good, borderRadius: '50% 50% 50% 0', transform: 'rotate(-45deg)' }} />Suggested site (colour = feasibility)</span>
-      <span className="key"><i style={{ background: COMPETITOR, borderRadius: '50%' }} />Competitor</span>
-      <span className="key"><i style={{ background: RELATED, borderRadius: '50%' }} />Related business</span>
+      <span className="key"><i className="biz-dot comp key-dot" />Competitor</span>
+      <span className="key"><i className="biz-dot rel key-dot" />Related business</span>
       {flood && <span className="key"><i style={{ background: '#3d78b8' }} />Flood zone 3</span>}
     </div>
   </div>
@@ -216,7 +220,7 @@ const catText = c => ({ restaurant_cafe: 'restaurants and cafés', takeaway: 'ta
 
 function Factor({ label, value, hint }) {
   const tone = value >= 65 ? 'good' : value >= 45 ? 'ok' : value >= 30 ? 'warn' : 'bad'
-  return <div className={`factor ${tone}`}><div><span>{label}</span><b>{value}</b></div><span className="track"><i style={{ width: `${Math.max(3, value)}%` }} /></span><small>{hint}</small></div>
+  return <div className={`factor ${tone}`}><div><span>{label}</span><b>{value}</b></div><span className="track"><i style={{ width: `${Math.max(3, value)}%` }} /></span><small>{String(hint).replace(/(\d) (?=(m|min)\b)/g, '$1\u00a0')}</small></div>
 }
 
 function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }) {
@@ -241,9 +245,9 @@ function SiteResult({ ctx, site: s, brief, engine, target, radius, nav, onSite }
 
     <h3><TrendingUp size={14} /> Market and trends</h3>
     <div className="facts-grid">
-      <div><Users size={14} /><b>{perComp ? fmt(Math.round(perComp)) : '–'}</b><span>customers per existing {target.label.toLowerCase()} here{ctx.cityPerCompetitor ? ` · city ${fmt(Math.round(ctx.cityPerCompetitor))}` : ''}</span></div>
+      <div><Users size={14} /><b>{perComp ? fmt(Math.round(perComp)) : '–'}</b><span>customers per existing {target.label.toLowerCase()} here{ctx.cityPerCompetitor ? <em>City average <b>{fmt(Math.round(ctx.cityPerCompetitor))}</b></em> : null}</span></div>
       <div><Footprints size={14} /><b>{s.nearest != null ? `${fmt(Math.round(s.nearest))} m` : '–'}</b><span>to the nearest competitor</span></div>
-      <div><TrendingUp size={14} /><b>{s.growth >= 0 ? '+' : ''}{s.growth.toFixed(1)}%</b><span>residents since 2021{s.u5Growth != null ? ` · under-5s ${s.u5Growth >= 0 ? '+' : ''}${s.u5Growth.toFixed(1)}%` : ''}</span></div>
+      <div><TrendingUp size={14} /><b>{s.growth >= 0 ? '+' : ''}{s.growth.toFixed(1)}%</b><span>residents since 2021{s.u5Growth != null ? <em>Under-5s <b>{s.u5Growth >= 0 ? '+' : ''}{s.u5Growth.toFixed(1)}%</b></em> : null}</span></div>
       <div><Droplets size={14} /><b>{s.flood ? 'Yes' : 'No'}</b><span>in flood zone 3</span></div>
     </div>
     {s.near.length > 0 && <div className="near-list"><span>Nearest competitors</span>{s.near.slice(0, 4).map((p, i) => <div key={i}><span>{p.name || 'Unnamed'}</span><b>{fmt(Math.round(p.d))} m</b></div>)}</div>}
