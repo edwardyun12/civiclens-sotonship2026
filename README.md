@@ -22,9 +22,9 @@
 
 <p align="center">
   <a href="https://youtu.be/139KMawz2Dw" title="Watch the CivicLens demo on YouTube">
-    <img src="https://img.youtube.com/vi/139KMawz2Dw/hqdefault.jpg" alt="CivicLens demo video: click to play on YouTube" width="80%">
+    <img src="docs/images/demo-preview.gif" alt="CivicLens demo preview: typing a business idea and seeing ranked sites across Southampton. Click to watch the full demo" width="90%">
   </a>
-  <br><sub>▶️ Click to play the demo on YouTube</sub>
+  <br><b>▶️ <a href="https://youtu.be/139KMawz2Dw">Watch the full 2:42 demo</a></b> <sub>(preview above plays automatically; click it for the full video with sound)</sub>
 </p>
 
 | 🧠 Understands any idea | 🗺️ Scores every street | 💬 Explains with evidence |
