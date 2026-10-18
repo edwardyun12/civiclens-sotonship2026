@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import math
 
-from sotonship_rag.config import EMBED_MODEL
-from sotonship_rag.ollama import request
+from rag.config import EMBED_MODEL
+from rag.ollama import request
 
 
 def embed(texts: list[str]) -> list[list[float]]:

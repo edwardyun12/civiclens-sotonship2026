@@ -109,7 +109,7 @@ and re-run `pytest` and `tests.run_evaluation` after swapping data (counts and c
 ```bat
 git pull
 .venv\Scripts\activate
-python -m src.build_places --ch-key YOUR_COMPANIES_HOUSE_KEY
+python run.py places --ch-key YOUR_COMPANIES_HOUSE_KEY
 ```
 
 - Free Companies House key: register at developer.company-information.service.gov.uk, create an application,
@@ -145,7 +145,7 @@ afterwards, because coverage numbers will change.
 - **Excluded, with the reason, into `excluded_places.csv`:** addresses not in Southampton (e.g. Southampton Row,
   London), dormant or non-trading companies, companies registered outside the city boundary, and companies whose
   postcode can't be located. Nothing is silently dropped.
-- **Scored:** every remaining flag lowers the 0-100 confidence (`PENALTY` in `src/build_places.py`).
+- **Scored:** every remaining flag lowers the 0-100 confidence (`PENALTY` in `pipeline/places/`).
 - **Fixed by the PC run:** pins from the 2017 postcode file are replaced by live postcodes.io lookups, and
   `--ch-key` pulls every active Southampton company live from Companies House (the website download stops at 5,000).
 

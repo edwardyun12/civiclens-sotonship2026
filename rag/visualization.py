@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import streamlit.components.v1 as components
 
-from sotonship_rag.config import INDEX_FILE, PROJECT_ROOT
+from rag.config import INDEX_FILE, PROJECT_ROOT
 
 
 @lru_cache(maxsize=4)

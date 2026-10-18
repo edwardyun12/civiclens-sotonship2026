@@ -5,8 +5,8 @@ from __future__ import annotations
 import argparse
 import sys
 
-from sotonship_rag.generator import answer
-from sotonship_rag.indexer import build_index
+from rag.generator import answer
+from rag.indexer import build_index
 
 
 def main() -> None:

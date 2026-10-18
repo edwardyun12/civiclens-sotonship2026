@@ -1,7 +1,7 @@
 {
   "dataset": "places",
   "population": "ONS mid-2024 estimates on Census 2021 Output Areas",
-  "computed_with": "python -m tests.run_evaluation (src/engine.py)",
+  "computed_with": "python run.py eval (simulator/engine.py)",
   "baseline_cases": 10,
   "baseline_differs": 6,
   "people_gained_vs_baseline_total": 9195,

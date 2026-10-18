@@ -12,4 +12,4 @@ Open either file in a browser (double-click). No install needed; data is built i
 The opportunity finder is a first screen, not a verdict: it uses residents within 800 m, existing same-type
 places within 800 m and shops/services within 400 m (a footfall stand-in), with weights we chose.
 
-Rebuild both pages after the data changes: `python viewer/build_viewers.py` (sources in `viewer/src/`).
+Rebuild both pages after the data changes: `python run.py viewers` (sources in `viewer/src/`).

@@ -51,21 +51,35 @@ Claude. So:
 - **Never** put a GitHub token in chat, in this file or anywhere in the repo (the repo is public).
 - GitHub shows the commit **author** (TYK3) on commits; the pusher only appears in the repo's Activity log.
 
+## Update (Sun 18 Oct, ~03:00): mid-2024 population, People map, reorganised repo
+
+- Residents are now ONS mid-2024 small area estimates (259,424; Census 2021 was 248,982), spread over Output Areas
+  by their Census shares (`pipeline/population.py`). The 17 Oct baseline still uses Census 2021, so published
+  numbers reproduce.
+- New **People** map view (where residents live) in the React Places page and `viewer/places_register.html`.
+- Code is organised by feature: `simulator/`, `pipeline/` (`city_data.py`, `population.py`, `places/` split into
+  6 modules), `rag/`, `frontend/`, `viewer/`, `tests/`, `evaluation/`. Every command: `python run.py <command>`.
+  "Where to change what" table: `docs/CODEBASE.md`.
+- If `src/front-end/` still exists, it couldn't be moved while `npm run dev` was running: stop the dev server,
+  then `git mv src/front-end frontend`. Everything already works with either location.
+- After the `rag` rename, reinstall once: `pip install -e .` (the `sotonship-rag` / `sotonship-api` commands
+  stay the same).
+
 ## Status (Sat 17 Oct, ~18:50): core works end to end, Gate 2 passed early
 
-Run: `pip install -r requirements.txt && streamlit run src/app.py`. Tests: `pytest -q` → **20/20 pass**.
-Evidence: `python -m tests.run_evaluation`. Full docs: **`docs/SIMULATOR.md`** (sources, method, results, limits).
+Run: `pip install -r requirements.txt && python run.py app`. Tests: `python run.py test` → **42/42 pass** (18 Oct, after the reorganisation).
+Evidence: `python run.py eval`. Full docs: **`docs/SIMULATOR.md`** (sources, method, results, limits).
 
 ### Files
 | File | What it is |
 |---|---|
-| `src/fetch_data.py` | Downloads and cleans all data → `data/processed/`. `--skip-osm`, `--osm-file PATH` options |
-| `src/config.py` | Categories, demand column, jobs assumptions, radii, score weights, thresholds |
-| `src/engine.py` | Deterministic engine (no AI): `load_city`, `evaluate_site`, `do_nothing`, `sensitivity`, `optimise`, `brute_force_best`, `baseline_rank`, `ward_centroid`, `EngineError` |
-| `src/brief.py` | `build_payload`, `audit` (numbers check), `refusal`, `template`, `generate` (LLM + 1 retry + fallback + cost log to `logs/briefs.jsonl`), `export_markdown` |
-| `src/app.py` | Streamlit app: Mode "Test a site" (map click / postcode / ward, compare up to 2 uses + do nothing, tabs: compare, who benefits, uncertainty, score inputs, brief, export) and Mode "Find best sites" (greedy top-3 map + table + brief). Sidebar: use, radius 600-1000, housing growth, demo mode |
+| `pipeline/city_data.py` | Downloads and cleans all data → `data/processed/`. `--skip-osm`, `--osm-file PATH` options |
+| `simulator/config.py` | Categories, demand column, jobs assumptions, radii, score weights, thresholds |
+| `simulator/engine.py` | Deterministic engine (no AI): `load_city`, `evaluate_site`, `do_nothing`, `sensitivity`, `optimise`, `brute_force_best`, `baseline_rank`, `ward_centroid`, `EngineError` |
+| `simulator/brief.py` | `build_payload`, `audit` (numbers check), `refusal`, `template`, `generate` (LLM + 1 retry + fallback + cost log to `logs/briefs.jsonl`), `export_markdown` |
+| `simulator/app.py` | Streamlit app: Mode "Test a site" (map click / postcode / ward, compare up to 2 uses + do nothing, tabs: compare, who benefits, uncertainty, score inputs, brief, export) and Mode "Find best sites" (greedy top-3 map + table + brief). Sidebar: use, radius 600-1000, housing growth, demo mode |
 | `tests/test_engine.py` | 20 tests incl. hand-checked toy example, outside-city, empty input, flood, refusal, audit injection, optimiser = exhaustive search |
-| `tests/run_evaluation.py` | Baseline comparison → `tests/baseline_results.csv`, `tests/evaluation_summary.json` |
+| `evaluation/run_evaluation.py` | Baseline comparison → `evaluation/results/baseline_results.csv`, `evaluation/results/evaluation_summary.json` |
 | `data/processed/` | `oa.csv` (792 Output Areas: lat/lon, pop, pop_0_4, ward, IMD rank/decile/quintile), `facilities.csv`, `lsoa.geojson`, `flood_zone3.geojson` |
 | `data/raw/SOURCES.json` | URL, licence, download time, row count per dataset |
 
@@ -85,24 +99,24 @@ Evidence: `python -m tests.run_evaluation`. Full docs: **`docs/SIMULATOR.md`** (
 
 ## Not done yet (priority order)
 
-**Sat 17 Oct ~22:00 update:** places database built (`src/build_places.py`, docs/DATA_PLAN.md): FSA, OSM, NHS ODS,
+**Sat 17 Oct ~22:00 update:** places database built (`pipeline/places/`, docs/DATA_PLAN.md): FSA, OSM, NHS ODS,
 Ofsted, Companies House (website CSV or API) merged into one `places` table with industry groups and flags;
 sample in `data/db/sample/` (OSM + NHS + 5,000-row CH download). The simulator (engine, app sidebar, browser
 playground) now reads `data/processed/facilities_places.csv` by default; `SIM_DATASET=baseline` = 17 Oct numbers.
-TODO on the PC: `python -m src.build_places --ch-key KEY --fsa-file FHRS877en-GB.xml`, then `pytest -q` and
-`python -m tests.run_evaluation` (writes the *_places files with Python), then commit.
+TODO on the PC: `python run.py places --ch-key KEY --fsa-file FHRS877en-GB.xml`, then `pytest -q` and
+`python run.py eval` (writes the *_places files with Python), then commit.
 
 **Sat 17 Oct ~20:30 update:** the cloud workspace could not install Python packages or reach gov.uk,
 postcodes.io or Overpass this session, so nothing could be run here. Added: business section in
 `docs/SIMULATOR.md` (item 4 done, prices are hypotheses), `docs/SUBMISSION.md` (150-word summary, checklist,
-PC run-book for items 1-2) and `tests/run_live_briefs.py` (untested: run it on the PC first).
+PC run-book for items 1-2) and `evaluation/run_live_briefs.py` (untested: run it on the PC first).
 
 1. **Live AI brief test.** No `ANTHROPIC_API_KEY` in the cloud workspace yet. Set the key, run 10 briefs
    across scenarios, record the audit pass rate and real cost from `logs/briefs.jsonl`, and add them to
    `docs/SIMULATOR.md` (there's a TODO line). Running live also fills the **demo-mode cache**
    (`data/cache/demo/*.json`). Commit those 3 rehearsed scenarios (cafe city centre; nursery optimiser top 3;
    library Bitterne Park 50.9330,-1.3700 vs cafe).
-2. **Ofsted childcare register** for nurseries (OSM's 40 is likely an undercount): add to `fetch_data.py`
+2. **Ofsted childcare register** for nurseries (OSM's 40 is likely an undercount): add to `pipeline/places/sources.py`
    like `fetch_nhs`, geocode postcodes, `merge_registers`. Check the licence.
 3. **Real-user quote** (C1): email data.observatory@southampton.gov.uk and ask mentors. Never invent a quote.
 4. **Business numbers** (C4): who pays (council planning/public health teams, nursery chains, pharmacy
@@ -121,9 +135,9 @@ counted. No capacity data (GP list sizes). Weights and jobs are unvalidated assu
 ## Gotchas
 - `use_container_width` is deprecated in Streamlit 1.66: use `width="stretch"` (except `st_folium`, which still takes `use_container_width`).
 - CartoDB tiles now need an API key, so the app uses `tiles="OpenStreetMap"`.
-- Folium GeoJson needs Feature-wrapped geometry, and the flood layer must be MultiPolygon (`polygonal()` in fetch_data).
+- Folium GeoJson needs Feature-wrapped geometry, and the flood layer must be MultiPolygon (`polygonal()` in `pipeline/city_data.py`).
 - Don't `pkill -f streamlit` from a shell whose command line contains "streamlit": it kills itself.
-- Headless UI test: `streamlit.testing.v1.AppTest.from_file("src/app.py")`. Set `at.session_state["site"]=(lat, lon)`.
+- Headless UI test: `streamlit.testing.v1.AppTest.from_file("simulator/app.py")`. Set `at.session_state["site"]=(lat, lon)`.
 
 ## Video plan (3:00)
 0:00-0:20 problem + evidence + quote · 0:20-1:40 live demo: café in centre = 0 change → "Find best sites"

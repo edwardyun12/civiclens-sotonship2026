@@ -7,12 +7,12 @@ import time
 
 import streamlit as st
 
-from sotonship_rag.citations import linkify_citations
-from sotonship_rag.config import CHAT_MODEL, EMBED_MODEL, INDEX_FILE, PROJECT_ROOT
-from sotonship_rag.generator import prepare_answer, stream_generated_answer
-from sotonship_rag.indexer import build_index
-from sotonship_rag.routing import direct_response
-from sotonship_rag.visualization import render_evidence_universe
+from rag.citations import linkify_citations
+from rag.config import CHAT_MODEL, EMBED_MODEL, INDEX_FILE, PROJECT_ROOT
+from rag.generator import prepare_answer, stream_generated_answer
+from rag.indexer import build_index
+from rag.routing import direct_response
+from rag.visualization import render_evidence_universe
 
 
 st.set_page_config(

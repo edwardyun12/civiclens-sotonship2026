@@ -6,7 +6,7 @@ import json
 import urllib.error
 import urllib.request
 
-from sotonship_rag.config import OLLAMA_URL
+from rag.config import OLLAMA_URL
 
 
 def request(path: str, payload: dict) -> dict:

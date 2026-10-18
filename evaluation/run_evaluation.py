@@ -1,20 +1,18 @@
-"""Evidence for the README and pitch (T1, T2, T5). Run: python -m tests.run_evaluation
+"""Evidence for the README and pitch (T1, T2, T5). Run: python run.py eval   (SIM_DATASET=baseline for the 17 Oct numbers)
 
 1. Baseline comparison: for each use, compare 3 candidate wards. Our pick = most residents newly
    covered within a 10 minute walk. Baseline pick = fewest competitors within 400 m (the spreadsheet answer).
 2. Optimiser timing and coverage gains per use.
-Writes tests/baseline_results.csv and tests/evaluation_summary.json.
+Writes evaluation/results/baseline_results[_places].csv and evaluation_summary[_places].json.
 """
 import json
 import time
-from pathlib import Path
 
 import pandas as pd
 
-from src import config as C
-from src import engine as E
-
-OUT = Path(__file__).parent
+from simulator import config as C
+from simulator import engine as E
+from simulator.paths import EVAL_RESULTS as OUT
 
 # Candidate wards per use: a city-centre ward, a suburban ward and an outer ward (chosen before running).
 CASES = [

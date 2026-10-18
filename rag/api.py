@@ -11,8 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from sotonship_rag.generator import prepare_answer, stream_generated_answer
-from sotonship_rag.routing import direct_response
+from rag.generator import prepare_answer, stream_generated_answer
+from rag.routing import direct_response
 
 
 class ChatMessage(BaseModel):
@@ -82,7 +82,7 @@ def chat(payload: ChatRequest) -> StreamingResponse:
 
 
 def main() -> None:
-    uvicorn.run("sotonship_rag.api:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("rag.api:app", host="127.0.0.1", port=8000, reload=False)
 
 
 if __name__ == "__main__":

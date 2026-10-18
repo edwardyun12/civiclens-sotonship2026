@@ -20,9 +20,7 @@ from shapely.ops import unary_union
 
 from . import config as C
 
-ROOT = Path(__file__).resolve().parents[1]
-PROC = ROOT / "data" / "processed"
-CACHE = ROOT / "data" / "cache"
+from simulator.paths import CACHE, PROC, RAW
 _TO_BNG = Transformer.from_crs(4326, 27700, always_xy=True)
 _TO_WGS = Transformer.from_crs(27700, 4326, always_xy=True)
 
@@ -99,7 +97,7 @@ class City:
         return id(self)
 
 
-# Where existing sites come from. "places" = the merged places database (src/build_places.py), the default when
+# Where existing sites come from. "places" = the merged places database (pipeline/places), the default when
 # it exists; "baseline" = the 17 Oct 2026 OSM + NHS file the published test numbers were computed on.
 DATASETS = {"places": "facilities_places.csv", "baseline": "facilities.csv"}
 
@@ -117,7 +115,7 @@ def dataset_file(proc: Path, dataset: str | None) -> tuple[str, Path]:
 def load_city(proc: Path = PROC, dataset: str | None = None) -> City:
     oa = pd.read_csv(proc / "oa.csv")
     dataset, fac_file = dataset_file(proc, dataset)
-    # Demand is the ONS mid-2024 estimate spread over OAs (src/fetch_data.py apply_sape). The 17 Oct baseline
+    # Demand is the ONS mid-2024 estimate spread over OAs (pipeline/population.py apply_sape). The 17 Oct baseline
     # keeps the Census 2021 counts its published test numbers were computed on.
     if dataset == "baseline" and "pop_2021" in oa:
         oa["pop"], oa["pop_0_4"], oa["pop_year"] = oa["pop_2021"], oa["pop_0_4_2021"], 2021
@@ -129,7 +127,7 @@ def load_city(proc: Path = PROC, dataset: str | None = None) -> City:
     wgs = unary_union([shape(f["geometry"]) for f in gj["features"]]).buffer(0)
     from shapely.ops import transform
     bng = transform(lambda x, y, z=None: _TO_BNG.transform(x, y), wgs)
-    src_f = ROOT / "data" / "raw" / "SOURCES.json"
+    src_f = RAW / "SOURCES.json"
     sources = json.loads(src_f.read_text()) if src_f.exists() else {}
     flood = None
     ff = proc / "flood_zone3.geojson"

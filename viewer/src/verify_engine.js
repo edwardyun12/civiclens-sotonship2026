@@ -1,4 +1,4 @@
-// Compare the JS port with the Python engine's saved results (tests/evaluation_summary.json, baseline_results.csv).
+// Compare the JS port with the Python engine's saved results (evaluation/results/evaluation_summary.json, baseline_results.csv).
 const fs = require("fs");
 const path = require("path");
 const repo = process.argv[2];
@@ -11,7 +11,7 @@ const check = (name, got, want) => {
   if (!ok) console.log("FAIL", name, "got", JSON.stringify(got), "want", JSON.stringify(want));
 };
 
-const summ = JSON.parse(fs.readFileSync(path.join(repo, "tests/evaluation_summary.json")));
+const summ = JSON.parse(fs.readFileSync(path.join(repo, "evaluation/results/evaluation_summary.json")));
 let t = Date.now();
 for (const [cat, o] of Object.entries(summ.optimiser)) {
   const p = E.optimise(cat, 3);
@@ -21,7 +21,7 @@ for (const [cat, o] of Object.entries(summ.optimiser)) {
 }
 console.log("optimiser (incl. distance matrix) ms", Date.now() - t);
 
-const rows = fs.readFileSync(path.join(repo, "tests/baseline_results.csv"), "utf8").trim().split("\n").slice(1);
+const rows = fs.readFileSync(path.join(repo, "evaluation/results/baseline_results.csv"), "utf8").trim().split("\n").slice(1);
 for (const line of rows) {
   const c = line.split(",");
   const cat = c[1], wards = c[2].split(" / ");

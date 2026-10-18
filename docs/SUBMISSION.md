@@ -36,26 +36,26 @@ python -m venv .venv && .venv\Scripts\activate
 pip install -r requirements.txt
 set ANTHROPIC_API_KEY=sk-ant-...
 pytest -q
-python -m tests.run_live_briefs
+python run.py live-briefs
 ```
 
 `run_live_briefs` runs 10 scenarios (café centre, library vs café, optimiser top 3 for all 5 uses, three
-ward-centre tests) and saves `tests/live_brief_results.json`: audit pass rate (first try / after retry /
+ward-centre tests) and saves `evaluation/results/live_brief_results.json`: audit pass rate (first try / after retry /
 fallback), mean tokens and real cost per brief. It is new and has not been run yet, so watch the first
 lines of output.
 
-Then fill the demo cache: `streamlit run src/app.py` with **Demo mode off**, and open these three so each
+Then fill the demo cache: `python run.py app` with **Demo mode off**, and open these three so each
 brief is generated live once:
 1. Test a site, Café, click or enter 50.9046, -1.4045 (city centre).
 2. Find best sites, Nursery, top 3, 800 m.
 3. Test a site, Library vs Café at 50.9330, -1.3700 (Bitterne Park).
 
-Commit `tests/live_brief_results.json` and `data/cache/demo/*.json` (never `.env` or the key).
+Commit `evaluation/results/live_brief_results.json` and `data/cache/demo/*.json` (never `.env` or the key).
 
 ## Ofsted childcare register (handover item 2)
 
 Download Ofsted's "Childcare providers and inspections: management information" (latest release) on your
 PC and save the provider-level file into `Downloads\sotonship-data\`. A session with package access can
-then add `--ofsted-file` to `fetch_data.py`, filter to Southampton, geocode postcodes and merge with OSM.
+then add `--ofsted-file` to `pipeline/places`, filter to Southampton, geocode postcodes and merge with OSM.
 Check its licence (expected OGL v3.0) before use. Childminders' home addresses are not published, which is
 fine: we only need group settings.

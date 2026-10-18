@@ -8,8 +8,8 @@ import pandas as pd
 import pytest
 from shapely.geometry import box
 
-from src import brief as B
-from src import engine as E
+from simulator import brief as B
+from simulator import engine as E
 
 CENTRE_CAFE = (50.9046, -1.4045)       # Above Bar / Bargate, dense cafe area
 WINCHESTER = (51.0632, -1.3080)
@@ -197,7 +197,7 @@ def test_18_two_scores_never_merged(city):
 
 # ---------------------------------------------------------------- mid-2024 population update
 def test_sape_scaling_keeps_census_split_and_matches_ons_totals():
-    from src.fetch_data import apply_sape
+    from pipeline.population import apply_sape
     oa = pd.DataFrame({"lsoa": ["L1", "L1", "L2"], "pop": [100., 300., 50.], "pop_0_4": [10., 0., 5.]})
     sape = pd.DataFrame({"lsoa": ["L1", "L2"], "pop_est": [440, 40], "pop_0_4_est": [5, 6]})
     out = apply_sape(oa, sape)

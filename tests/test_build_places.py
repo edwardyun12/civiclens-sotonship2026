@@ -1,7 +1,8 @@
 """Tests for the places database pipeline (offline, synthetic records). Run: pytest -q tests/test_build_places.py"""
 import pandas as pd
 
-from src import build_places as BP
+from pipeline import places as BP
+from pipeline.places import companies as CH  # module-level names the Companies House test patches
 
 POLYS, _ = BP.load_city()
 CENTRE = (50.9046, -1.4045)          # inside the city
@@ -105,16 +106,16 @@ def test_companies_house_match_and_no_guessing():
                                  "company_status": "active", "postcode": "SO14 1AA"}],
             "Unknown Sole Trader": [{"company_number": "07654321", "company_name": "SOMETHING ELSE LIMITED",
                                      "company_status": "active", "postcode": "SO14 1AA"}]}
-    orig = BP.ch_candidates_api, BP.ch_profile, BP.time.sleep
-    BP.ch_candidates_api = lambda name, key: fake[name]
-    BP.ch_profile = lambda num, key: {"company_type": "ltd", "incorporated": "2015-01-01", "sic_codes": "56102",
+    orig = CH.ch_candidates_api, CH.ch_profile, CH.time.sleep
+    CH.ch_candidates_api = lambda name, key: fake[name]
+    CH.ch_profile = lambda num, key: {"company_type": "ltd", "incorporated": "2015-01-01", "sic_codes": "56102",
                                       "accounts_type": "micro-entity", "last_accounts_made_up_to": "2025-03-31",
                                       "registered_postcode": "SO14 1AA"}
-    BP.time.sleep = lambda s: None
+    CH.time.sleep = lambda s: None
     try:
-        out = BP.companies_house(places, "key", None, 10, mode="search").set_index("place_id")
+        out = CH.companies_house(places, "key", None, 10, mode="search").set_index("place_id")
     finally:
-        BP.ch_candidates_api, BP.ch_profile, BP.time.sleep = orig
+        CH.ch_candidates_api, CH.ch_profile, CH.time.sleep = orig
     assert out.loc["P1", "company_number"] == "01234567"
     assert out.loc["P1", "match_confidence"] == 1.0  # exact name, same district, SIC 56 fits a cafe
     assert out.loc["P2", "ch_status"] == "no_match"
@@ -123,15 +124,15 @@ def test_companies_house_match_and_no_guessing():
 def test_companies_house_flags_wrong_industry():
     places = pd.DataFrame([{"place_id": "P1", "name": "Sunshine Nursery", "category": "nursery",
                             "postcode": "SO15 2AA", "n_sources": 1}])
-    orig = BP.ch_candidates_api, BP.ch_profile, BP.time.sleep
-    BP.ch_candidates_api = lambda name, key: [{"company_number": "1", "company_name": "SUNSHINE NURSERY LIMITED",
+    orig = CH.ch_candidates_api, CH.ch_profile, CH.time.sleep
+    CH.ch_candidates_api = lambda name, key: [{"company_number": "1", "company_name": "SUNSHINE NURSERY LIMITED",
                                                "company_status": "active", "postcode": "BH1 1AA"}]
-    BP.ch_profile = lambda num, key: {"sic_codes": "01300", "registered_postcode": "BH1 1AA"}  # plant nursery
-    BP.time.sleep = lambda s: None
+    CH.ch_profile = lambda num, key: {"sic_codes": "01300", "registered_postcode": "BH1 1AA"}  # plant nursery
+    CH.time.sleep = lambda s: None
     try:
-        out = BP.companies_house(places, "key", None, 10, mode="search").iloc[0]
+        out = CH.companies_house(places, "key", None, 10, mode="search").iloc[0]
     finally:
-        BP.ch_candidates_api, BP.ch_profile, BP.time.sleep = orig
+        CH.ch_candidates_api, CH.ch_profile, CH.time.sleep = orig
     assert "COMPANY_SIC_DOESNT_FIT_TYPE" in out["company_flags"]
     assert "COMPANY_REGISTERED_ELSEWHERE" in out["company_flags"]
     assert out["match_confidence"] < 0.6
@@ -157,21 +158,21 @@ def test_advanced_search_splits_windows_and_matches_locally(tmp_path=None):
         hit = [c for c in companies if a <= c["date_of_creation"] <= b]
         return R({"hits": len(hit), "items": hit[:5]})
 
-    orig = BP.requests.get, BP.time.sleep, BP.DB
+    orig = CH.requests.get, CH.time.sleep, CH.DB
     import tempfile, pathlib
-    BP.requests.get, BP.time.sleep = fake_get, (lambda s: None)
-    BP.DB = pathlib.Path(tempfile.mkdtemp())
+    CH.requests.get, CH.time.sleep = fake_get, (lambda s: None)
+    CH.DB = pathlib.Path(tempfile.mkdtemp())
     try:
-        reg = BP.fetch_ch_advanced("key")
+        reg = CH.fetch_ch_advanced("key")
         places = pd.DataFrame([{"place_id": "P1", "name": "Bean There Cafe", "category": "restaurant_cafe",
                                 "postcode": "SO14 7DU", "n_sources": 2}])
-        BP.fetch_ch_advanced = lambda key: reg
-        BP.ch_profile = lambda num, key: {"sic_codes": "56102", "registered_postcode": "SO14 7DU",
+        CH.fetch_ch_advanced = lambda key: reg
+        CH.ch_profile = lambda num, key: {"sic_codes": "56102", "registered_postcode": "SO14 7DU",
                                           "accounts_type": "micro-entity", "last_accounts_made_up_to": "2025-12-31"}
-        out = BP.companies_house(places, "key", None, 10, mode="advanced")
+        out = CH.companies_house(places, "key", None, 10, mode="advanced")
     finally:
-        BP.requests.get, BP.time.sleep, BP.DB = orig
-        import importlib; importlib.reload(BP)
+        CH.requests.get, CH.time.sleep, CH.DB = orig
+        import importlib; importlib.reload(CH)
     assert len(reg) == 13 and set(reg["company_status"]) == {"active"}
     assert out.iloc[0]["company_number"] == "99999999"
 

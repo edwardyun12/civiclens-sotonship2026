@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from sotonship_rag.citations import format_citation
-from sotonship_rag.config import CHAT_MODEL, MAX_OUTPUT_TOKENS
-from sotonship_rag.ollama import stream
-from sotonship_rag.retriever import retrieve
-from sotonship_rag.routing import direct_response
+from rag.citations import format_citation
+from rag.config import CHAT_MODEL, MAX_OUTPUT_TOKENS
+from rag.ollama import stream
+from rag.retriever import retrieve
+from rag.routing import direct_response
 
 
 def build_retrieval_query(question: str, conversation_history: list[dict] | None = None) -> str:

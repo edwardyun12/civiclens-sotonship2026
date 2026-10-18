@@ -1,10 +1,11 @@
 """Rebuild the two browser pages in viewer/ from the templates in viewer/src/ and the current data.
 
-    python viewer/build_viewers.py            # needs: pandas, numpy; node optional (engine check)
+    python run.py viewers                     # needs: pandas, numpy; node optional (engine check)
 
 Inputs: data/processed/{oa.csv, facilities.csv, facilities_places.csv, lsoa.geojson, flood_zone3.geojson},
         data/db/places.csv + source_records.csv + summary.json (falls back to data/db/sample/).
-Outputs: viewer/site_simulator.html, viewer/places_register.html (self-contained, open by double-click).
+Outputs: viewer/site_simulator.html, viewer/places_register.html (self-contained, open by double-click),
+         frontend/public/data/{places,city}.json for the React app.
 """
 import json
 import shutil
@@ -17,10 +18,11 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from src.build_places import specialty_of  # noqa: E402
+from pipeline.places import specialty_of  # noqa: E402
+from simulator.paths import DB as FULL_DB, DB_SAMPLE, FRONTEND, PROC, VIEWER  # noqa: E402
 
-SRC = ROOT / "viewer" / "src"
-DB = ROOT / "data" / "db" if (ROOT / "data" / "db" / "places.csv").exists() else ROOT / "data" / "db" / "sample"
+SRC = VIEWER / "src"
+DB = FULL_DB if (FULL_DB / "places.csv").exists() else DB_SAMPLE
 
 
 def esc(s: str) -> str:
@@ -46,7 +48,7 @@ def places_slim(places: pd.DataFrame) -> dict:
 
 
 def area_data() -> dict:
-    oa = pd.read_csv(ROOT / "data" / "processed" / "oa.csv")
+    oa = pd.read_csv(PROC / "oa.csv")
     return {"oa": {"lat": oa.lat.round(6).tolist(), "lon": oa.lon.round(6).tolist(), "pop": oa["pop"].round().astype(int).tolist(),
                    "ward": oa.ward.tolist(), "q": oa.imd_quintile.astype(int).tolist()},
             "lsoa_ward": oa.groupby("lsoa").ward.agg(lambda s: s.mode().iloc[0]).to_dict(),
@@ -55,9 +57,9 @@ def area_data() -> dict:
 
 def ward_outlines() -> dict:
     """Each ward's outline as closed rings [[lon, lat], ...]: the LSOA edges used once within the ward, chained."""
-    oa = pd.read_csv(ROOT / "data" / "processed" / "oa.csv")
+    oa = pd.read_csv(PROC / "oa.csv")
     lsoa_ward = oa.groupby("lsoa").ward.agg(lambda s: s.mode().iloc[0]).to_dict()
-    gj = json.loads((ROOT / "data" / "processed" / "lsoa.geojson").read_text(encoding="utf-8"))
+    gj = json.loads((PROC / "lsoa.geojson").read_text(encoding="utf-8"))
     segs = {}
     for f in gj["features"]:
         ward = lsoa_ward.get(f["properties"]["LSOA21CD"])
@@ -96,8 +98,8 @@ def ward_outlines() -> dict:
 
 
 def frontend_data(places: pd.DataFrame, city: dict, sources: dict):
-    """Data files for the CivicLens React app (src/front-end/public/data/)."""
-    out = ROOT / "src" / "front-end" / "public" / "data"
+    """Data files for the CivicLens React app (frontend/public/data/)."""
+    out = FRONTEND / "public" / "data"
     out.mkdir(parents=True, exist_ok=True)
     p = places[places["lat"].notna()].copy()
     fl = p["flags"].fillna("")
@@ -135,7 +137,7 @@ def main():
            .replace("__PLACES__", esc(json.dumps(places_slim(places), separators=(",", ":"))))
            .replace("__PSOURCES__", esc(json.dumps(sources)))
            .replace("__ENGINE__", engine))
-    (ROOT / "viewer" / "site_simulator.html").write_text(sim, encoding="utf-8", newline="")
+    (VIEWER / "site_simulator.html").write_text(sim, encoding="utf-8", newline="")
 
     geo = {"lsoa": city_places["lsoa"], "edges": city_places["edges"]}
     reg = ((SRC / "places_register.template.html").read_text(encoding="utf-8")
@@ -144,7 +146,7 @@ def main():
            .replace("__GEO__", esc(json.dumps(geo, separators=(",", ":"))))
            .replace("__SUMMARY__", esc(json.dumps(summary)))
            .replace("__AREA__", esc(json.dumps(area_data(), separators=(",", ":")))))
-    (ROOT / "viewer" / "places_register.html").write_text(reg, encoding="utf-8", newline="")
+    (VIEWER / "places_register.html").write_text(reg, encoding="utf-8", newline="")
     print(f"Built viewer/site_simulator.html ({len(sim):,} bytes) and viewer/places_register.html ({len(reg):,} bytes) from {DB}")
     frontend_data(places, city_places, sources)
 

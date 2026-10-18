@@ -14,17 +14,17 @@ git checkout feature/simulator
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...                     # optional; Windows: set ANTHROPIC_API_KEY=...
-streamlit run src/app.py
+python run.py app
 ```
 
 Processed data is committed, so the app runs from a clean clone with no downloads. Without an API key it
 still works and shows a plain template brief instead of the AI brief. **Demo mode** (sidebar) serves
 briefs cached from earlier live runs and labels them as cached.
 
-Rebuild the data from source: `python -m src.fetch_data`. Overpass (OpenStreetMap) blocks some cloud IPs.
-If it fails, download on a laptop and run `python -m src.fetch_data --osm-file osm_facilities.json`.
+Rebuild the data from source: `python run.py city-data`. Overpass (OpenStreetMap) blocks some cloud IPs.
+If it fails, download on a laptop and run `python run.py city-data --osm-file osm_facilities.json`.
 
-Tests: `pytest -q` (20 tests). Evidence: `python -m tests.run_evaluation`.
+Tests: `python run.py test` (42 tests). Evidence: `python run.py eval`.
 
 ## Data sources
 
@@ -41,14 +41,14 @@ All downloaded 17 Oct 2026. Full list with URLs and row counts: `data/raw/SOURCE
 | Postcode coordinates | postcodes.io (ONS Postcode Directory) | OGL v3.0, OS and Royal Mail © | Geocoding NHS sites; postcode box |
 | Cafés, nurseries/childcare, libraries | OpenStreetMap via Overpass (data as of 17 Oct 2026 17:31 UTC) | ODbL 1.0 © OpenStreetMap contributors | Existing sites |
 | Flood Zone 3 (rivers and sea) | Environment Agency Flood Map for Planning | OGL v3.0 | Constraint flag; optimiser excludes FZ3 |
-| Jobs per facility | **Our assumption table** (`src/config.py`) | n/a | Indicative jobs only |
+| Jobs per facility | **Our assumption table** (`simulator/config.py`) | n/a | Indicative jobs only |
 
 No personal data is used. Facility data is about organisations, and population data is aggregated
 census counts.
 
 ## What the engine computes (deterministic, no AI)
 
-`src/engine.py`, distances in metres on British National Grid.
+`simulator/engine.py`, distances in metres on British National Grid.
 
 - **Coverage(R)**: population whose Output Area centroid is within R metres (straight line) of at least one
   facility, divided by total population. Computed before and after adding the proposed site. Default R = 800 m,
@@ -72,7 +72,7 @@ census counts.
 
 ## What the AI does
 
-`src/brief.py`. The LLM (Claude Haiku 5.5, configurable with `BRIEF_MODEL`) receives **only** a JSON of numbers
+`simulator/brief.py`. The LLM (Claude Haiku 5.5, configurable with `BRIEF_MODEL`) receives **only** a JSON of numbers
 the engine already computed, plus source tags. It writes a 150-250 word brief for a planner, with a source tag
 after each claim.
 
@@ -95,15 +95,15 @@ The AI never computes a number. The numbers are deterministic on purpose so they
   to exhaustive search over all 792 sites for all 5 uses, equity quintiles summing to the total, an injected
   wrong number caught by the audit, and audit retry then fallback.
 - **Baseline** ("pick the site with the fewest competitors within 400 m", the spreadsheet answer), 10 cases ×
-  3 candidate wards (`tests/baseline_results.csv`): our pick **differs in 5 of 10 cases**, and in those
+  3 candidate wards (`evaluation/results/baseline_results.csv`): our pick **differs in 5 of 10 cases**, and in those
   cases newly covers **8,457 more people** in total. Caveat: in several cases the baseline was a tie (0
   competitors at 2-3 sites) broken by list order. That is what a spreadsheet does, but it flatters us.
 - **Data used**: the simulator now reads existing sites from the merged places database
-  (`data/processed/facilities_places.csv`, written by `python -m src.build_places`). GP and pharmacy sites must be on
+  (`data/processed/facilities_places.csv`, written by `python run.py places`). GP and pharmacy sites must be on
   the NHS register (the map also tags MRI units and counsellors as "doctors"); companies known only by their
   registered office are never counted as sites. The 17 Oct file stays available as `SIM_DATASET=baseline` (and in
   the app's sidebar) so the numbers below can be reproduced. Places database results:
-  `tests/evaluation_summary_places.json` and `tests/baseline_results_places.csv`.
+  `evaluation/results/evaluation_summary_places.json` and `evaluation/results/baseline_results_places.csv`.
 
 | Use | Coverage now → after top 3 (places database) | 17 Oct baseline |
 |---|---|---|
@@ -127,8 +127,8 @@ The AI never computes a number. The numbers are deterministic on purpose so they
 | Library | 43.7% | 59.7% | Freemantle, Redbridge, Sholing |
 
 - **AI brief numbers audit on live briefs**: not yet run (needs an API key). TODO: run
-  `python -m tests.run_live_briefs` (10 scenarios) and report the pass rate and real cost from
-  `tests/live_brief_results.json`.
+  `python run.py live-briefs` (10 scenarios) and report the pass rate and real cost from
+  `evaluation/results/live_brief_results.json`.
 
 ## Known limits and failures
 
@@ -194,6 +194,6 @@ deprivation indices.
 
 ## AI-generated vs pre-existing
 
-The code in `src/` and `tests/` was written during the hackathon with an AI coding assistant (Claude),
+The code in `simulator/`, `pipeline/`, `viewer/`, `tests/` and `evaluation/` was written during the hackathon with an AI coding assistant (Claude),
 directed and reviewed by the team. No pre-existing project code. Libraries: pandas, numpy, shapely, pyproj,
 streamlit, folium, streamlit-folium, anthropic. All data is from the public sources above.

@@ -1,10 +1,11 @@
 // Places register: every named business and service in Southampton, merged across official registers
-// (built by src/build_places.py). Search, industry -> detailed type filter, and three map views.
+// (built by pipeline/places). Search, industry -> detailed type filter, and four map views: Popular, Heatmap
+// (where places cluster), People (where residents live: ONS mid-2024 or Census 2021, from city.json) and Places.
 import { useEffect, useMemo, useState } from 'react'
 import { CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { Building2, Flame, Layers3, MapPin, Search, Sparkles, X } from 'lucide-react'
-import HeatLayer, { HEAT_GRADIENT } from '../lib/HeatLayer.jsx'
+import { Building2, Flame, Layers3, MapPin, Search, Sparkles, Users, X } from 'lucide-react'
+import HeatLayer, { HEAT_GRADIENT, PEOPLE_GRADIENT, PEOPLE_RAMP } from '../lib/HeatLayer.jsx'
 import { CATEGORICAL, OTHER, bounds, fmt, placeRows, useData } from '../lib/cityData.js'
 import { FitCity, pad } from '../lib/MapFit.jsx'
 
@@ -66,6 +67,8 @@ export default function PlacesView() {
   const [hideRO, setHideRO] = useState(true)
   const [view, setView] = useState('popular')
   const [lq, setLq] = useState(false)
+  const [who, setWho] = useState('all')      // People view: all residents or children aged 0-4
+  const [year, setYear] = useState('2024')   // People view: ONS mid-2024 estimate or Census 2021
   const [ward, setWard] = useState(() => new URLSearchParams(window.location.search).get('ward'))  // e.g. ?ward=Portswood#places
   const [place, setPlace] = useState(null)
 
@@ -92,6 +95,7 @@ export default function PlacesView() {
   }, [base, grp, specQ, ward])
 
   const outlines = useMemo(() => (city ? Object.entries(city.ward_outlines).map(([w, rings]) => ({ w, rings, pos: rings.map(r => r.map(([x, y]) => [y, x])) })) : []), [city])
+  const people = useMemo(() => peoplePoints(city, who, year), [city, who, year])
   const wardPop = useMemo(() => { const o = {}; if (city) city.oa.ward.forEach((w, i) => (o[w] = (o[w] || 0) + city.oa.pop[i])); return o }, [city])
   const target = useMemo(() => (ward && city ? bounds(city.ward_outlines[ward]) : null), [ward, city])
 
@@ -111,10 +115,12 @@ export default function PlacesView() {
         return <Polygon key={w} positions={pos} pathOptions={{ color: on ? '#062b25' : '#0b332b', weight: on ? 4 : 1.2, opacity: on ? 1 : 0.55,
           fillColor: view === 'popular' ? fill : dim ? '#f5f7f2' : '#0b332b', fillOpacity: opacity, fillRule: 'evenodd' }}
           eventHandlers={{ click: () => pickWard(w) }}>
-          <Tooltip sticky className="ward-tip"><WardTip w={w} stats={pop.by[w]} pop={pop} wardPop={wardPop[w]} selected={on} /></Tooltip>
+          <Tooltip sticky className="ward-tip">{view === 'people' ? <PeopleTip w={w} people={people} selected={on} />
+            : <WardTip w={w} stats={pop.by[w]} pop={pop} wardPop={wardPop[w]} selected={on} />}</Tooltip>
         </Polygon>
       })}
       {view === 'heat' && <HeatLayer points={shown} />}
+      {view === 'people' && <HeatLayer points={people.points} radiusM={300} colors={PEOPLE_RAMP} />}
       {view === 'points' && shown.slice(0, 20000).map(p => <CircleMarker key={p.id} center={[p.lat, p.lon]} radius={place?.id === p.id ? 8 : 4}
         pathOptions={{ color: '#fff', weight: 1, fillColor: groupColor(p.grp, groups), fillOpacity: p.ro ? 0.45 : 0.9 }}
         eventHandlers={{ click: () => setPlace(p) }} />)}
@@ -150,17 +156,28 @@ export default function PlacesView() {
       <div>
         <button className={view === 'popular' ? 'active' : ''} onClick={() => setView('popular')}><Sparkles size={13} /> Popular</button>
         <button className={view === 'heat' ? 'active' : ''} onClick={() => setView('heat')}><Flame size={13} /> Heatmap</button>
+        <button className={view === 'people' ? 'active' : ''} onClick={() => setView('people')}><Users size={13} /> People</button>
         <button className={view === 'points' ? 'active' : ''} onClick={() => setView('points')}><MapPin size={13} /> Places</button>
       </div>
+      {view === 'people' && <div className="seg-small">
+        <button className={who === 'all' ? 'active' : ''} onClick={() => setWho('all')}>All residents</button>
+        <button className={who === 'u5' ? 'active' : ''} onClick={() => setWho('u5')}>Aged 0–4</button>
+      </div>}
+      {view === 'people' && people.has2021 && <div className="seg-small">
+        <button className={year === '2024' ? 'active' : ''} onClick={() => setYear('2024')}>Mid-2024</button>
+        <button className={year === '2021' ? 'active' : ''} onClick={() => setYear('2021')}>Census 2021</button>
+      </div>}
       {view === 'popular' && <div className="seg-small">
         <button className={!lq ? 'active' : ''} onClick={() => setLq(false)}>Most common</button>
         <button className={lq ? 'active' : ''} onClick={() => setLq(true)}>Stands out vs city</button>
       </div>}
       <p>{view === 'popular' ? (lq ? 'Each area is coloured by the type that is most over-represented there compared with the whole city (at least 3 places).' : 'Each area is coloured by its most common type. Stronger colour = bigger share of the area’s places.')
-        : view === 'heat' ? 'Where the filtered places cluster: darker = more places within about 250 m.' : 'Every filtered place. Faded dots are companies at their registered office.'} Click an area to explore it.</p>
+        : view === 'heat' ? 'Where the filtered places cluster: darker = more places within about 250 m.'
+        : view === 'people' ? `Where people live: ${fmt(people.total)} ${who === 'all' ? 'residents' : 'children aged 0–4'} (${people.label}) at the population-weighted centres of the city’s ${people.points.length} Output Areas. Darker = more people within about 300 m.`
+        : 'Every filtered place. Faded dots are companies at their registered office.'} Click an area to explore it.</p>
     </section>
 
-    <Legend view={view} pop={pop} />
+    <Legend view={view} pop={pop} people={people} />
     {place && <PlaceDetail p={place} onClose={() => setPlace(null)} />}
     {ward && !place && city && <WardProfile ward={ward} typed={typed} pop={pop} wardPop={wardPop} city={city} onClose={() => setWard(null)} onPick={k => setSpec(new Set([k]))} onWard={pickWard} />}
   </div>
@@ -175,6 +192,37 @@ function wardCentre(city, w) {
   return centres.get(w)
 }
 
+// Residents at each Output Area centre (city.json, from data/processed/oa.csv). pop/pop04 are the ONS mid-2024
+// estimates; pop21/pop0421 are the Census 2021 counts (present once pipeline/population.py has run).
+function peoplePoints(city, who, year) {
+  if (!city) return { points: [], byWard: {}, change: {}, total: 0, label: '', has2021: false, who }
+  const o = city.oa, has2021 = Array.isArray(o.pop21), old = year === '2021' && has2021
+  const v = who === 'u5' ? (old ? o.pop0421 : o.pop04) : (old ? o.pop21 : o.pop)
+  const points = [], byWard = {}
+  let total = 0
+  for (let i = 0; i < o.lat.length; i++) {
+    points.push({ lat: o.lat[i], lon: o.lon[i], w: v[i] })
+    byWard[o.ward[i]] = (byWard[o.ward[i]] || 0) + v[i]
+    total += v[i]
+  }
+  const change = {}  // % change per ward since Census 2021, for the tooltip
+  if (has2021) {
+    const a = who === 'u5' ? o.pop0421 : o.pop21, b = who === 'u5' ? o.pop04 : o.pop, A = {}, B = {}
+    o.ward.forEach((w, i) => { A[w] = (A[w] || 0) + a[i]; B[w] = (B[w] || 0) + b[i] })
+    for (const w in A) change[w] = 100 * (B[w] / A[w] - 1)
+  }
+  return { points, byWard, change, total, label: old || !has2021 ? 'Census 2021' : 'ONS mid-2024 estimate', has2021, who }
+}
+
+function PeopleTip({ w, people, selected }) {
+  const c = people.change[w]
+  return <div className="tip">
+    <b>{w}</b><small>{selected ? 'Click to go back to the whole city' : 'Click to explore this area'}</small>
+    <small>{fmt(Math.round(people.byWard[w] || 0))} {people.who === 'u5' ? 'children aged 0–4' : 'residents'} · {people.label}</small>
+    {c != null && <small>{c >= 0 ? '+' : '−'}{Math.abs(c).toFixed(1)}% from Census 2021 to mid-2024</small>}
+  </div>
+}
+
 function WardTip({ w, stats, pop, wardPop, selected }) {
   const items = stats ? Object.entries(stats.top).sort((a, b) => b[1] - a[1]).slice(0, 5) : []
   return <div className="tip">
@@ -184,7 +232,8 @@ function WardTip({ w, stats, pop, wardPop, selected }) {
   </div>
 }
 
-function Legend({ view, pop }) {
+function Legend({ view, pop, people }) {
+  if (view === 'people') return <div className="legend tool-legend"><span>Fewer people</span><i className="ramp" style={{ background: PEOPLE_GRADIENT }} /><span>More people · {people.label}</span></div>
   if (view === 'heat') return <div className="legend tool-legend"><span>Fewer</span><i className="ramp" style={{ background: HEAT_GRADIENT }} /><span>More places close together</span></div>
   if (view === 'points') return null
   const shown = pop.order.slice(0, 6)

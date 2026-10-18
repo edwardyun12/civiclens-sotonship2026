@@ -1,4 +1,4 @@
-"""Southampton planning scenario simulator. Run:  streamlit run src/app.py"""
+"""Southampton planning scenario simulator (Streamlit). Run:  python run.py app"""
 from __future__ import annotations
 
 import hashlib
@@ -14,13 +14,13 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src import brief as B  # noqa: E402
-from src import config as C  # noqa: E402
-from src import engine as E  # noqa: E402
+from simulator import brief as B  # noqa: E402
+from simulator import config as C  # noqa: E402
+from simulator import engine as E  # noqa: E402
+from simulator.paths import CACHE, PROC  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
-DEMO = ROOT / "data" / "cache" / "demo"
-PC_CACHE = ROOT / "data" / "cache" / "postcodes.json"
+DEMO = CACHE / "demo"
+PC_CACHE = CACHE / "postcodes.json"
 CITY_CENTRE = (50.9097, -1.4044)
 RESIDENTS_PER_HOME = 2.3  # ASSUMPTION: rough average household size, shown in the UI
 
@@ -39,7 +39,7 @@ DATASET_LABELS = {"places": "Places database (merged registers)", "baseline": "1
 dataset = st.sidebar.radio("Existing sites from", list(DATASET_LABELS), format_func=DATASET_LABELS.get)
 CITY = city(dataset)
 if CITY.dataset != dataset:
-    st.sidebar.warning("No places database built yet (run python -m src.build_places); using the 17 Oct baseline.")
+    st.sidebar.warning("No places database built yet (run python run.py places); using the 17 Oct baseline.")
 st.sidebar.caption("Sites: " + ", ".join(f"{len(CITY.facilities(k))} {v['label'].lower()}"
                                          for k, v in C.CATEGORIES.items()))
 CATS = {k: v["label"] for k, v in C.CATEGORIES.items() if len(CITY.facilities(k)) >= 1}
@@ -106,7 +106,7 @@ def base_map(center, zoom=13) -> folium.Map:
                    name="Southampton boundary",
                    style_function=lambda _: {"color": "#555", "weight": 1.5, "fill": False}).add_to(m)
     if CITY.flood is not None:
-        fl = json.loads((ROOT / "data" / "processed" / "flood_zone3.geojson").read_text())
+        fl = json.loads((PROC / "flood_zone3.geojson").read_text())
         folium.GeoJson(fl, name="Flood Zone 3", show=False,
                        style_function=lambda _: {"color": "#2b6cb0", "weight": 0, "fillOpacity": 0.25}).add_to(m)
     return m

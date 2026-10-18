@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 
-from sotonship_rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT, RAW_DATA_DIR
-from sotonship_rag.documents import SUPPORTED_SUFFIXES, chunk_text, read_document
-from sotonship_rag.embeddings import embed
+from rag.config import EMBED_MODEL, INDEX_FILE, PROJECT_ROOT, RAW_DATA_DIR
+from rag.documents import SUPPORTED_SUFFIXES, chunk_text, read_document
+from rag.embeddings import embed
 
 
 def build_index() -> None:

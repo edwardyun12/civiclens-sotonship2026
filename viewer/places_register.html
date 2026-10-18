@@ -7,18 +7,18 @@
 /* Layout: summary strip, then filters | map, then register table + record inspector. Same survey-paper palette as the simulator. */
 :root {
   --paper: #f4f5ef; --panel: #fbfbf7; --ink: #1c2420; --muted: #5d675f; --line: #d7dbcf; --chip: #e9ece2;
-  --accent: #b02a66; --accent-soft: #f6e3ec; --water: #3c7fa6; --good: #2f7a4f; --warn: #b26a12; --bad: #b3362f;
+  --people: #c2410c; --accent: #b02a66; --accent-soft: #f6e3ec; --water: #3c7fa6; --good: #2f7a4f; --warn: #b26a12; --bad: #b3362f;
   --c1: #b02a66; --c2: #2f6f8f; --c3: #c07a12; --c4: #4f7f3a; --c5: #6b4fa0; --c6: #8a5a3c; --c7: #7a8079;
   --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833; --chip: #242b27;
-  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
+  --people: #fb923c; --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
   --c1: #e0699f; --c2: #6fb1d6; --c3: #e2a14a; --c4: #8cc06f; --c5: #a993dc; --c6: #c99a78; --c7: #a5ada6; color-scheme: dark } }
 :root[data-theme="dark"] {
   --paper: #141917; --panel: #1b211e; --ink: #e6ebe5; --muted: #9aa59c; --line: #2f3833; --chip: #242b27;
-  --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
+  --people: #fb923c; --accent: #e0699f; --accent-soft: #3a1f2c; --water: #6fb1d6; --good: #5cb782; --warn: #e2a14a; --bad: #e0756d;
   --c1: #e0699f; --c2: #6fb1d6; --c3: #e2a14a; --c4: #8cc06f; --c5: #a993dc; --c6: #c99a78; --c7: #a5ada6; color-scheme: dark }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
@@ -161,7 +161,7 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
   </aside>
   <section class="mapwrap" aria-label="Map">
     <canvas id="map" aria-label="Map of places; click a dot to inspect it"></canvas>
-    <div class="maptools"><div class="seg" role="group" aria-label="Map view" style="grid-template-columns:repeat(4,auto)"><button id="mv-pts" aria-pressed="true">Places</button><button id="mv-heat" aria-pressed="false">Heatmap</button><button id="mv-pop" aria-pressed="false">Popular</button><button id="mv-area" aria-pressed="false">Per 1,000</button></div>
+    <div class="maptools"><div class="seg" role="group" aria-label="Map view" style="grid-template-columns:repeat(5,auto)"><button id="mv-pts" aria-pressed="true">Places</button><button id="mv-heat" aria-pressed="false">Heatmap</button><button id="mv-ppl" aria-pressed="false">People</button><button id="mv-pop" aria-pressed="false">Popular</button><button id="mv-area" aria-pressed="false">Per 1,000</button></div>
       <select id="popmode" hidden aria-label="What counts as popular" style="width:auto;background:var(--panel)"><option value="top">Most common type</option><option value="lq">Stands out vs city</option></select>
       <button id="opp" class="primary">Suggest spots to open</button></div>
     <div class="mapbtns"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit city" style="font-size:.7rem">FIT</button></div>
@@ -8701,7 +8701,8 @@ ch,12967743,LAINSTON COMMERCIAL TWO LIMITED,SIC 68209,property,,50.9039435998737
     if (S.mode === "comp") { drawComp(w, h); return; }
     if (S.mapView === "area") drawAreas(w, h);
     if (S.mapView === "pop") drawPopular(w, h);
-    if (S.mapView === "heat") drawHeat();
+    if (S.mapView === "heat") drawHeat((S.rows || []).filter((p) => Number.isFinite(p.lat)), 250, "--accent");
+    if (S.mapView === "ppl") drawHeat(PEOPLE, 300, "--people");
     if (S.ward) for (const l of GEO.lsoa) if (AREA.lsoa_ward[l.code] !== S.ward) {  // fade the rest of the city
       ctx.beginPath(); for (const r of l.rings) r.forEach(([x, y], i) => { const [a, b] = px(x, y); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); });
       ctx.globalAlpha = 0.6; ctx.fillStyle = css("--panel"); ctx.fill("evenodd"); ctx.globalAlpha = 1;
@@ -8885,22 +8886,25 @@ ch,12967743,LAINSTON COMMERCIAL TWO LIMITED,SIC 68209,property,,50.9039435998737
     ctx.textBaseline = "alphabetic";
   }
 
-  // ---------- heatmap: where the places the filters keep cluster (each place spreads over ~250 m)
+  // ---------- heatmaps. Places: where the filtered places cluster (each spreads over ~250 m).
+  // People: where residents live, ONS mid-2024 estimates at the 792 Output Area centres, weighted by residents (w).
+  const PEOPLE = AREA.oa.lat.map((la, i) => ({ lat: la, lon: AREA.oa.lon[i], w: AREA.oa.pop[i] }));
   const heatCv = document.createElement("canvas");
-  function drawHeat() {
-    const pts = (S.rows || []).filter((p) => Number.isFinite(p.lat)); if (!pts.length) return;
+  function drawHeat(pts, radiusM, colourToken) {
+    if (!pts.length) return;
+    const mean = pts.reduce((s, p) => s + (p.w ?? 1), 0) / pts.length;
     heatCv.width = cv.width; heatCv.height = cv.height;
     const o = heatCv.getContext("2d", { willReadFrequently: true }), dpr = devicePixelRatio || 1;
     o.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const r = Math.max(8, (250 / 111250) * V.s), w = cv.clientWidth, h = cv.clientHeight;
+    const r = Math.max(8, (radiusM / 111250) * V.s), w = cv.clientWidth, h = cv.clientHeight;
     for (const p of pts) {
       const [x, y] = px(p.lon, p.lat); if (x < -r || y < -r || x > w + r || y > h + r) continue;
-      const g = o.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(0,0,0,0.12)"); g.addColorStop(1, "rgba(0,0,0,0)");
+      const g = o.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(0,0,0,${Math.min(0.9, (0.12 * (p.w ?? 1)) / mean)})`); g.addColorStop(1, "rgba(0,0,0,0)");
       o.fillStyle = g; o.fillRect(x - r, y - r, 2 * r, 2 * r);
     }
     const img = o.getImageData(0, 0, heatCv.width, heatCv.height), d = img.data;
     let max = 1; for (let i = 3; i < d.length; i += 4) if (d[i] > max) max = d[i];
-    const hex = css("--accent").replace("#", ""), R = parseInt(hex.slice(0, 2), 16), G = parseInt(hex.slice(2, 4), 16), B = parseInt(hex.slice(4, 6), 16);
+    const hex = css(colourToken).replace("#", ""), R = parseInt(hex.slice(0, 2), 16), G = parseInt(hex.slice(2, 4), 16), B = parseInt(hex.slice(4, 6), 16);
     for (let i = 0; i < d.length; i += 4) { const t = d[i + 3] / max; d[i] = R; d[i + 1] = G; d[i + 2] = B; d[i + 3] = t < 0.02 ? 0 : Math.round(235 * Math.pow(t, 0.6)); }
     o.putImageData(img, 0, 0);
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(heatCv, 0, 0); ctx.restore();
@@ -8974,15 +8978,16 @@ ch,12967743,LAINSTON COMMERCIAL TWO LIMITED,SIC 68209,property,,50.9039435998737
   }
 
   function setView(v) {
-    S.mapView = v; for (const k of ["pts", "heat", "pop", "area"]) $("mv-" + k).setAttribute("aria-pressed", v === k);
+    S.mapView = v; for (const k of ["pts", "heat", "ppl", "pop", "area"]) $("mv-" + k).setAttribute("aria-pressed", v === k);
     $("popmode").hidden = v !== "pop"; $("maptip").hidden = true; draw(); legendArea();
   }
-  for (const k of ["pts", "heat", "pop", "area"]) $("mv-" + k).onclick = () => setView(k);
-  { const hv = (location.hash.match(/view=(heat|pop|area)/) || [])[1]; if (hv) setView(hv); }  // e.g. places_register.html#view=pop
+  for (const k of ["pts", "heat", "ppl", "pop", "area"]) $("mv-" + k).onclick = () => setView(k);
+  { const hv = (location.hash.match(/view=(heat|ppl|pop|area)/) || [])[1]; if (hv) setView(hv); }  // e.g. places_register.html#view=pop
   $("popmode").addEventListener("input", () => { draw(); legendArea(); });
   function legendArea() {
     const L = $("legend");
     if (S.mapView === "area") L.innerHTML = `<span><i style="background:var(--accent)"></i>Darker = more matching places per 1,000 residents</span><span>Label: ward · count · rate · most common type</span><span>Uses the filters on the left</span>`;
+    else if (S.mapView === "ppl") L.innerHTML = `<span>Fewer<span class="ramp" style="background:linear-gradient(90deg,transparent,var(--people))"></span>more people living close together</span><span>${fmt(Math.round(PEOPLE.reduce((s, p) => s + p.w, 0)))} residents, ONS mid-2024 estimate, at ${PEOPLE.length} Output Area centres</span><span>Hover a ward for its places</span>`;
     else if (S.mapView === "heat") L.innerHTML = `<span>Fewer<span class="ramp" style="background:linear-gradient(90deg,transparent,var(--accent))"></span>more places close together</span><span>${fmt((S.rows || []).length)} places from the filters on the left</span><span>Hover a ward for its top types</span>`;
     else if (S.mapView === "pop") {
       const P = S.pop || popular(), shown = P.order.slice(0, 6);

@@ -3,9 +3,9 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sotonship-rag"
+name = "sotonship2026"
 version = "0.1.0"
-description = "Local RAG prototype for the Southampton Opportunity Engine"
+description = "Southampton Opportunity Engine: planning simulator, places database and local RAG"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -18,8 +18,9 @@ dependencies = [
 ]
 
 [project.scripts]
-sotonship-rag = "sotonship_rag.cli:main"
-sotonship-api = "sotonship_rag.api:main"
+sotonship-rag = "rag.cli:main"
+sotonship-api = "rag.api:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["simulator*", "pipeline*", "rag*"]

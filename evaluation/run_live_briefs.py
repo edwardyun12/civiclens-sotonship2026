@@ -1,7 +1,7 @@
 """Live AI brief test: 10 scenarios, real API calls, numbers-audit pass rate and real cost.
 
-Run (needs ANTHROPIC_API_KEY):  python -m tests.run_live_briefs
-Writes tests/live_brief_results.json and appends every call to logs/briefs.jsonl.
+Run (needs ANTHROPIC_API_KEY):  python run.py live-briefs
+Writes evaluation/results/live_brief_results.json and appends every call to logs/briefs.jsonl.
 """
 from __future__ import annotations
 
@@ -12,10 +12,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from src import brief as B  # noqa: E402
-from src import engine as E  # noqa: E402
+from simulator import brief as B  # noqa: E402
+from simulator import engine as E  # noqa: E402
+from simulator.paths import EVAL_RESULTS  # noqa: E402
 
-OUT = ROOT / "tests" / "live_brief_results.json"
+OUT = EVAL_RESULTS / "live_brief_results.json"
 
 
 def site_payload(city, cats, lat, lon):

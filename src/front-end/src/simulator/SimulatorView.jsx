@@ -1,5 +1,5 @@
 // Module C simulator in the CivicLens app. Every number comes from the shared engine (viewer/src/engine.js, a
-// verified port of src/engine.py); this file only draws it.
+// verified port of simulator/engine.py); this file only draws it.
 import { Fragment, useMemo, useState } from 'react'
 import { Circle, CircleMarker, MapContainer, Polygon, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 import { BadgeCheck, Crosshair, Droplets, Footprints, MapPin, ShieldAlert, Target, Users } from 'lucide-react'

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 const cache = {}
 function load(name) {
   return (cache[name] ||= fetch(`/data/${name}.json`).then(r => {
-    if (!r.ok) throw new Error(`Could not load ${name}.json. Run python viewer/build_viewers.py from the repo root.`)
+    if (!r.ok) throw new Error(`Could not load ${name}.json. Run python run.py viewers from the repo root.`)
     return r.json()
   }))
 }

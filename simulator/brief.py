@@ -12,10 +12,10 @@ import os
 import re
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-LOG = ROOT / "logs" / "briefs.jsonl"
+from simulator.paths import LOGS
+
+LOG = LOGS / "briefs.jsonl"
 
 MODEL = os.environ.get("BRIEF_MODEL", "claude-haiku-5-5")
 # USD per million tokens (platform.claude.com/docs/en/about-claude/pricing, checked 17 Oct 2026)

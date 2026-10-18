@@ -6,10 +6,10 @@ import json
 
 from rank_bm25 import BM25Okapi
 
-from sotonship_rag.citations import extract_pdf_pages, format_citation
-from sotonship_rag.config import INDEX_FILE, PROJECT_ROOT
-from sotonship_rag.embeddings import cosine_similarity, embed
-from sotonship_rag.hybrid import reciprocal_rank_fusion, tokenize
+from rag.citations import extract_pdf_pages, format_citation
+from rag.config import INDEX_FILE, PROJECT_ROOT
+from rag.embeddings import cosine_similarity, embed
+from rag.hybrid import reciprocal_rank_fusion, tokenize
 
 
 def retrieve(question: str, top_k: int = 3) -> list[dict]:

@@ -30,28 +30,37 @@ Output: a decision brief, evidence trail and recommendations for human review.
 
 ```text
 .
+├── run.py                  # One entry point: python run.py app | test | eval | viewers | places | population | rag | api | frontend
+├── simulator/              # Module C model (Python)
+│   ├── config.py           #   every design choice: categories, radii, weights, jobs
+│   ├── engine.py           #   deterministic engine: coverage, scores, optimiser (no AI)
+│   ├── brief.py            #   AI brief + numbers audit
+│   ├── app.py              #   Streamlit app
+│   └── paths.py            #   every data folder, defined once
+├── pipeline/               # Builds data/ (run rarely)
+│   ├── city_data.py        #   ONS geography, Census 2021, IMD, OSM/NHS sites, flood zones
+│   ├── population.py       #   ONS mid-2024 small area population estimates
+│   └── places/             #   places database: sources, names, business_types, merge, companies, build
+├── rag/                    # Module D local RAG assistant (Ollama)
+│   ├── api.py              #   FastAPI bridge for the React experience
+│   ├── cli.py              #   command-line entry point
+│   ├── config.py           #   models, Ollama URL, and paths
+│   ├── documents.py        #   PDF/text loading and chunking
+│   ├── embeddings.py       #   embeddings and vector similarity
+│   ├── generator.py        #   grounded answer generation
+│   ├── indexer.py          #   document indexing pipeline
+│   ├── ollama.py           #   local Ollama client
+│   ├── retriever.py        #   relevant-chunk retrieval
+│   └── web.py              #   Streamlit chat interface
+├── frontend/               # Vite + React app (places map with People heat map, simulator, RAG chat)
+├── viewer/                 # Self-contained browser pages (simulator, places register) + templates in viewer/src/
 ├── data/
-│   ├── raw/
-│   │   ├── official/       # Council and public-sector source documents
-│   │   └── project/        # Internal project material
+│   ├── raw/                # Downloaded sources + SOURCES.json; official/ and project/ hold RAG documents
 │   ├── processed/          # Simulator input data (committed); RAG index.json (excluded from Git)
-│   └── db/                 # Places database (simulator)
-├── src/engine.py, brief.py, app.py, build_places.py, fetch_data.py   # Module C simulator
-├── viewer/                 # Simulator and places register browser pages
-├── docs/                   # Simulator method, data plan, codebase guide
-├── src/sotonship_rag/
-│   ├── api.py              # FastAPI bridge for the React experience
-│   ├── cli.py              # Command-line entry point
-│   ├── config.py           # Models, Ollama URL, and paths
-│   ├── documents.py        # PDF/text loading and chunking
-│   ├── embeddings.py       # Embeddings and vector similarity
-│   ├── generator.py        # Grounded answer generation
-│   ├── indexer.py          # Document indexing pipeline
-│   ├── ollama.py           # Local Ollama client
-│   ├── retriever.py        # Relevant-chunk retrieval
-│   └── web.py              # Streamlit chat interface
-├── src/front-end/           # Vite + React opportunity dashboard
-├── tests/                  # Automated tests
+│   └── db/                 # Places database
+├── tests/                  # pytest tests
+├── evaluation/             # Evidence scripts and results/ (baseline comparison, live AI briefs)
+├── docs/                   # CODEBASE.md (where to change what), SIMULATOR.md, DATA_PLAN.md, SUBMISSION.md
 ├── pyproject.toml          # Package metadata and CLI definition
 └── requirements.txt        # Runtime dependencies
 ```
@@ -64,7 +73,7 @@ Setup, data sources and licences, what the AI does, test results and known limit
 
 ```bash
 pip install -r requirements.txt
-streamlit run src/app.py
+python run.py app
 ```
 
 Browser pages, no install needed: open `viewer/site_simulator.html` or `viewer/places_register.html`.
@@ -98,8 +107,8 @@ Add UTF-8 `.txt`, `.md`, or text-based `.pdf` source files under the appropriate
 Alternative module invocation:
 
 ```bash
-python -m sotonship_rag index
-python -m sotonship_rag query "What are Southampton's economic priorities?"
+python -m rag index
+python -m rag query "What are Southampton's economic priorities?"
 ```
 
 ## Streamlit interface
@@ -107,7 +116,7 @@ python -m sotonship_rag query "What are Southampton's economic priorities?"
 With Ollama running, start the local web interface:
 
 ```bash
-streamlit run src/sotonship_rag/web.py
+python run.py rag-web
 ```
 
 Then open `http://localhost:8501`. The sidebar shows the active local models,
@@ -124,7 +133,7 @@ source .venv/bin/activate
 sotonship-api
 
 # Terminal 3
-cd src/front-end
+cd frontend
 npm install
 npm run dev
 ```

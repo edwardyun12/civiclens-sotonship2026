@@ -1,4 +1,4 @@
-/* Southampton simulator engine, a direct port of src/engine.py and the template/audit parts of src/brief.py.
+/* Southampton simulator engine, a direct port of simulator/engine.py and the template/audit parts of simulator/brief.py.
    Deterministic. Distances in metres on British National Grid. */
 (function (root) {
   "use strict";
@@ -318,7 +318,7 @@
       return [O.lat[best], O.lon[best]];
     }
 
-    // ---------------------------------------------------------------- brief payload, template and audit (src/brief.py)
+    // ---------------------------------------------------------------- brief payload, template and audit (simulator/brief.py)
     const SOURCE_TAGS = {
       census: "Census 2021 TS007A (ONS, OGL)", imd: "English Indices of Deprivation 2019 (MHCLG, OGL)",
       osm: "OpenStreetMap (ODbL)", nhs: "NHS Organisation Data Service (OGL)",

@@ -17,21 +17,46 @@ sites from, plus browser map views with an advanced filter, an area view and an 
 ## 2. How the pieces connect
 
 ```
- open data (ONS, Census, IMD, EA flood)          open registers (FSA, OSM, NHS ODS, Ofsted, Companies House)
-            │ src/fetch_data.py                               │ src/build_places.py
+ open data (ONS, Census, IMD, EA flood)            open registers (FSA, OSM, NHS ODS, Ofsted, Companies House)
+   pipeline/city_data.py + pipeline/population.py     pipeline/places/
             ▼                                                 ▼
  data/processed/oa.csv, lsoa.geojson,          data/db/places.csv (+ source_records, excluded, sqlite)
  flood_zone3.geojson, facilities.csv           data/processed/facilities_places.csv  ◄── export_facilities()
             │                                                 │
             └───────────────┬─────────────────────────────────┘
                             ▼
-                     src/engine.py  (deterministic: coverage, scores, optimiser; no AI, no UI)
+                 simulator/engine.py  (deterministic: coverage, scores, optimiser; no AI, no UI)
                             │
-             ┌──────────────┼───────────────────┐
-             ▼              ▼                   ▼
-       src/brief.py    src/app.py         viewer/ (browser pages; JS port of the engine)
-   (AI brief + audit)  (Streamlit UI)
+        ┌───────────────────┼──────────────────────┬──────────────────────────────┐
+        ▼                   ▼                      ▼                              ▼
+ simulator/brief.py   simulator/app.py     viewer/ (browser pages,         frontend/ (React app; reads
+ (AI brief + audit)   (Streamlit UI)       JS port: viewer/src/engine.js)  viewer/src/engine.js + public/data)
+
+ rag/ (separate feature): reads documents in data/raw/official|project → data/processed/index.json → answers
+ questions through rag/api.py (used by frontend/) or rag/web.py (Streamlit chat).
 ```
+
+All commands go through `run.py` (`python run.py` lists them). All folders are defined once in
+`simulator/paths.py`.
+
+## Where to change what
+
+| I want to… | Edit | Then run |
+|---|---|---|
+| Change a radius, score weight, jobs figure or use category | `simulator/config.py` (+ `CATEGORIES` in `viewer/src/engine.js`) | `python run.py test`, `python run.py viewers` |
+| Change how coverage / scores / the optimiser work | `simulator/engine.py` **and** `viewer/src/engine.js` | `python run.py test`, `python run.py viewers` |
+| Change what the AI brief says or checks | `simulator/brief.py` | `python run.py test` |
+| Change the Streamlit app | `simulator/app.py` | `python run.py app` |
+| Update residents to a newer ONS estimate | `SAPE_URL`, `SAPE_YEAR` in `pipeline/population.py` | `python run.py population`, then `viewers`, `eval` |
+| Re-download geography, Census, IMD, flood, OSM/NHS sites | `pipeline/city_data.py` | `python run.py city-data` |
+| Add or fix a places source (FSA, OSM, NHS, Ofsted) | `pipeline/places/sources.py` | `python run.py places`, `viewers` |
+| Change how records merge into one place, flags, confidence | `pipeline/places/merge.py` (thresholds in `common.py`) | `python run.py test`, `places` |
+| Change detailed types, cuisines, industry groups | `pipeline/places/business_types.py` | `python run.py places`, `viewers` |
+| Change Companies House linking | `pipeline/places/companies.py` | `python run.py places --ch-key KEY` |
+| Change the browser pages | `viewer/src/*.template.html` (never the built `viewer/*.html`) | `python run.py viewers` |
+| Change the React app | `frontend/src/` (Places map: `places/PlacesView.jsx`, heat maps: `lib/HeatLayer.jsx`) | `python run.py frontend` |
+| Change the RAG assistant | `rag/` (models and paths in `rag/config.py`) | `python run.py rag index`, `python run.py api` |
+| Move a data folder | `simulator/paths.py` only | `python run.py test` |
 
 **Golden rule:** `engine.py` has no AI and no UI. Every number shown anywhere comes from it (or its verified JS
 port), so numbers are deterministic and testable. The AI only writes words around numbers it is given, and an
@@ -41,10 +66,15 @@ audit rejects any number not in the data.
 
 | Path | What it is | Edit by hand? |
 |---|---|---|
-| `src/` | All Python code (below) | Yes |
-| `tests/` | pytest tests, evaluation scripts, saved results | Code yes, results no (regenerate) |
-| `data/raw/` | Downloaded source files + `SOURCES.json` (URL, licence, date, rows) | No: written by `fetch_data.py` |
-| `data/processed/` | Clean inputs the engine reads | No: written by `fetch_data.py` / `build_places.py` |
+| `run.py` | One entry point for every command | Yes |
+| `simulator/` | The model: `config.py`, `engine.py`, `brief.py`, `app.py`, `paths.py` | Yes |
+| `pipeline/` | Builds `data/`: `city_data.py`, `population.py`, `places/` | Yes |
+| `rag/` | Local RAG assistant (Ollama): indexing, retrieval, answers, API, Streamlit chat | Yes |
+| `frontend/` | React app (Vite): welcome, places map, simulator, RAG chat | `src/` yes, `public/data/` no (written by `run.py viewers`) |
+| `tests/` | pytest tests only | Yes |
+| `evaluation/` | Evidence scripts + `results/` (baseline comparison, live briefs) | Scripts yes, results no (regenerate) |
+| `data/raw/` | Downloaded source files + `SOURCES.json` (URL, licence, date, rows) | No: written by `pipeline/` |
+| `data/processed/` | Clean inputs the engine reads | No: written by `pipeline/` |
 | `data/db/` | Places database from a full PC run (gitignored `raw/`, `google_check.csv`) | No |
 | `data/db/sample/` | Small real build (17 Oct OSM + NHS + 5,000-row Companies House download) | No |
 | `data/cache/` | Distance matrix `.npy` (gitignored), demo-mode briefs, postcode cache | No |
@@ -54,7 +84,7 @@ audit rejects any number not in the data.
 | `CLAUDE.md` | Rules for AI assistants (git identity, branch) | Yes |
 | `logs/` | `briefs.jsonl` cost/audit log (gitignored) | No |
 
-## 4. `src/config.py`: every design choice in one place
+## 4. `simulator/config.py`: every design choice in one place
 
 Nothing here is a validated fact. Change values here, not inside functions.
 
@@ -70,7 +100,7 @@ Nothing here is a validated fact. Change values here, not inside functions.
 | `NEED_WEIGHTS`, `VIABILITY_WEIGHTS` | Score weights; perturbed ±20% in the sensitivity check |
 | `FLOOD_VIABILITY_PENALTY` (15) | Points off viability in Flood Zone 3 |
 
-## 5. `src/engine.py`: the deterministic engine
+## 5. `simulator/engine.py`: the deterministic engine
 
 All distances are metres on British National Grid (EPSG:27700). Demand points are the 792 Census 2021 Output Area
 population-weighted centroids, weighted by ONS mid-2024 residents (`city.pop_year`; the baseline dataset swaps
@@ -102,7 +132,7 @@ in the Census 2021 counts). Candidate sites for the optimiser and for score perc
 | `baseline_rank` | "Fewest competitors within 400 m": the spreadsheet answer | Baseline for judging C2/C3 |
 | `ward_centroid(city, ward)` | Population-weighted ward centre snapped to an OA centre | Ward picker, evaluation cases |
 
-## 6. `src/brief.py`: the AI part
+## 6. `simulator/brief.py`: the AI part
 
 | Function / constant | What it does | Why |
 |---|---|---|
@@ -116,9 +146,9 @@ in the Census 2021 counts). Candidate sites for the optimiser and for score perc
 | `cost_gbp`, `_log`, `_now` | Cost maths and logging | |
 | `export_markdown(payload, brief, sources)` | One-page Markdown export | Planner can attach it to a report |
 
-## 7. `src/app.py`: Streamlit app (the product judges see)
+## 7. `simulator/app.py`: Streamlit app (the product judges see)
 
-Run `streamlit run src/app.py`. Sidebar: **Existing sites from** (places database / 17 Oct baseline), mode, use,
+Run `python run.py app`. Sidebar: **Existing sites from** (places database / 17 Oct baseline), mode, use,
 radius, housing growth, demo mode.
 
 | Function | What it does |
@@ -137,16 +167,16 @@ Modes: **Test a site** (map click / postcode / ward; compare up to 2 other uses 
 (greedy top 1-3, map, table, brief). Streamlit 1.66 gotchas: use `width="stretch"`, not `use_container_width`
 (except `st_folium`); map tiles are `OpenStreetMap` (CartoDB needs a key).
 
-## 8. `src/fetch_data.py`: city data (run rarely)
+## 8. `pipeline/city_data.py` and `pipeline/population.py`: city data (run rarely)
 
-`python -m src.fetch_data [--skip-osm] [--osm-file PATH]` rebuilds `data/processed/` and `data/raw/SOURCES.json`.
-`python -m src.fetch_data --update-pop [--sape-file PATH]` only refreshes `oa.csv` to the latest ONS population estimate.
+`python run.py city-data [--skip-osm] [--osm-file PATH]` rebuilds `data/processed/` and `data/raw/SOURCES.json`.
+`python run.py population [--sape-file PATH]` only refreshes `oa.csv` to the latest ONS population estimate.
 
 | Function | Source → output |
 |---|---|
 | `arcgis_query`, `in_list`, `fetch_geography` | ONS ArcGIS: OA centroids, OA→LSOA→ward lookups, LSOA boundaries, IMD 2019 |
 | `fetch_population` | Census 2021 TS007A via Nomis: total and aged 0-4 per OA |
-| `fetch_sape`, `apply_sape`, `update_population` | ONS mid-2024 LSOA estimates (83 MB xlsx; city rows cached in `data/raw/ons_sape_mid2024_lsoa.csv`). Scales each OA by its LSOA's growth → `pop`, `pop_0_4`, `pop_year`; Census counts kept as `pop_2021`, `pop_0_4_2021` |
+| `population.py`: `fetch_sape`, `apply_sape`, `update_population` | ONS mid-2024 LSOA estimates (83 MB xlsx; city rows cached in `data/raw/ons_sape_mid2024_lsoa.csv`). Scales each OA by its LSOA's growth → `pop`, `pop_0_4`, `pop_year`; Census counts kept as `pop_2021`, `pop_0_4_2021` |
 | `fetch_facilities`, `parse_osm`, `classify` | Overpass: the 5 uses (+ coworking) → `facilities_osm.csv` |
 | `geocode`, `fetch_nhs`, `merge_registers` | NHS ODS GPs/pharmacies geocoded by postcode; replace OSM for those uses → `facilities.csv` (**the 17 Oct baseline**) |
 | `polygonal`, `fetch_flood` | Environment Agency Flood Zone 3 → `flood_zone3.geojson` |
@@ -154,9 +184,9 @@ Modes: **Test a site** (map click / postcode / ward; compare up to 2 other uses 
 
 Overpass is blocked from cloud workspaces: download on a PC and pass `--osm-file`.
 
-## 9. `src/build_places.py`: the places database
+## 9. `pipeline/places/`: the places database
 
-`python -m src.build_places [options]` → `data/db/` and `data/processed/facilities_places.csv`.
+`python run.py places [options]` → `data/db/` and `data/processed/facilities_places.csv`.
 
 Options: `--ch-key KEY` (Companies House API: every active Southampton company, default `--ch-mode advanced`),
 `--ch-file CSV` (website Advanced-search download, max 5,000 rows), `--ch-bulk FILE` (free bulk product),
@@ -167,6 +197,18 @@ Options: `--ch-key KEY` (Companies House API: every active Southampton company, 
 **Pipeline:** fetch/parse each source into one record format → postcode lookup → `build()` (fill coordinates,
 match records into places, flags, confidence, names, types) → optional Companies House name-search links and Google
 check → `save()` → `export_facilities()`.
+
+**Modules** (`from pipeline import places` still gives every name below):
+
+| Module | Functions and constants |
+|---|---|
+| `common.py` | `note`, thresholds (`MATCH_*`, `SPREAD_FLAG_M`, …), `metres`, `load_city`, `in_city`, `ward_of` |
+| `names.py` | `norm_name`, `name_sim`, `norm_postcode`, `TYPE_MAP`, `OSM_MAP`, `osm_type`, `compatible`, `display_name` |
+| `sources.py` | `fetch_/parse_` FSA, OSM, NHS, Ofsted; `postcode_lookup`; `google_check` |
+| `business_types.py` | `SIC_SUBTYPE` … `detailed_type`, `specialty_of`, `SIC_CATEGORY`, `INDUSTRY_GROUP`, `sic_category` |
+| `merge.py` | `match`, `build`, `COORD_RANK`, `SRC_LABEL`, `NAME_PRIORITY`, `PENALTY`, `exclusion_reason` |
+| `companies.py` | `ch_records`, `ch_candidates_api`, `ch_profile`, `fetch_ch_advanced`, `parse_ch_search_csv`, `company_tables`, `load_ch_bulk`, `companies_house` |
+| `build.py` | `SIM_USES`, `export_facilities`, `save`, `main` |
 
 **Record format** (every source produces these columns): `source, source_id, name, raw_type, category,
 sim_category, lat, lon, coord_method, address, postcode, brand, opening_hours, website, phone, quality,
@@ -226,33 +268,37 @@ DORMANT_OR_NON_TRADING, NOT_IN_SOUTHAMPTON, COORDS_FROM_2017_POSTCODE_FILE, COMP
 ## 10. `viewer/`: browser pages
 
 Open `viewer/places_register.html` or `viewer/site_simulator.html` by double-click. Rebuild after data changes:
-`python viewer/build_viewers.py` (uses `data/db/` if a full build exists, else `data/db/sample/`).
+`python run.py viewers` (uses `data/db/` if a full build exists, else `data/db/sample/`).
 
 | File | What it is |
 |---|---|
 | `src/engine.js` | JS port of `engine.py` (coverage, scores, sensitivity, optimiser, payload, template brief, audit) incl. a WGS84→OSGB36→BNG projection. **Must stay in step with engine.py.** |
 | `src/verify_engine.js` | Checks the JS port against the Python engine's saved results (49 checks; run by `build_viewers.py` when node exists) |
-| `src/eval_places.js` | Evaluation on the places dataset with the JS engine (writes `tests/*_places.*`) |
+| `src/eval_places.js` | Evaluation on the places dataset with the JS engine (writes `evaluation/results/*_places.*`) |
 | `src/pack_city.py` | Packs OAs, sites, LSOA shapes (simplified), city edge, flood shapes into one JSON |
 | `src/site_simulator.template.html` | Simulator page: modes, dataset switch (database / baseline / load a newer `places.csv`), named nearby sites, "What's nearby" tab, map tooltips |
-| `src/places_register.template.html` | Register page: table + map, advanced search (industry group → tickable, searchable detailed types grouped by business type; everyday words like "boba" or "sushi" also match), flags filter, map views: Places, **Heatmap** (density of the filtered places, one-hue ramp), **Popular** (each ward coloured by its leading detailed type: most common, or stands out vs its city-wide share with ≥3 places; marker + label per ward; hover tooltip with the ward's top 6), Per 1,000 (wards shaded per 1,000 residents); click a ward (in any area view, or the ward links) to focus it: zoom, outline, rest faded, table filtered, and a ward profile (places, per 1,000 vs city, residents, % most deprived fifth, top 10 types as bars with "× city" share ratio, types it has less of than the city); `#view=heat|pop|area&ward=Portswood` opens a view and ward, **Suggest spots to open** (ranks OA centres: residents within 800 m × footfall stand-in ÷ (1 + 2 × same-type within 800 m); 5 picks ≥1 km apart) |
-| `build_viewers.py` | Fills the templates' `__PLACEHOLDERS__` with data and writes the two HTML files |
+| `src/places_register.template.html` | Register page: table + map, advanced search (industry group → tickable, searchable detailed types grouped by business type; everyday words like "boba" or "sushi" also match), flags filter, map views: Places, **Heatmap** (density of the filtered places, one-hue ramp), **People** (where residents live: ONS mid-2024 residents at the 792 OA centres, weighted heat map), **Popular** (each ward coloured by its leading detailed type: most common, or stands out vs its city-wide share with ≥3 places; marker + label per ward; hover tooltip with the ward's top 6), Per 1,000 (wards shaded per 1,000 residents); click a ward (in any area view, or the ward links) to focus it: zoom, outline, rest faded, table filtered, and a ward profile (places, per 1,000 vs city, residents, % most deprived fifth, top 10 types as bars with "× city" share ratio, types it has less of than the city); `#view=heat|pop|area&ward=Portswood` opens a view and ward, **Suggest spots to open** (ranks OA centres: residents within 800 m × footfall stand-in ÷ (1 + 2 × same-type within 800 m); 5 picks ≥1 km apart) |
+| `build_viewers.py` | Fills the templates' `__PLACEHOLDERS__` with data and writes the two HTML files, plus `frontend/public/data/{places,city}.json` |
 
-## 11. `tests/`
+The React app (`frontend/`) has the same map views on its Places page (`places/PlacesView.jsx`): Popular,
+Heatmap (places), **People** (residents: all or aged 0–4, mid-2024 or Census 2021; ward tooltip shows the change
+since 2021) and Places. Both heat maps use `lib/HeatLayer.jsx` (points may carry a weight `w`).
+
+## 11. `tests/` and `evaluation/`
 
 | File | What it covers |
 |---|---|
-| `test_engine.py` (20) | Hand-checked toy example, dense café ≈ 0 change, flood flag, thin-data refusal, outside city, empty input, no-key fallback, sensitivity, identical scenarios, optimiser = brute force, equity sums, audit catches injected number, retry then fallback, housing growth, ward centre inside city, scores never merged |
-| `test_build_places.py` (19) | Name normalising, cross-source merge, neighbours stay separate, location/type conflict, postcode checks, missing coords / outside city, duplicate merge + stale flag, exclusions, confidence, Companies House matching/no-guessing/wrong industry, advanced search window splitting, website CSV parsing, address grouping, company merges into places, SIC categories, pharmacy ≠ surgery, register name wins, detailed types and cuisine |
-| `run_evaluation.py` | Baseline comparison + optimiser timings → `baseline_results*.csv`, `evaluation_summary*.json` (suffix `_places` unless `SIM_DATASET=baseline`) |
-| `run_live_briefs.py` | 10 live AI briefs (needs `ANTHROPIC_API_KEY`) → audit pass rate and real cost |
+| `tests/test_engine.py` (22) | Hand-checked toy example, dense café ≈ 0 change, flood flag, thin-data refusal, outside city, empty input, no-key fallback, sensitivity, identical scenarios, optimiser = brute force, equity sums, audit catches injected number, retry then fallback, housing growth, ward centre inside city, scores never merged, mid-2024 scaling, baseline keeps Census 2021 |
+| `tests/test_build_places.py` (20) | Name normalising, cross-source merge, neighbours stay separate, location/type conflict, postcode checks, missing coords / outside city, duplicate merge + stale flag, exclusions, confidence, Companies House matching/no-guessing/wrong industry, advanced search window splitting, website CSV parsing, address grouping, company merges into places, SIC categories, pharmacy ≠ surgery, register name wins, detailed types and cuisine |
+| `evaluation/run_evaluation.py` | Baseline comparison + optimiser timings → `baseline_results*.csv`, `evaluation_summary*.json` (suffix `_places` unless `SIM_DATASET=baseline`) |
+| `evaluation/run_live_briefs.py` | 10 live AI briefs (needs `ANTHROPIC_API_KEY`) → audit pass rate and real cost |
 
 ## 12. Rules when changing things
 
 - Numbers come from `engine.py` only. If you change maths there, change `viewer/src/engine.js` the same way and run
-  `python viewer/build_viewers.py` (49/49 checks must still pass) and `pytest -q`.
+  `python run.py viewers` (49/49 checks must still pass) and `python run.py test`.
 - Never let the AI compute a number; extend `build_payload` instead.
-- Keep the 17 Oct baseline files (`facilities.csv`, `tests/baseline_results.csv`, `tests/evaluation_summary.json`)
+- Keep the 17 Oct baseline files (`facilities.csv`, `evaluation/results/baseline_results.csv`, `evaluation/results/evaluation_summary.json`)
   unchanged: the README numbers were computed on them.
 - New data source → produce the standard record format, add it to `SRC_LABEL`, `NAME_PRIORITY`, `COORD_RANK`
   if relevant, call `note()` with URL and licence, add a test.

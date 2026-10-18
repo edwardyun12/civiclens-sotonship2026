@@ -18,7 +18,7 @@ const opt = {};
 for (const cat of Object.keys(S.CATEGORIES)) { const t = Date.now(); const p = E.optimise(cat, 3);
   opt[cat] = { seconds: (Date.now() - t) / 1000, coverage_before_pct: p[0].coverage_before_pct, coverage_after_top3_pct: p[0].coverage_after_all_pct, top3_wards: p.map((x) => x.ward) }; }
 const centre = E.evaluateSite("cafe", 50.9046, -1.4045);
-const summary = { dataset: "places", computed_with: "JS port of src/engine.py (matches Python on 49/49 checks); rerun python -m tests.run_evaluation to regenerate",
+const summary = { dataset: "places", computed_with: "JS port of simulator/engine.py (matches Python on 49/49 checks); rerun python run.py eval to regenerate",
   baseline_cases: rows.length, baseline_differs: rows.filter((r) => r.differs === "True").length,
   people_gained_vs_baseline_total: rows.reduce((s, r) => s + r.people_gained_vs_baseline, 0), optimiser: opt,
   sites: Object.fromEntries(Object.keys(S.CATEGORIES).map((c) => [c, E.facilities(c).length])),
