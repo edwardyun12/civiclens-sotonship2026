@@ -289,6 +289,25 @@ Heatmap (places), **People** (where residents live, by age group: all, 0–4, 5�
 ward tooltip and area profile show each area's age mix against the city) and Places. `?view=people&ward=Bargate#places`
 opens a view and ward. Age groups come from `AGE_BANDS` in `pipeline/population.py` (each OA takes its LSOA's age mix). Both heat maps use `lib/HeatLayer.jsx` (points may carry a weight `w`).
 
+### React business simulator (`frontend/src/simulator/`)
+
+`SimulatorView.jsx` + `opportunity.js` (deterministic, no AI). The user types what they want to open; the model
+matches it to a detailed type in the places data (`matchBusiness`; no exact match → the whole category, e.g. all
+restaurants), picks default customers by age group (editable), then scores all 792 Output Area centres
+(`analyse`): customers nearby (target-age residents within the walking distance, nearer ones weighted more),
+room in the market (customers ÷ (1 + 2 × competitors + 0.3 × related businesses)), passing trade (customer-facing
+places within 400 m) and growth (residents since 2021). Each is a percentile across all sites; weights depend on
+the sector (passing-trade sectors weight footfall 25%); flood zone 3 costs 15 points. **Whole Southampton**
+proposes the top 5 sites ≥1 km apart (`suggest`), **Choose an area** the top 3 in one ward, **Pick on map** tests
+any spot (`siteAt`). `feasibilityBrief` turns the numbers into strengths, risks, suggested changes (including a
+better site within 1.5 km) and limitations. For nursery / GP / pharmacy / café / library the planning engine adds
+coverage and the audited planning brief. Place-type helpers shared with the Places page are in
+`lib/placeTypes.js`.
+
+**Assistant context:** `lib/assistantContext.js` holds a plain-text summary of what is on screen (set by the
+Places and Simulator pages); the chatbot (`App.jsx`) sends it as `context` with each question, and
+`rag/generator.py prepare_answer(app_context=...)` adds it to the prompt as "App analysis" that the model may cite.
+
 ## 11. `tests/` and `evaluation/`
 
 | File | What it covers |

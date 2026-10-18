@@ -24,6 +24,8 @@ class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2_000)
     history: list[ChatMessage] = Field(default_factory=list)
     top_k: int = Field(default=3, ge=1, le=5)
+    # what the user is looking at in the app (page, business, site, scores), computed by the app's own model
+    context: str | None = Field(default=None, max_length=4_000)
 
 
 app = FastAPI(title="Southampton Opportunity Engine API", version="0.1.0")
@@ -58,6 +60,7 @@ def chat(payload: ChatRequest) -> StreamingResponse:
                 payload.question,
                 top_k=payload.top_k,
                 conversation_history=history,
+                app_context=payload.context,
             )
             public_sources = [
                 {

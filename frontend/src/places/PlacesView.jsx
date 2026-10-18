@@ -9,27 +9,10 @@ import HeatLayer, { HEAT_GRADIENT, PEOPLE_GRADIENT, PEOPLE_RAMP } from '../lib/H
 import { CATEGORICAL, OTHER, bounds, fmt, placeRows, sectorColor, useData } from '../lib/cityData.js'
 import { FitCity, pad } from '../lib/MapFit.jsx'
 
-const CAT_LABEL = { restaurant_cafe: 'Restaurant / café', takeaway: 'Takeaway', pub_bar: 'Pub / bar', other_catering: 'Other catering',
-  mobile_caterer: 'Mobile caterer', supermarket: 'Supermarket', shop_food: 'Food shop', shop_other: 'Other shop', nursery: 'Nursery / childcare',
-  gp: 'GP surgery', pharmacy: 'Pharmacy', dentist: 'Dentist', hospital: 'Hospital', health_other: 'Other health', library: 'Library',
-  education: 'School / college', care_childcare_health: 'Care', hotel: 'Hotel / B&B', community: 'Community', leisure: 'Leisure',
-  coworking: 'Coworking', hair_beauty: 'Hair and beauty', personal_services: 'Personal services', professional: 'Professional services',
-  finance: 'Finance', property: 'Property', it_tech: 'IT and tech', business_services: 'Business services', wholesale: 'Wholesale',
-  construction: 'Construction', manufacturing: 'Manufacturing', food_manufacturer: 'Food manufacturer', motor: 'Motor trade',
-  transport_logistics: 'Transport and logistics', utilities_primary: 'Utilities and primary', other: 'Other' }
-const catLabel = c => CAT_LABEL[c] || c
+import { SYN, catLabel, specOf, vague } from '../lib/placeTypes.js'
+import { setAssistantContext } from '../lib/assistantContext.js'
+
 const VIEWS = [['popular', 'Popular', Sparkles], ['heat', 'Heatmap', Flame], ['people', 'People', Users], ['points', 'Places', MapPin]]
-// everyday words that should find a detailed type
-const SYN = { 'Bubble tea': 'boba milk tea', Japanese: 'sushi ramen', Korean: 'kbbq', 'Coffee shop': 'cafe coffee', Café: 'cafe coffee',
-  'Dental practice': 'dentist teeth', 'GP practice': 'doctor surgery', 'GP or clinic': 'doctor surgery', 'Fish and chips': 'chippy chip shop',
-  Barber: 'hair', 'Nail salon': 'nails manicure', 'Gym or fitness centre': 'fitness workout', 'Pub or bar': 'pub bar drinks',
-  'Asian supermarket': 'oriental grocery', Pharmacy: 'chemist', 'Veterinary practice': 'vet pets', Optician: 'glasses eyes' }
-const vague = k => /not known|no detail/.test(k) || !k
-// categories that are already specific ("GP surgery") don't need a "(no detail)" note
-const SPECIFIC = new Set(['gp', 'pharmacy', 'dentist', 'hospital', 'nursery', 'library', 'supermarket', 'pub_bar', 'hotel', 'hair_beauty', 'coworking', 'takeaway'])
-// same names the register uses, so one place type isn't split in two ("GP surgery" vs "GP practice")
-const SAME_AS = { gp: 'GP practice', dentist: 'Dental practice', nursery: 'Day nursery or childcare', supermarket: 'Supermarket or convenience store', pub_bar: 'Pub or bar' }
-const specOf = p => p.spec || SAME_AS[p.cat] || (SPECIFIC.has(p.cat) ? catLabel(p.cat) : `${catLabel(p.cat)} (no detail)`)
 
 // leading key per ward: by default the detailed type; keyOf = sector when no sector is chosen on the Popular view.
 // Most common, or (lq) the key furthest above its city-wide share with at least 3 places.
@@ -124,6 +107,19 @@ export default function PlacesView() {
   const pickWard = w => { setWard(cur => (cur === w ? null : w)); setPlace(null) }
   // a type clicked in an area profile opens the Places search for it
   const searchType = k => { setGrp(view === 'points' ? grp : sector); setSpec(new Set([k])); setQ(''); setView('points') }
+  // tell the assistant what is on screen
+  useEffect(() => {
+    const lines = [`Page: Places map, ${VIEW_TEXT[view][0]} view.`]
+    if (view === 'popular') lines.push(sector ? `Sector: ${sector}. Share of each area's places in it: ${Object.entries(focus?.by || {}).sort((a, b) => b[1].share - a[1].share).map(([w, f]) => `${w} ${Math.round(100 * f.share)}%`).join(', ')}. City average ${Math.round(100 * (focus?.cityShare || 0))}%.`
+      : `All sectors. Leading ${bySector ? 'sector' : 'type'} per area: ${Object.entries(pop.win).map(([w, b]) => `${w}: ${b.k}`).join('; ')}.`)
+    if (view === 'heat') lines.push(`Heat map of ${sector || 'all sectors'}: ${shown.length} places.`)
+    if (view === 'people') lines.push(`People: ${people.noun}, ${Math.round(people.total)} in the city. By area: ${Object.entries(people.byWard).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${Math.round(n)}`).join(', ')}.`)
+    if (view === 'points') lines.push(`Search "${q}", industry ${grp || 'all'}, types ${[...spec].join(', ') || 'all'}: ${shown.length} places.`)
+    if (ward) { const st = pop.by[ward], mix = people.mix[ward] || {}, n = Object.values(mix).reduce((a, b) => a + b, 0) || 1
+      lines.push(`Selected area: ${ward}, ${Math.round(wardPop[ward] || 0)} residents, ${st ? st.n : 0} places. Age mix: ${people.ages.slice(1).map(([k, l]) => `${l} ${Math.round(100 * (mix[k] || 0) / n)}%`).join(', ')}. Top: ${st ? Object.entries(st.top).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, c]) => `${k} ${c}`).join(', ') : 'none'}.`) }
+    setAssistantContext(lines.join('\n'))
+  }, [view, sector, focus, pop, bySector, shown, people, ward, wardPop, q, grp, spec])
+
   if (error) return <div className="tool-error">{error.message}</div>
   const [eyebrow, title, intro] = VIEW_TEXT[view]
   const ViewIcon = VIEWS.find(([id]) => id === view)[2]

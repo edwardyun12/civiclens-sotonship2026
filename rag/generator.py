@@ -44,6 +44,7 @@ def prepare_answer(
     question: str,
     top_k: int = 3,
     conversation_history: list[dict] | None = None,
+    app_context: str | None = None,
 ) -> tuple[list[dict], str]:
     """Retrieve evidence and build the grounded generation prompt."""
     retrieval_query = build_retrieval_query(question, conversation_history)
@@ -60,7 +61,7 @@ def prepare_answer(
     prompt = f"""You are an evidence-based Southampton planning assistant.
 
 Follow these rules strictly:
-1. Answer only with information directly supported by the supplied sources.
+1. Answer only with information directly supported by the supplied sources or the App analysis below.
 2. Do not use prior knowledge, assumptions, or invented details.
 3. Do not guess missing names, dates, figures, locations, causes, or conclusions.
 4. If the sources do not contain enough evidence, reply: "I don't know based on the available evidence."
@@ -77,6 +78,9 @@ Conversation history:
 {format_conversation_context(conversation_history)}
 
 Question: {question}
+
+App analysis (what the user is looking at, computed by the app's own model; cite it as [App analysis]):
+{app_context or 'None.'}
 
 Sources:
 {context}
