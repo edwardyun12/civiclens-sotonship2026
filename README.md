@@ -15,16 +15,16 @@
 </p>
 
 <p align="center">
-  🌐 <b>Live site:</b> <a href="https://civiclens-sotonship2026.onrender.com">civiclens-sotonship2026.onrender.com</a> · 🎬 <b>Demo video:</b> <a href="https://youtu.be/139KMawz2Dw">youtu.be/139KMawz2Dw</a> · 🛠️ <a href="#️-run-it-yourself">Run it yourself</a>
+  🌐 <b>Live site:</b> <a href="https://civiclens-sotonship2026.onrender.com">civiclens-sotonship2026.onrender.com</a> · 🎬 <b>Commercial demo:</b> <a href="https://youtu.be/nkD6APCcXts">youtu.be/nkD6APCcXts</a> · 🛠️ <a href="#️-run-it-yourself">Run it yourself</a>
 </p>
 
 ## 🎬 Demo video
 
 <p align="center">
-  <a href="https://youtu.be/139KMawz2Dw" title="Watch the CivicLens demo on YouTube">
-    <img src="docs/images/demo-preview.gif" alt="CivicLens demo preview: typing a business idea and seeing ranked sites across Southampton. Click to watch the full demo" width="90%">
+  <a href="https://youtu.be/nkD6APCcXts" title="Watch the CivicLens commercial demo on YouTube">
+    <img src="docs/images/demo-preview.gif" alt="CivicLens commercial demo preview: typing a business idea and seeing ranked sites across Southampton. Click to watch the full video" width="90%">
   </a>
-  <br><b>▶️ <a href="https://youtu.be/139KMawz2Dw">Watch the full 2:42 demo</a></b> <sub>(preview above plays automatically; click it for the full video with sound)</sub>
+  <br><b>▶️ <a href="https://youtu.be/nkD6APCcXts">Watch the CivicLens commercial demo</a></b>: a narrated run-through of the whole website on live data<br><sub>(the preview above plays automatically; click it for the full video with sound)</sub>
 </p>
 
 | 🧠 Understands any idea | 🗺️ Scores every street | 💬 Explains with evidence |
