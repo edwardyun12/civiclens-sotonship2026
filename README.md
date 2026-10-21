@@ -4,6 +4,8 @@
 
 <p align="center"><b>Type any business idea. See where in Southampton it would work, and why.</b></p>
 
+<p align="center">🥈 <b>2nd place, Southampton City (Council) track, SotonShip 2026</b></p>
+
 <p align="center">
   <img alt="SotonShip 2026" src="https://img.shields.io/badge/SotonShip%202026-Southampton%20City%20track-0b332b">
   <img alt="Tests" src="https://img.shields.io/badge/tests-57%20passing-2f7a4f">
